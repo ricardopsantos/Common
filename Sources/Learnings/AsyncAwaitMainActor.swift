@@ -281,6 +281,7 @@ public extension CommonLearnings.AsyncAwaitMainActorView {
 //
 
 #if canImport(SwiftUI) && DEBUG
+@available(iOS 17, *)
 #Preview {
     CommonLearnings.AsyncAwaitMainActorView()
 }

@@ -171,6 +171,7 @@ public extension CommonLearnings.ListTechniques {
 //
 
 #if canImport(SwiftUI) && DEBUG
+@available(iOS 17, *)
 #Preview {
     VStack {
         if Common_Utils.true {

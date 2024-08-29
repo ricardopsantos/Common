@@ -32,6 +32,7 @@ internal extension Common_Preview {
 }
 
 #if canImport(SwiftUI) && DEBUG
+@available(iOS 17, *)
 #Preview {
     Common_Preview.ViewsModifiersTestView()
 }

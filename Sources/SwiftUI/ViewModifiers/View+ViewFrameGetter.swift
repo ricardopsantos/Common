@@ -32,6 +32,7 @@ struct ViewFrameGetter: ViewModifier {
 }
 
 #if canImport(SwiftUI) && DEBUG
+@available(iOS 17, *)
 #Preview {
     Common_Preview.ViewsModifiersTestView()
 }

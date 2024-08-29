@@ -147,6 +147,7 @@ fileprivate extension Common_Preview {
     }
 }
 
+@available(iOS 17, *)
 #Preview {
     Common_Preview.KeyChainTestViewView()
 }

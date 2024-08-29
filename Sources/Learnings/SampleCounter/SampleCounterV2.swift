@@ -43,6 +43,7 @@ public extension SampleCounterDomain {
 //
 
 #if canImport(SwiftUI) && DEBUG
+@available(iOS 17, *)
 #Preview {
     SampleCounterDomain.SampleCounterV2_View(
         viewModel:

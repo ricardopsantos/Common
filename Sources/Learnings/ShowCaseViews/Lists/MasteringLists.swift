@@ -127,6 +127,7 @@ public extension CommonLearnings.MasteringLists {
 //
 
 #if canImport(SwiftUI) && DEBUG
+@available(iOS 17, *)
 #Preview {
     // CommonLearnings.MasteringLists.ListDemoV1()
     // CommonLearnings.MasteringLists.ListDemoV2(setInitialIndex: 10)

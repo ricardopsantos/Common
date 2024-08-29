@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "Common",
     platforms: [
-        .iOS(.v16)
+        .iOS(.v15)
     ],
     products: [
         .library(
@@ -37,9 +37,6 @@ let package = Package(
                 "Common",
                 .product(name: "Nimble", package: "Nimble")
             ],
-            // resources: [
-            //    .process("Resources/google.co.uk.cer")
-            // ],
             swiftSettings: [
                 .define("IN_PACKAGE_CODE") // Compiler flag
             ]

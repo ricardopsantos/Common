@@ -49,6 +49,7 @@ public extension CommonLearnings {
 //
 
 #if canImport(SwiftUI) && DEBUG
+@available(iOS 17, *)
 #Preview {
     CommonLearnings.CategoryPickerUsageView()
 }

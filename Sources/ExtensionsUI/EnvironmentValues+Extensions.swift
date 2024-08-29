@@ -64,6 +64,7 @@ struct SafeAreaInsetsView: View {
     }
 }
 
+@available(iOS 17, *)
 #Preview {
     SafeAreaInsetsView()
 }
