@@ -24,9 +24,14 @@ public extension CommonLearnings {
         @State private var newMessageText: String = ""
         public var body: some View {
             List(messages, id: \.0) { item in
-                Text(item.1).safeAreaInset(edge: .bottom) { TextField("New message", text: $newMessageText)
-                    padding()
-                        .textFieldStyle(.roundedBorder)
+                let view = Text(item.1)
+                if #available(iOS 15.0, *) {
+                    view.safeAreaInset(edge: .bottom) { TextField("New message", text: $newMessageText)
+                        padding()
+                            .textFieldStyle(.roundedBorder)
+                    }
+                } else {
+                    Text("Not available for iOS15<")
                 }
             }
         }

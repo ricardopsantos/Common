@@ -22,11 +22,16 @@ public extension CommonLearnings {
         typealias ViewModel = ViewModelV2
         @StateObject var viewModel: ViewModel = .init(loader: AccountLoader())
         public var body: some View {
-            Text("Number of accounts = \(viewModel.accounts.count)")
+            let view = Text("Number of accounts = \(viewModel.accounts.count)")
                 .background(Color.random.opacity(0.1))
-                .task {
-                    await viewModel.load()
-                }
+            if #available(iOS 15.0, *) {
+                view
+                    .task {
+                        await viewModel.load()
+                    }
+            } else {
+                view
+            }
         }
     }
 }

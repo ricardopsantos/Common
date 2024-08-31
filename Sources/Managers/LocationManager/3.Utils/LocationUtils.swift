@@ -12,7 +12,7 @@ import Combine
 //
 
 public extension Common {
-    struct LocationUtils {
+    enum LocationUtils {
         //
         // MARK: - Coordinate
         //

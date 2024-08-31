@@ -9,7 +9,7 @@ import Foundation
 //
 public extension CDataCRUDEntity {
     var mapToModel: CommonCoreData.Utils.Sample.CRUDEntity? {
-        .init(id: id ?? "", name: name ?? "", recordDate: recordDate ?? .now)
+        .init(id: id ?? "", name: name ?? "", recordDate: recordDate ?? Date())
     }
 }
 

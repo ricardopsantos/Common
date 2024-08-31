@@ -52,23 +52,46 @@ public struct AnimatedBackground: ViewModifier {
     }
 
     public func body(content: Content) -> some View {
-        content
-            .overlay(content: {
-                Rectangle()
-                    .trim(from: isVisible ? 1 : 0, to: 1)
-                    .stroke(color1, lineWidth: lineWidth)
-                    .padding(lineWidth)
+        Group {
+            if #available(iOS 15.0, *) {
+                content
+                    .overlay(alignment: .center) {
+                        Rectangle()
+                            .trim(from: isVisible ? 1 : 0, to: 1)
+                            .stroke(color1, lineWidth: lineWidth)
+                            .padding(lineWidth)
 
-                Rectangle()
-                    .trim(from: isVisible ? 1 : 0, to: 1)
-                    .stroke(color2, lineWidth: lineWidth)
-                    .rotationEffect(.degrees(180))
-            })
-            .onAppear(perform: {
-                withAnimation(.linear(duration: duration)) {
-                    isVisible = true
-                }
-            })
+                        Rectangle()
+                            .trim(from: isVisible ? 1 : 0, to: 1)
+                            .stroke(color2, lineWidth: lineWidth)
+                            .rotationEffect(.degrees(180))
+                    }
+                    .onAppear {
+                        withAnimation(.linear(duration: duration)) {
+                            isVisible = true
+                        }
+                    }
+            } else {
+                content
+                    .overlay(
+                        Rectangle()
+                            .trim(from: isVisible ? 1 : 0, to: 1)
+                            .stroke(color1, lineWidth: lineWidth)
+                            .padding(lineWidth)
+                    )
+                    .overlay(
+                        Rectangle()
+                            .trim(from: isVisible ? 1 : 0, to: 1)
+                            .stroke(color2, lineWidth: lineWidth)
+                            .rotationEffect(.degrees(180))
+                    )
+                    .onAppear {
+                        withAnimation(.linear(duration: duration)) {
+                            isVisible = true
+                        }
+                    }
+            }
+        }
     }
 }
 

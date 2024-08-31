@@ -13,26 +13,27 @@ public extension Common.InternalUserDefaults {
     enum Keys: String {
         case numberOfLogins
         case locationUtils
-        case averageMetrics 
+        case averageMetrics
         case expiringKeyValueEntity
-        
+
         var keyPrefix: String {
             "\(Common.self).\(Common.InternalUserDefaults.self)"
         }
+
         var defaultsKey: String {
-            "\(self.keyPrefix).\(self.rawValue)"
+            "\(keyPrefix).\(rawValue)"
         }
     }
 }
 
 public extension Common {
     struct InternalUserDefaults {
-
         private init() {}
         public static var prefix: String { "\(Common.self).\(InternalUserDefaults.self)" }
         public static var defaults: UserDefaults? {
             UserDefaults(suiteName: "\(Common.bundleIdentifier)")
         }
+
         public static func cleanUserDefaults() {
             CronometerAverageMetrics.shared.clear()
             Common.LocationUtils.clear()
@@ -60,6 +61,4 @@ public extension Common.InternalUserDefaults {
         Common.InternalUserDefaults.defaults?.setValue(current, forKey: key)
         return current
     }
-
 }
-

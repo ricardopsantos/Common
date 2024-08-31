@@ -13,7 +13,7 @@ public extension CDataSong {
         .init(
             id: id ?? "",
             title: title ?? "",
-            releaseDate: releaseDate ?? Date.now,
+            releaseDate: releaseDate ?? Date(),
             cascadeSinger: cascade ? singer?.mapToModel : nil
         )
     }

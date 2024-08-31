@@ -33,7 +33,7 @@ public extension CommonCoreData.Utils.Sample.Song {
         Self(
             id: UUID().uuidString,
             title: "Title \(String.randomWithSpaces(10))",
-            releaseDate: Date.now,
+            releaseDate: Date(),
             cascadeSinger: .random
         )
     }

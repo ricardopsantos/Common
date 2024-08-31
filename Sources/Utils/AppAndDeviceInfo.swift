@@ -28,8 +28,6 @@ public extension Common {
             let appState = UIApplication.shared.applicationState
             return appState == .background || appState == .inactive
         }
-
-
     }
 
     struct DeviceInfo {
@@ -76,7 +74,11 @@ public extension Common {
             if battery == -1 {
                 return "Unknown"
             }
-            return "\(battery.formatted(.percent))"
+            if #available(iOS 15.0, *) {
+                return "\(battery.formatted(.percent))"
+            } else {
+                return "\(battery)"
+            }
         }
 
         public static var uuid: String { UIDevice.current.identifierForVendor!.uuidString }

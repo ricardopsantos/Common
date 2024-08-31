@@ -19,14 +19,14 @@ public extension CommonLearnings {
             VStack(spacing: 30) {
                 Text("short Text")
                     .padding()
-                    .foregroundStyle(Color.white)
+                    .foregroundColor(Color.white)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
                             .fill(Color.blue)
                     )
                 Text("long Text long Text long Text long Text ")
                     .padding()
-                    .foregroundStyle(Color.white)
+                    .foregroundColor(Color.white)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
                             .fill(Color.red)
@@ -59,12 +59,12 @@ public extension CommonLearnings {
                 Text("short Text Solution1")
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .foregroundStyle(Color.white)
+                    .foregroundColor(Color.white)
                     .background(Color.blue)
                 Text("long Text long Text long Text ")
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .foregroundStyle(Color.white)
+                    .foregroundColor(Color.white)
                     .background(Color.red)
             }
             .fixedSize(horizontal: true, vertical: false)
@@ -89,13 +89,13 @@ public extension CommonLearnings {
             VStack(spacing: 30) {
                 Text("short Text Solution2 ")
                     .padding()
-                    .foregroundStyle(Color.white)
+                    .foregroundColor(Color.white)
                     .frame(width: maxWidth)
                     .background(Color.blue)
 
                 Text("long Text long Text long Text ")
                     .padding()
-                    .foregroundStyle(Color.white)
+                    .foregroundColor(Color.white)
                     .background(
                         GeometryReader { geometry in
                             DispatchQueue.main.async {
@@ -117,7 +117,7 @@ extension CommonLearnings {
             VStack(spacing: 30) {
                 Text("short Text Solution3")
                     .padding()
-                    .foregroundStyle(Color.white)
+                    .foregroundColor(Color.white)
                     .modifier(Common.CustomWidthViewModifier(width: maxWidth))
                     .lineLimit(1)
                     .background(
@@ -133,7 +133,7 @@ extension CommonLearnings {
                 Text(textString)
                     .padding()
                     .lineLimit(1)
-                    .foregroundStyle(Color.white)
+                    .foregroundColor(Color.white)
                     .modifier(Common.CustomWidthViewModifier(width: maxWidth))
                     .background(
                         GeometryReader { geometry in
@@ -181,14 +181,14 @@ extension CommonLearnings {
             VStack(spacing: 30) {
                 Text(debug)
                 Text(textA)
-                    .foregroundStyle(Color.white)
+                    .foregroundColor(Color.white)
                     .padding()
                     .lineLimit(1)
                     .modifier(Common.EqualWidthViewModifier(width: $maxWidth))
                     .background(Color.blue)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text(textB)
-                    .foregroundStyle(Color.white)
+                    .foregroundColor(Color.white)
                     .padding()
                     .lineLimit(1)
                     .modifier(Common.EqualWidthViewModifier(width: $maxWidth))

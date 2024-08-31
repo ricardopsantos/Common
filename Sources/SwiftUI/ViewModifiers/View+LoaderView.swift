@@ -15,13 +15,21 @@ public struct LoaderView: View {
 
     public var body: some View {
         if isLoading {
-            VStack {
+            let view = VStack {
                 ProgressView()
             }
             .padding()
             .padding()
             .padding()
-            .background(.background)
+
+            Group {
+                if #available(iOS 15.0, *) {
+                    view
+                        .background(.background)
+                } else {
+                    view
+                }
+            }
             .cornerRadius(10)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(

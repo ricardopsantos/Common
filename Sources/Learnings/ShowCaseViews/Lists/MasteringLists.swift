@@ -21,10 +21,15 @@ public extension CommonLearnings.MasteringLists {
             List {
                 ForEach(0..<list.count, id: \.self) { i in
                     let item = list[i]
-                    Text(item)
+                    let view = Text(item)
                         .frame(height: 100, alignment: .leading)
                         .frame(maxWidth: .infinity)
-                        .listRowSeparator(.hidden, edges: .all)
+                    if #available(iOS 15.0, *) {
+                        view
+                            .listRowSeparator(.hidden, edges: .all)
+                    } else {
+                        view
+                    }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -52,11 +57,16 @@ public extension CommonLearnings.MasteringLists {
                     List {
                         ForEach(0..<list.count, id: \.self) { i in
                             let item = list[i]
-                            Text(item)
+                            let view = Text(item)
                                 .frame(height: 100, alignment: .leading)
                                 .frame(maxWidth: .infinity)
-                                .listRowSeparator(.hidden, edges: .all)
                                 .id(i)
+                            if #available(iOS 15.0, *) {
+                                view
+                                    .listRowSeparator(.hidden, edges: .all)
+                            } else {
+                                view
+                            }
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -93,7 +103,6 @@ public extension CommonLearnings.MasteringLists {
                             Text(item)
                                 .frame(height: 100, alignment: .leading)
                                 .frame(maxWidth: .infinity)
-                                .listRowSeparator(.hidden, edges: .all)
                                 .id(i)
                                 .onAppear {
                                     if i == list.count - 1 {

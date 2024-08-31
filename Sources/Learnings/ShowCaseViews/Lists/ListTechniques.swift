@@ -81,16 +81,21 @@ public extension CommonLearnings.ListTechniques {
         public var body: some View {
             List {
                 ForEach(items, id: \.self) { item in
-                    Text(item)
-                        .swipeActions {
-                            Button(role: .destructive) {
-                                if let index = items.firstIndex(of: item) {
-                                    items.remove(at: index)
+                    let view = Text(item)
+                    if #available(iOS 15.0, *) {
+                        view
+                            .swipeActions {
+                                Button(role: .destructive) {
+                                    if let index = items.firstIndex(of: item) {
+                                        items.remove(at: index)
+                                    }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
                                 }
-                            } label: {
-                                Label("Delete", systemImage: "trash")
                             }
-                        }
+                    } else {
+                        Text("Not available for iOS15<")
+                    }
                 }
             }
         }
@@ -138,10 +143,15 @@ public extension CommonLearnings.ListTechniques {
         }
 
         public var body: some View {
-            List(filteredItems, id: \.self) { item in
+            let view = List(filteredItems, id: \.self) { item in
                 Text(item)
             }
-            .searchable(text: $searchText)
+            if #available(iOS 15.0, *) {
+                view
+                    .searchable(text: $searchText)
+            } else {
+                Text("Not available for iOS15<")
+            }
         }
     }
 }

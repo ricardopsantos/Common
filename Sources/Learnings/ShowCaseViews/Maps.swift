@@ -50,7 +50,6 @@ public extension CommonLearnings.Maps {
                             .accentColor(.white)
                     }
                     .frame(width: 44, height: 44)
-                    .background(.green)
                     .cornerRadius(22)
                 }
             }
