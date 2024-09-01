@@ -65,7 +65,7 @@ github "https://github.com/ricardopsantos/Common" "1.0.0"
 or for beta
 
 ```ogdl
-github "ricardopsantos/RJSLibUF" "master"
+github "ricardopsantos/Common" "master"
 ```
 
 ---
