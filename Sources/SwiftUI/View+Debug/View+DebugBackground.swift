@@ -7,6 +7,7 @@ import Foundation
 import SwiftUI
 
 public extension View {
+    
     func debugBackground() -> some View {
         #if DEBUG
         background(Color.random)
@@ -18,7 +19,7 @@ public extension View {
     func debugBordersDefault() -> some View {
         debugBorders(.red, .blue)
     }
-
+ 
     func debugBordersRandom() -> some View {
         debugBorders(.random, .random)
     }

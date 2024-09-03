@@ -95,7 +95,7 @@ enum Commom_Previews_ViewControllerRepresentable {
     // View Preview
     struct PreviewProvider_2: PreviewProvider {
         static var previews: some View {
-            Common_ViewRepresentable { SampleVC().view }.buildPreviews()
+            Common_ViewRepresentable { SampleVC().view }
         }
     }
     #endif
