@@ -24,6 +24,7 @@ let package = Package(
                 //    .product(name: "NukeUI", package: "Nuke"),
             ],
             resources: [
+                .process("Resources/Assets.xcassets"),
                 .process("Resources/CommonDB.xcdatamodeld"),
                 .process("Resources/google.co.uk.cer")
             ],

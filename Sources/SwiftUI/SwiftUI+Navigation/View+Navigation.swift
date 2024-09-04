@@ -222,7 +222,7 @@ internal extension Common_Preview {
         struct MainCoordinatorView: View {
             @ObservedObject var listCoordinator: MainCoordinator = .init()
             var asNavigation: Bool
-            init(asNavitagion value: Bool) {
+            init(asNavigation value: Bool) {
                 self.asNavigation = value
             }
 
@@ -279,6 +279,6 @@ internal extension Common_Preview {
 
 @available(iOS 17, *)
 #Preview {
-    Common_Preview.SampleNavAppA.MainCoordinatorView(asNavitagion: true)
+    Common_Preview.SampleNavAppA.MainCoordinatorView(asNavigation: true)
 }
 #endif

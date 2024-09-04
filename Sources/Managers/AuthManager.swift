@@ -124,7 +124,7 @@ fileprivate extension Common.AuthManagerViewModel {
         switch error.code {
         case .userCancel:
             // The user tapped the cancel button in the authentication dialog.
-            // After failed autentication the first time, use choose to cancel instead of repeat
+            // After failed authentication the first time, use choose to cancel instead of repeat
             return .userDidCanceledOnEnrolledBiometryPrompt
         case .biometryNotAvailable:
             // Biometry is not available on the device. User has denied the use of biometry for this app.
@@ -142,7 +142,6 @@ fileprivate extension Common.AuthManagerViewModel {
         case .appCancel: () // The app canceled authentication.
         case .invalidContext: () // The context was previously invalidated.
         case .notInteractive: () // Displaying the required authentication user interface is forbidden.
-        case .watchNotAvailable: () // An attempt to authenticate with Apple Watch failed.
         default: ()
         }
         return .unknown

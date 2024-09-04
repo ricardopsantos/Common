@@ -111,7 +111,6 @@ fileprivate extension Common_Preview {
                         SwiftUIUtils.FixedVerticalSpacer(height: 1).id(bottomID)
                     }
                     .padding(.bottom, keyboardHeight)
-                    .animation(.easeInOut(duration: Common.Constants.defaultAnimationsTime))
                     .onDragDismissKeyboardV1()
                     .onTapDismissKeyboard()
                     .onChange(of: keyboardManagerV1.keyboardHeight, perform: { newValue in

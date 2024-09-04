@@ -6,7 +6,7 @@ import Foundation
 
 public extension CommonCoreData {
     struct Utils {
-        static var logsEnabled = Common_Utils.onDebug
+        static var logsEnabled = !(Common_Utils.onDebug || Common_Utils.onUITests || Common_Utils.onUITests)
         // static var logNumber = 1
         private init() {}
     }

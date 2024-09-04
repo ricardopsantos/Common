@@ -236,9 +236,9 @@ fileprivate extension Common.EncryptionManager {
     }
 
     static var ivAESCBC: Data {
-        let randonString = String.random(16)
-        let randonStringToByteArray: [UInt8] = Array(randonString.utf8)
-        return Data(randonStringToByteArray)
+        let randomString = String.random(16)
+        let randomStringToByteArray: [UInt8] = Array(randomString.utf8)
+        return Data(randomStringToByteArray)
         // return Data([14, 04, 166, 110, 175, 138, 138, 118, 175, 12, 05, 187, 179, 183, 167, 8].reversed())
     }
 

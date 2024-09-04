@@ -37,9 +37,8 @@ extension CommonBaseCoreDataManager: NSFetchedResultsControllerDelegate {
         } else {
             /// `<CDataCRUDEntity: 0x60000211c280>` --> `CDataCRUDEntity`
             dbModelName = "\(anObject.self)".dropFirstIf("<").split(by: ":").first
-            [
+            let possibleKeys = [
                 "id",
-                "identifier",
                 "key",
                 "uid",
                 "guid",
@@ -49,10 +48,16 @@ extension CommonBaseCoreDataManager: NSFetchedResultsControllerDelegate {
                 "recordId",
                 "objectId",
                 "entityId"
-            ].forEach { key in
-                // Try to find the id
-                if id == nil, let some = (anObject as AnyObject).value(forKey: key), !"\(some)".isEmpty {
-                    id = "\(some)"
+            ]
+            for key in possibleKeys {
+                if id == nil {
+                    // Check for key-value coding compliance
+                    if (anObject as AnyObject).responds(to: Selector(key)) {
+                        if let some = (anObject as AnyObject).value(forKey: key), !"\(some)".isEmpty {
+                            id = "\(some)"
+                            break
+                        }
+                    }
                 }
             }
         }

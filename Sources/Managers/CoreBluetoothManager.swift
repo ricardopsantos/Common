@@ -5,7 +5,7 @@
 
 import Foundation
 import CoreBluetooth
-
+/*
 public extension Common {
     class CoreBluetoothManager: NSObject {
         override public init() {
@@ -154,3 +154,4 @@ extension Common.CoreBluetoothManager: CBCentralManagerDelegate {
         onUpdateState?(central.state, central.authorization, Self.bluetoothSmartState)
     }
 }
+*/
