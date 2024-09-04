@@ -24,7 +24,7 @@ private extension View {
             }
         }
     }
-    
+
     func sample2<Item>(viewModel: Binding<Item?>, @ViewBuilder destination: (Item) -> some View) -> some View {
         let isActive = Binding(
             get: {
@@ -53,15 +53,17 @@ private struct BindingSampleView: View {
         case value2
         case value3
     }
+
     @Binding var selected: String
     init(selected: Binding<SomeEnum?>) {
         _selected = Binding(
             get: { selected.wrappedValue?.rawValue ?? SomeEnum.value1.rawValue },
             set: { newValue in
                 selected.wrappedValue = SomeEnum(rawValue: newValue)
-            })
+            }
+        )
     }
-    
+
     var body: some View {
         HStack {
             Picker("SomeEnum", selection: $selected) {

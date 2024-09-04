@@ -8,7 +8,11 @@ import UIKit
 
 public extension CGFloat {
     var localeString: String {
-        Double(self).localeString
+        Double(self).localeDecimalString
+    }
+
+    func localeCurrencyString(currencyCode: String? = nil) -> String {
+        Double(self).localeCurrencyString(currencyCode: currencyCode)
     }
 }
 

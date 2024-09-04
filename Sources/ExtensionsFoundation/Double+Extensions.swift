@@ -15,11 +15,22 @@ public extension Double {
         truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", self) : String(self)
     }
 
-    var localeString: String {
+    var localeDecimalString: String {
         let formatter = NumberFormatter()
         formatter.locale = .current
         formatter.numberStyle = .decimal
         formatter.isLenient = true
+        return formatter.string(from: self as NSNumber) ?? "\(self)"
+    }
+
+    func localeCurrencyString(currencyCode: String? = nil) -> String {
+        let formatter = NumberFormatter()
+        formatter.locale = .current
+        formatter.numberStyle = .currency
+        formatter.isLenient = true
+        if let code = currencyCode {
+            formatter.currencyCode = code
+        }
         return formatter.string(from: self as NSNumber) ?? "\(self)"
     }
 }

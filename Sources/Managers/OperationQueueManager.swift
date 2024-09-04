@@ -139,7 +139,7 @@ public extension Common {
                 urlString: urlString,
                 caching: .hot,
                 downsample: nil
-            ) { image in
+            ) { image, _ in
                 self.image = image!
                 self.executing(false)
                 self.finish(true)

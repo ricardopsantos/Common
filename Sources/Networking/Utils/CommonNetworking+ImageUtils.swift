@@ -32,7 +32,7 @@ public extension CommonNetworking {
             downsample: CGSize?
         ) async throws -> UIImage? {
             let result: UIImage? = try await withCheckedThrowingContinuation { continuation in
-                imageFrom(urlString: urlString, caching: caching, downsample: downsample) { image in
+                imageFrom(urlString: urlString, caching: caching, downsample: downsample) { image, _ in
                     continuation.resume(with: .success(image))
                 }
             }
@@ -43,14 +43,14 @@ public extension CommonNetworking {
             urlString: String,
             caching: StoragePolicy,
             downsample: CGSize?,
-            completion: @escaping ((UIImage?) -> Void)
+            completion: @escaping ((UIImage?, String) -> Void)
         ) {
             guard let url = URL(string: urlString) else {
-                DispatchQueue.executeInMainTread { completion(nil) }
+                DispatchQueue.executeInMainTread { completion(nil, "") }
                 return
             }
-            imageFrom(url: url, caching: caching, downsample: downsample) { some in
-                completion(some)
+            imageFrom(url: url, caching: caching, downsample: downsample) { image, url in
+                completion(image, url)
             }
         }
 
@@ -63,8 +63,8 @@ public extension CommonNetworking {
                 return nil
             }
             let result: UIImage? = try await withCheckedThrowingContinuation { continuation in
-                imageFrom(urlString: urlString, caching: caching, downsample: downsample) { locationForAddress in
-                    continuation.resume(with: .success(locationForAddress))
+                imageFrom(urlString: urlString, caching: caching, downsample: downsample) { image, url in
+                    continuation.resume(with: .success(image))
                 }
             }
             return result
@@ -74,7 +74,7 @@ public extension CommonNetworking {
             url: URL,
             caching: StoragePolicy,
             downsample: CGSize?,
-            completion: @escaping ((UIImage?) -> Void)
+            completion: @escaping ((UIImage?, String) -> Void)
         ) {
             let lock = Common.UnfairLockManagerWithKey()
             let lockEnabled = false
@@ -84,9 +84,9 @@ public extension CommonNetworking {
                     if let downsample,
                        let image,
                        let imageDownSample = image.resizeToFitMaxSize(maxWidth: downsample.width, maxHeight: downsample.height) {
-                        DispatchQueue.executeInMainTread { completion(imageDownSample) }
+                        DispatchQueue.executeInMainTread { completion(imageDownSample, url.absoluteString) }
                     } else {
-                        DispatchQueue.executeInMainTread { completion(image) }
+                        DispatchQueue.executeInMainTread { completion(image, url.absoluteString) }
                     }
                     if lockEnabled {
                         lock.unlock(key: cachedImageName)
