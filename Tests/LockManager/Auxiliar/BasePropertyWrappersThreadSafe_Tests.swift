@@ -11,7 +11,7 @@ import Nimble
 @testable import Common
 
 protocol TestClassProtocol {
-    var value: Int { set get }
+    var value: Int { get set }
     mutating func modify()
 }
 

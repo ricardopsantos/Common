@@ -10,18 +10,17 @@ import SwiftUI
 
 public extension View {
     func debug() -> some View {
-#if DEBUG
+        #if DEBUG
         debugBordersDefault()
-        .renderTimeTracker()
-        .displaySize()
-#else
-self
-#endif
+            .renderTimeTracker()
+            .displaySize()
+        #else
+        self
+        #endif
     }
 }
 
-
-// 
+//
 // MARK: - Preview
 //
 

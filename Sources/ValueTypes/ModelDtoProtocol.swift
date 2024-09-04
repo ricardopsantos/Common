@@ -66,38 +66,3 @@ extension Array<String>: ModelDtoProtocol {
         description
     }
 }
-
-/**
-
-  Sample Request
-
-  ```
-  public extension ModelDto {
-      struct WeatherRequest: ModelDtoProtocol {
-          public let latitude: String
-          public let longitude: String
-          public init(latitude: String, longitude: String) {
-              self.longitude = longitude
-              self.latitude = latitude
-          }
-      }
-  }
- ```
-
-  Sample Response
-
-  ```
-  public extension ModelDto {
-      struct WeatherResponse: ModelDtoProtocol {
-          public var latitude, longitude, generationtimeMS: Double?
-
-          public init() {}
-
-          enum CodingKeys: String, CodingKey {
-              case latitude
-              case longitude
-              case generationtimeMS = "generationtime_ms"
-          }
-      }
-  ```
-  */

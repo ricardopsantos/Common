@@ -15,7 +15,7 @@ public extension Common_PropertyWrappers {
     struct KeychainStorageV2: DynamicProperty {
         @State private var value: String?
         private let key: String
-        private let container = Keychain(service: Bundle.main.bundleIdentifier ?? "\(Common.self)_\(Self.self)")
+        private let container = Keychain(service: "\(Common.self)_\(Self.self)")
         init(key: String) {
             self.key = key
             _value = State(initialValue: container[key])

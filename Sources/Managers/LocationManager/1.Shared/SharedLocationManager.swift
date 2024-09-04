@@ -180,5 +180,3 @@ private extension Common.SharedLocationManager {
         }
     }
 }
-
-// swiftlint:enable logs_rule_1

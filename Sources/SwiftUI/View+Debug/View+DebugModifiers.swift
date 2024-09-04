@@ -10,43 +10,42 @@ import SwiftUI
 
 public extension View {
     func displaySize() -> some View {
-#if DEBUG
+        #if DEBUG
         modifier(SizeDisplayModifier())
-#else
+        #else
         self
-#endif
+        #endif
     }
-    
+
     func performanceMetrics() -> some View {
-#if DEBUG
+        #if DEBUG
         modifier(PerformanceMetricsModifier())
-#else
+        #else
         self
-#endif
-        
+        #endif
     }
-    
+
     func renderTimeTracker() -> some View {
-#if DEBUG
+        #if DEBUG
         modifier(RenderTimeModifier())
-#else
+        #else
         self
-#endif
+        #endif
     }
-    
+
     func layoutGuides(grid: Bool = true, baseline: Bool = true) -> some View {
-#if DEBUG
+        #if DEBUG
         modifier(LayoutGuidesModifier(grid: grid, baseline: baseline))
-#else
+        #else
         self
-#endif
+        #endif
     }
 }
 
 struct LayoutGuidesModifier: ViewModifier {
     let grid: Bool
     let baseline: Bool
-    
+
     func body(content: Content) -> some View {
         content
             .overlay(
@@ -62,7 +61,7 @@ struct LayoutGuidesModifier: ViewModifier {
                 }
             )
     }
-    
+
     private func gridOverlay(for size: CGSize) -> some View {
         let gridSpacing: CGFloat = 20
         return ZStack {
@@ -84,7 +83,7 @@ struct LayoutGuidesModifier: ViewModifier {
             }
         }
     }
-    
+
     private func baselineOverlay(for size: CGSize) -> some View {
         let baselineSpacing: CGFloat = 8
         return VStack(spacing: baselineSpacing) {
@@ -107,7 +106,7 @@ struct RenderTimeModifier: ViewModifier {
                             let start = CACurrentMediaTime()
                             DispatchQueue.main.async {
                                 let end = CACurrentMediaTime()
-                                self.renderTime = end - start
+                                renderTime = end - start
                             }
                         }
                 }
@@ -129,27 +128,27 @@ class PerformanceMetrics: ObservableObject {
     @Published var cpuUsage: Double = 0
     @Published var memoryUsage: Int64 = 0
     @Published var frameRate: Double = 0
-    
+
     private var timer: Timer?
     private var displayLink: CADisplayLink?
     private var frameCount: Int = 0
     private var startTime: CFTimeInterval = 0
-    
+
     init() {
         // Start the timer to update metrics
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+        self.timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             self?.updateMetrics()
         }
-        
+
         // Start the display link to calculate frame rate
         startFrameRateMeasurement()
     }
-    
+
     private func updateMetrics() {
         cpuUsage = getCPUUsage()
         memoryUsage = getMemoryUsage()
     }
-    
+
     private func getCPUUsage() -> Double {
         // Fetch CPU usage data
         var cpuInfo = host_cpu_load_info()
@@ -159,7 +158,7 @@ class PerformanceMetrics: ObservableObject {
                 host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, $0, &count)
             }
         }
-        
+
         if kerr == KERN_SUCCESS {
             let totalUsage = Double(cpuInfo.cpu_ticks.0 + cpuInfo.cpu_ticks.1 + cpuInfo.cpu_ticks.2 + cpuInfo.cpu_ticks.3)
             let userUsage = Double(cpuInfo.cpu_ticks.0 + cpuInfo.cpu_ticks.1)
@@ -168,7 +167,7 @@ class PerformanceMetrics: ObservableObject {
             return 0
         }
     }
-    
+
     private func getMemoryUsage() -> Int64 {
         var taskInfo = mach_task_basic_info()
         var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size) / 4
@@ -183,12 +182,12 @@ class PerformanceMetrics: ObservableObject {
             return 0
         }
     }
-    
+
     private func startFrameRateMeasurement() {
         displayLink = CADisplayLink(target: self, selector: #selector(updateFrameRate))
         displayLink?.add(to: .current, forMode: .default)
     }
-    
+
     @objc private func updateFrameRate() {
         frameCount += 1
         if startTime == 0 {
@@ -201,17 +200,16 @@ class PerformanceMetrics: ObservableObject {
             startTime = CACurrentMediaTime()
         }
     }
-    
+
     deinit {
         timer?.invalidate()
         displayLink?.invalidate()
     }
 }
 
-
 struct PerformanceMetricsModifier: ViewModifier {
     @StateObject private var metrics = PerformanceMetrics()
-    
+
     func body(content: Content) -> some View {
         content
             .overlay(
@@ -220,12 +218,12 @@ struct PerformanceMetricsModifier: ViewModifier {
                     Text("Memory: \(ByteCountFormatter.string(fromByteCount: metrics.memoryUsage, countStyle: .memory))")
                     Text("FPS: \(String(format: "%.1f", metrics.frameRate))")
                 }
-                    .font(.caption)
-                    .padding(4)
-                    .background(Color.black.opacity(0.7))
-                    .foregroundColor(.white)
-                    .cornerRadius(4)
-                    .padding(4),
+                .font(.caption)
+                .padding(4)
+                .background(Color.black.opacity(0.7))
+                .foregroundColor(.white)
+                .cornerRadius(4)
+                .padding(4),
                 alignment: .topLeading
             )
     }
@@ -233,7 +231,7 @@ struct PerformanceMetricsModifier: ViewModifier {
 
 struct SizeDisplayModifier: ViewModifier {
     @State private var size: CGSize = .zero
-    
+
     func body(content: Content) -> some View {
         content
             .background(
@@ -243,7 +241,7 @@ struct SizeDisplayModifier: ViewModifier {
                 }
             )
             .onPreferenceChange(SizePreferenceKey.self) { newSize in
-                self.size = newSize
+                size = newSize
             }
             .overlay(
                 Text("W: \(Int(size.width)) H: \(Int(size.height))")
@@ -279,7 +277,6 @@ fileprivate extension Common_Preview {
                 Text("renderTimeTracker").padding(20).renderTimeTracker()
                 Text("performanceMetrics").padding(20).performanceMetrics()
                 Text("displaySize").padding(20).displaySize()
-                
             }
         }
     }

@@ -14,14 +14,14 @@ class Assets_Tests: XCTestCase {
     func enabled() -> Bool {
         true
     }
-    
+
     override func setUp() {
         super.setUp()
         continueAfterFailure = false
         TestsGlobal.loadedAny = nil
         TestsGlobal.cancelBag.cancel()
     }
-    
+
     func test_validImageLoad() {
         let validImageName = "back"
         let image: Image? = Image(validImageName, bundle: Bundle.module)

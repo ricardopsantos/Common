@@ -86,17 +86,12 @@ enum Commom_Previews_ViewControllerRepresentable {
 
     #if canImport(SwiftUI) && DEBUG
     // ViewController Preview
-    struct PreviewProvider_1: PreviewProvider {
-        static var previews: some View {
-            Common_ViewControllerRepresentable { SampleVC() }
-        }
+    #Preview("Common_ViewControllerRepresentable") {
+        Common_ViewControllerRepresentable { SampleVC() }
     }
 
-    // View Preview
-    struct PreviewProvider_2: PreviewProvider {
-        static var previews: some View {
-            Common_ViewRepresentable { SampleVC().view }
-        }
+    #Preview("Common_ViewRepresentable") {
+        Common_ViewRepresentable { SampleVC().view }
     }
     #endif
 }

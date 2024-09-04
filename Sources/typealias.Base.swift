@@ -21,8 +21,6 @@ public typealias Common_ViewRepresentable = Common.ViewRepresentable2
 
 // MARK: - Value types
 
-public typealias Common_OutputForHashable = Common.HashableValueObserver
-public typealias Common_InputForHashable = Common.HashableValueObserver
 public typealias Common_PropertyWrappers = Common.PropertyWrappers
 
 // MARK: - CronometerManager

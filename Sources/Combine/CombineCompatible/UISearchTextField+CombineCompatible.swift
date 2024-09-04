@@ -7,23 +7,6 @@ import Foundation
 import Combine
 import UIKit
 
-public extension UISearchTextField {
-    var textAnimated: String? {
-        get { text }
-        set { if text != newValue {
-            fadeTransition(); text = newValue ?? ""
-        } }
-    }
-
-    private func fadeTransition(_ duration: CFTimeInterval = 0.5) {
-        let animation = CATransition()
-        animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        animation.type = .fade
-        animation.duration = duration
-        layer.add(animation, forKey: CATransitionType.fade.rawValue)
-    }
-}
-
 public extension CombineCompatible {
     var editingChangedPublisher: AnyPublisher<String?, Never> {
         if let target = target as? UISearchTextField {
