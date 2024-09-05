@@ -152,7 +152,7 @@ public extension Common {
                 )
             }
         }
-        
+
         static func cleanAll() {
             CommonNetworking.ImageUtils.cleanCache()
             CronometerAverageMetrics.shared.clear()

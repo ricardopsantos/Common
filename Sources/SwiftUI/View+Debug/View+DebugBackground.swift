@@ -38,17 +38,19 @@ public extension View {
 public struct AnimatedBackground: ViewModifier {
     @State private var isVisible: Bool
     private let lineWidth: CGFloat = 2
-    private let duration: CGFloat = Common.Constants.defaultAnimationsTime * 2
+    private let duration: CGFloat
     private let color1: Color
     private let color2: Color
     public init(
         isVisible: Bool = false,
         color1: Color = .red,
-        color2: Color = .blue
+        color2: Color = .blue,
+        duration: CGFloat = Common.Constants.defaultAnimationsTime * 2
     ) {
         self.isVisible = isVisible
         self.color1 = color1
         self.color2 = color2
+        self.duration = duration
     }
 
     public func body(content: Content) -> some View {

@@ -27,8 +27,7 @@ public extension Common.InternalUserDefaults {
 }
 
 public extension Common {
-    
-    struct Storage {
+    enum Storage {
         static func cleanAll() {
             CommonNetworking.ImageUtils.cleanCache()
             CronometerAverageMetrics.shared.clear()
@@ -39,7 +38,7 @@ public extension Common {
             Common.InternalUserDefaults.cleanUserDefaults()
         }
     }
-    
+
     struct InternalUserDefaults {
         private init() {}
         public static var prefix: String { "\(Common.self).\(InternalUserDefaults.self)" }

@@ -13,6 +13,7 @@ public extension Common {
         @PWThreadSafe private static var throttleTimestamps: [String: TimeInterval] = [:]
         // Thread-safe storage for debounce timers
         @PWThreadSafe private static var debounceTimers: [String: Timer] = [:]
+        @PWThreadSafe private static var blockReferenceCount: [String: Int] = [:]
 
         /**
          Throttles the execution of a closure. The closure will only be executed if the specified time interval has elapsed since the last execution with the same operation ID.
@@ -70,6 +71,26 @@ public extension Common {
 
             // Store the new timer
             debounceTimers[operationId] = timer
+        }
+
+        public static func dropFirst(
+            n: Int,
+            operationId: String,
+            block: @escaping () -> Void
+        ) {
+            guard n > 0 else {
+                block()
+                return
+            }
+            var refCount = blockReferenceCount[operationId] ?? 0
+            if refCount >= n {
+                // Executed
+                block()
+            } else {
+                // Dropped...
+            }
+            refCount += 1
+            blockReferenceCount[operationId] = refCount
         }
     }
 }

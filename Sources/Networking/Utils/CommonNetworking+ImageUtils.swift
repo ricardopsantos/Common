@@ -14,19 +14,19 @@ public extension CommonNetworking {
     enum ImageUtils {
         @PWThreadSafe static var _imagesCache = NSCache<NSString, UIImage>()
         public static var cachedImagesPrefix: String { "cached_image" }
-        
+
         public enum StoragePolicy: Int {
             case none // Don't use storage
             case cold // Use cache, stored and persistent after app is closed (slow access)
             case hot // Use cache, persistent only while app is open (fast access)
             case hotElseCold // Use cache, hot first if available, else cold cache
         }
-        
+
         public static func cleanCache() {
             _imagesCache.removeAllObjects()
             Common.ImagesFileManager.deleteAll(namePart: Self.cachedImagesPrefix)
         }
-        
+
         public static func imageFrom(
             urlString: String,
             caching: StoragePolicy,
@@ -39,12 +39,12 @@ public extension CommonNetworking {
             }
             return result
         }
-        
+
         public static func imageFrom(
             urlString: String,
             caching: StoragePolicy,
             downsample: CGSize?,
-            completion: @escaping ((UIImage?, String) -> Void) 
+            completion: @escaping ((UIImage?, String) -> Void)
         ) {
             guard let url = URL(string: urlString) else {
                 DispatchQueue.executeInMainTread { completion(nil, "") }
@@ -54,7 +54,7 @@ public extension CommonNetworking {
                 completion(image, url)
             }
         }
-        
+
         public static func imageFrom(
             urlString: String?,
             downsample: CGSize?,
@@ -64,13 +64,13 @@ public extension CommonNetworking {
                 return nil
             }
             let result: UIImage? = try await withCheckedThrowingContinuation { continuation in
-                imageFrom(urlString: urlString, caching: caching, downsample: downsample) { image, url in
+                imageFrom(urlString: urlString, caching: caching, downsample: downsample) { image, _ in
                     continuation.resume(with: .success(image))
                 }
             }
             return result
         }
-        
+
         @discardableResult
         public static func imageFrom(
             url: URL?,
@@ -106,7 +106,7 @@ public extension CommonNetworking {
                     }
                 }
             }
-            
+
             if lockEnabled {
                 lock.lock(key: cachedImageName)
             }
@@ -125,15 +125,15 @@ public extension CommonNetworking {
                 returnImage(nil)
                 return nil
             }
-            
+
             let config = URLSessionConfiguration.default
-            config.timeoutIntervalForRequest = timeout  // Timeout for individual request (in seconds)
-            config.timeoutIntervalForResource = timeout*2 // Timeout for the entire resource load (in seconds)
+            config.timeoutIntervalForRequest = timeout // Timeout for individual request (in seconds)
+            config.timeoutIntervalForResource = timeout * 2 // Timeout for the entire resource load (in seconds)
             let session = URLSession(configuration: config)
-            let task = session.dataTask(with: url) { data, response, error in
+            let task = session.dataTask(with: url) { data, _, error in
                 let image = imageFromData(data: data)
                 if let error = error as NSError? {
-                    if error.domain == NSURLErrorDomain && error.code == NSURLErrorCannotFindHost {
+                    if error.domain == NSURLErrorDomain, error.code == NSURLErrorCannotFindHost {
                         Common_Logs.error("ail do download image. Cannot find host. URL may be invalid: \(url)")
                     } else if error.localizedDescription != "cancelled" {
                         // Task canceled. Don't print error
@@ -150,7 +150,7 @@ public extension CommonNetworking {
             task.resume()
             return task
         }
-        
+
         private static func imageFromData(data: Data?) -> UIImage? {
             guard let data = data else { return nil }
             var image = UIImage(data: data)
@@ -159,7 +159,7 @@ public extension CommonNetworking {
                 if let dataAsText = String(data: data, encoding: .utf8)?
                     .dropFirstIf("data:image/webp;base64,")
                     .dropFirstIf("data:image/jpg;base64,"),
-                   let newData = Data(base64Encoded: dataAsText), let newImage = UIImage(data: newData) {
+                    let newData = Data(base64Encoded: dataAsText), let newImage = UIImage(data: newData) {
                     // Recovered!
                     image = newImage
                 }
