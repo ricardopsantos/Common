@@ -27,6 +27,19 @@ public extension Common.InternalUserDefaults {
 }
 
 public extension Common {
+    
+    struct Storage {
+        static func cleanAll() {
+            CommonNetworking.ImageUtils.cleanCache()
+            CronometerAverageMetrics.shared.clear()
+            Common.LocationUtils.clear()
+            CacheManagerForCodableUserDefaultsRepository.shared.syncClearAll()
+            CommonDataBaseRepository.shared.syncClearAll()
+            Common.CacheManagerForCodableCoreDataRepository.shared.syncClearAll()
+            Common.InternalUserDefaults.cleanUserDefaults()
+        }
+    }
+    
     struct InternalUserDefaults {
         private init() {}
         public static var prefix: String { "\(Common.self).\(InternalUserDefaults.self)" }
@@ -35,11 +48,6 @@ public extension Common {
         }
 
         public static func cleanUserDefaults() {
-            CronometerAverageMetrics.shared.clear()
-            Common.LocationUtils.clear()
-            CacheManagerForCodableUserDefaultsRepository.shared.syncClearAll()
-            CommonDataBaseRepository.shared.syncClearAll()
-            Common.CacheManagerForCodableCoreDataRepository.shared.syncClearAll()
             let keys = defaults?.dictionaryRepresentation().filter { $0.key.hasPrefix("\(Common.self)") }.map(\.key)
             keys?.forEach { key in
                 defaults?.removeObject(forKey: key)

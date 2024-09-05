@@ -152,5 +152,15 @@ public extension Common {
                 )
             }
         }
+        
+        static func cleanAll() {
+            CommonNetworking.ImageUtils.cleanCache()
+            CronometerAverageMetrics.shared.clear()
+            Common.LocationUtils.clear()
+            CacheManagerForCodableUserDefaultsRepository.shared.syncClearAll()
+            CommonDataBaseRepository.shared.syncClearAll()
+            Common.CacheManagerForCodableCoreDataRepository.shared.syncClearAll()
+            Common.InternalUserDefaults.cleanUserDefaults()
+        }
     }
 }

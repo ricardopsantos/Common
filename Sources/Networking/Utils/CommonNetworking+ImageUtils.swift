@@ -14,18 +14,19 @@ public extension CommonNetworking {
     enum ImageUtils {
         @PWThreadSafe static var _imagesCache = NSCache<NSString, UIImage>()
         public static var cachedImagesPrefix: String { "cached_image" }
-
+        
         public enum StoragePolicy: Int {
             case none // Don't use storage
             case cold // Use cache, stored and persistent after app is closed (slow access)
             case hot // Use cache, persistent only while app is open (fast access)
             case hotElseCold // Use cache, hot first if available, else cold cache
         }
-
+        
         public static func cleanCache() {
+            _imagesCache.removeAllObjects()
             Common.ImagesFileManager.deleteAll(namePart: Self.cachedImagesPrefix)
         }
-
+        
         public static func imageFrom(
             urlString: String,
             caching: StoragePolicy,
@@ -38,12 +39,12 @@ public extension CommonNetworking {
             }
             return result
         }
-
+        
         public static func imageFrom(
             urlString: String,
             caching: StoragePolicy,
             downsample: CGSize?,
-            completion: @escaping ((UIImage?, String) -> Void)
+            completion: @escaping ((UIImage?, String) -> Void) 
         ) {
             guard let url = URL(string: urlString) else {
                 DispatchQueue.executeInMainTread { completion(nil, "") }
@@ -53,7 +54,7 @@ public extension CommonNetworking {
                 completion(image, url)
             }
         }
-
+        
         public static func imageFrom(
             urlString: String?,
             downsample: CGSize?,
@@ -69,17 +70,29 @@ public extension CommonNetworking {
             }
             return result
         }
-
+        
+        @discardableResult
         public static func imageFrom(
-            url: URL,
+            url: URL?,
             caching: StoragePolicy,
             downsample: CGSize?,
+            timeout: Double = 30,
             completion: @escaping ((UIImage?, String) -> Void)
-        ) {
+        ) -> URLSessionDataTask? {
+            guard let url = url else {
+                DispatchQueue.executeInMainTread { completion(nil, url?.absoluteString ?? "") }
+                return nil
+            }
             let lock = Common.UnfairLockManagerWithKey()
-            let lockEnabled = false
+            let lockEnabled = Bool.false
             let cachedImageName = "\(Self.cachedImagesPrefix)" + "_" + url.absoluteString.sha1 + ".png"
             func returnImage(_ image: UIImage?) {
+                if let image, caching == .cold || caching == .hotElseCold {
+                    _ = Common.ImagesFileManager.saveImageWith(name: cachedImageName, image: image)
+                }
+                if let image, caching == .hot || caching == .hotElseCold {
+                    _imagesCache.setObject(image, forKey: cachedImageName as NSString)
+                }
                 autoreleasepool {
                     if let downsample,
                        let image,
@@ -93,45 +106,65 @@ public extension CommonNetworking {
                     }
                 }
             }
-
-            Common_Utils.executeInBackgroundTread {
-                autoreleasepool {
-                    if lockEnabled {
-                        lock.lock(key: cachedImageName)
+            
+            if lockEnabled {
+                lock.lock(key: cachedImageName)
+            }
+            if caching == .hot || caching == .hotElseCold,
+               let cachedImage = _imagesCache.object(forKey: cachedImageName as NSString) {
+                // Found hot cache (faster)
+                returnImage(cachedImage)
+                return nil
+            } else if caching == .cold || caching == .hotElseCold,
+                      let cachedImage = Common.ImagesFileManager.imageWith(name: cachedImageName).image {
+                // Found hot cache (slower)
+                returnImage(cachedImage)
+                return nil
+            }
+            guard Common_Utils.existsInternetConnection() else {
+                returnImage(nil)
+                return nil
+            }
+            
+            let config = URLSessionConfiguration.default
+            config.timeoutIntervalForRequest = timeout  // Timeout for individual request (in seconds)
+            config.timeoutIntervalForResource = timeout*2 // Timeout for the entire resource load (in seconds)
+            let session = URLSession(configuration: config)
+            let task = session.dataTask(with: url) { data, response, error in
+                let image = imageFromData(data: data)
+                if let error = error as NSError? {
+                    if error.domain == NSURLErrorDomain && error.code == NSURLErrorCannotFindHost {
+                        Common_Logs.error("ail do download image. Cannot find host. URL may be invalid: \(url)")
+                    } else if error.localizedDescription != "cancelled" {
+                        // Task canceled. Don't print error
+                        Common_Logs.error("Fail do download image. Error: \(error.localizedDescription))")
                     }
-                    if caching == .hot || caching == .hotElseCold,
-                       let cachedImage = _imagesCache.object(forKey: cachedImageName as NSString) {
-                        // Try hot cache first, is faster
-                        returnImage(cachedImage)
-                        return
-                    } else if caching == .cold || caching == .hotElseCold,
-                              let cachedImage = Common.ImagesFileManager.imageWith(name: cachedImageName).image {
-                        returnImage(cachedImage)
-                        return
-                    } else if Common_Utils.existsInternetConnection(), let data = try? Data(contentsOf: url) {
-                        var image = UIImage(data: data)
-                        if image == nil {
-                            // Failed? Maybe there is some encoding at start...
-                            if let dataAsText = String(data: data, encoding: .utf8)?
-                                .dropFirstIf("data:image/webp;base64,")
-                                .dropFirstIf("data:image/jpg;base64,"),
-                                let newData = Data(base64Encoded: dataAsText), let newImage = UIImage(data: newData) {
-                                // Recovered!
-                                image = newImage
-                            }
-                        }
-                        returnImage(image)
-                        if let image, caching == .cold || caching == .hotElseCold {
-                            _ = Common.ImagesFileManager.saveImageWith(name: cachedImageName, image: image)
-                        }
-                        if let image, caching == .hot || caching == .hotElseCold {
-                            _imagesCache.setObject(image, forKey: cachedImageName as NSString)
-                        }
-                    } else {
-                        returnImage(nil)
-                    }
+                    returnImage(nil)
+                } else if image == nil {
+                    Common_Logs.error("Fail do download image. Image is nil: \(String(describing: url))")
+                    returnImage(nil)
+                } else {
+                    returnImage(image)
                 }
             }
+            task.resume()
+            return task
+        }
+        
+        private static func imageFromData(data: Data?) -> UIImage? {
+            guard let data = data else { return nil }
+            var image = UIImage(data: data)
+            if image == nil {
+                // Failed? Maybe there is some encoding at start...
+                if let dataAsText = String(data: data, encoding: .utf8)?
+                    .dropFirstIf("data:image/webp;base64,")
+                    .dropFirstIf("data:image/jpg;base64,"),
+                   let newData = Data(base64Encoded: dataAsText), let newImage = UIImage(data: newData) {
+                    // Recovered!
+                    image = newImage
+                }
+            }
+            return image
         }
     }
 }
