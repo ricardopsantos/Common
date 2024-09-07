@@ -13,7 +13,6 @@ final class CronometerAverageMetrics_Tests: XCTestCase {
     override func setUp() {
         super.setUp()
         // Reset the shared instance before each test to ensure a clean state.
-        CronometerAverageMetrics.shared.clear()
     }
 
     override func tearDown() {
@@ -21,7 +20,9 @@ final class CronometerAverageMetrics_Tests: XCTestCase {
     }
 
     func test_basicUsageSingleOperation() {
-        let key = "testOperation"
+        CronometerAverageMetrics.shared.clear()
+
+        let key = #function
 
         // Start the timer
         CronometerAverageMetrics.shared.start(key: key)
@@ -35,7 +36,9 @@ final class CronometerAverageMetrics_Tests: XCTestCase {
     }
 
     func test_basicUsageMultipleOperationsT1() {
-        let key = "testOperation"
+        CronometerAverageMetrics.shared.clear()
+
+        let key = #function
 
         let time1InSeconds: Double = Double(Int.random(in: 1...3))
         let time2InSeconds: Double = Double(Int.random(in: 1...3))
@@ -53,8 +56,10 @@ final class CronometerAverageMetrics_Tests: XCTestCase {
     }
 
     func testReportV1() {
-        let key1 = "testOperation1"
-        let key2 = "testOperation2"
+        CronometerAverageMetrics.shared.clear()
+
+        let key1 = "\(#function)_1"
+        let key2 = "\(#function)_2"
 
         let time1InSeconds: Double = Double(Int.random(in: 1...3))
         let time2InSeconds: Double = Double(Int.random(in: 1...3))

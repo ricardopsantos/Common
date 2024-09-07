@@ -101,4 +101,79 @@ class ExecutionControlManager_Tests: XCTestCase {
         let timeoutT2 = NimbleTimeInterval.seconds(Int(timeInterval + 2))
         expect(executionCount).toEventually(equal(2), timeout: timeoutT2)
     }
+
+    func testDropFirstNegative() {
+        var executionCount = 0
+        let operationId = #function
+        let timeInterval: Double = 1
+        let drops: Int = -1
+
+        Common.ExecutionControlManager.dropFirst(n: drops, operationId: operationId) {
+            executionCount += 1 // Should execute
+        }
+        Common.ExecutionControlManager.dropFirst(n: drops, operationId: operationId) {
+            executionCount += 1 // Should execute
+        }
+
+        // Test assertions
+        let timeout = NimbleTimeInterval.seconds(Int(timeInterval))
+        expect(executionCount).toEventually(equal(2), timeout: timeout)
+    }
+
+    func testDropFirst0() {
+        var executionCount = 0
+        let operationId = #function
+        let timeInterval: Double = 1
+        let drops: Int = 0
+
+        Common.ExecutionControlManager.dropFirst(n: drops, operationId: operationId) {
+            executionCount += 1 // Should execute
+        }
+        Common.ExecutionControlManager.dropFirst(n: drops, operationId: operationId) {
+            executionCount += 1 // Should execute
+        }
+
+        // Test assertions
+        let timeout = NimbleTimeInterval.seconds(Int(timeInterval))
+        expect(executionCount).toEventually(equal(2), timeout: timeout)
+    }
+
+    func testDropFirst1() {
+        var executionCount = 0
+        let operationId = #function
+        let timeInterval: Double = 1
+        let drops: Int = 1
+
+        Common.ExecutionControlManager.dropFirst(n: drops, operationId: operationId) {
+            XCTAssert(false) // Should not execute
+        }
+        Common.ExecutionControlManager.dropFirst(n: drops, operationId: operationId) {
+            executionCount += 1 // Should execute
+        }
+
+        // Test assertions
+        let timeout = NimbleTimeInterval.seconds(Int(timeInterval))
+        expect(executionCount).toEventually(equal(1), timeout: timeout)
+    }
+
+    func testDropFirst2() {
+        var executionCount = 0
+        let operationId = #function
+        let timeInterval: Double = 1
+        let drops: Int = 2
+
+        Common.ExecutionControlManager.dropFirst(n: drops, operationId: operationId) {
+            XCTAssert(false) // Should not execute
+        }
+        Common.ExecutionControlManager.dropFirst(n: drops, operationId: operationId) {
+            XCTAssert(false) // Should not execute
+        }
+        Common.ExecutionControlManager.dropFirst(n: drops, operationId: operationId) {
+            executionCount += 1 // Should execute
+        }
+
+        // Test assertions
+        let timeout = NimbleTimeInterval.seconds(Int(timeInterval))
+        expect(executionCount).toEventually(equal(1), timeout: timeout)
+    }
 }

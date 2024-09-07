@@ -37,12 +37,12 @@ public extension Common {
             if refCount[sender] != nil {
                 refCount[sender] = false
             }
-            if refCount.allSatisfy(\.value) {
+            let using = refCount.filter(\.value).map(\.key)
+            if using.isEmpty {
                 Common_Logs.debug("\(Self.self) stoped")
                 SharedLocationManager.shared.stopUpdatingLocation()
             } else {
-                let sendersUsing = refCount.filter(\.value).map(\.key)
-                Common_Logs.debug("\(Self.self) stop by [\(sender)] ignored. On use by \(sendersUsing)")
+                Common_Logs.debug("\(Self.self) stop by [\(sender)] ignored. On use by \(using)")
             }
         }
 

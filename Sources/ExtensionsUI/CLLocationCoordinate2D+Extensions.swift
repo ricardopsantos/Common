@@ -94,7 +94,7 @@ public extension CLLocationCoordinate2D {
 }
 
 public extension Array where Element == CLLocationCoordinate2D {
-    func regionToFitCoordinates(extraDelta: Double = 0.3) -> MKCoordinateRegion {
+    func regionToFitCoordinates(extraDelta: Double = 0.1) -> MKCoordinateRegion {
         guard !isEmpty else {
             return MKCoordinateRegion()
         }
