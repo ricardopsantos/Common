@@ -31,7 +31,7 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
         // Should be overridden to start "listening" db changes
     }
 
-    public init(dbName: String, dbBundle: String) {
+    public init(dbName: String, dbBundle: String, persistence: CommonCoreData.Utils.Persistence) {
         if let nsManagedObjectModel = CommonCoreData.Utils.managedObjectModel(dbName: dbName, dbBundle: dbBundle) {
             self.managedObjectModel = nsManagedObjectModel
         } else if let nsManagedObjectModel = CommonCoreData.Utils.managedObjectModelForSPM(dbName: dbName) {
@@ -42,7 +42,7 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
         if let persistentContainer = CommonCoreData.Utils.buildPersistentContainer(
             dbName: dbName,
             managedObjectModel: managedObjectModel,
-            storeInMemory: false
+            persistence: persistence
         ) {
             self.persistentContainer = persistentContainer
         } else {

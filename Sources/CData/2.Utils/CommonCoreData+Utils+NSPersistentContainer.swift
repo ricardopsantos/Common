@@ -11,17 +11,44 @@ import CoreData
 //
 
 public extension CommonCoreData.Utils {
+    enum Persistence {
+        case `default`
+        case memory
+        case directory(value: FileManager.SearchPathDirectory)
+        case appGroup(identifier: String)
+    }
+}
+
+public extension CommonCoreData.Utils {
     static func buildPersistentContainer(
         dbName: String,
         managedObjectModel: NSManagedObjectModel,
-        storeInMemory: Bool
+        persistence: Persistence
     ) -> NSPersistentContainer? {
         let container = NSPersistentContainer(name: dbName, managedObjectModel: managedObjectModel)
-        if storeInMemory {
+        switch persistence {
+        case .default:
+            ()
+        case .memory:
             let description = NSPersistentStoreDescription()
             description.url = URL(fileURLWithPath: "/dev/null")
             container.persistentStoreDescriptions = [description]
+        case .directory(value: let value):
+            if let defaultStoreURL = FileManager.default.urls(for: value, in: .userDomainMask).first {
+                let storeURL = defaultStoreURL.appendingPathComponent("\(dbName).sqlite")
+                let description = NSPersistentStoreDescription(url: storeURL)
+                container.persistentStoreDescriptions = [description]
+            }
+        case .appGroup(identifier: let identifier):
+            if let sharedContainerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: identifier) {
+                let storeURL = sharedContainerURL.appendingPathComponent("\(dbName).sqlite")
+                let description = NSPersistentStoreDescription(url: storeURL)
+                container.persistentStoreDescriptions = [description]
+            } else {
+                Common_Logs.error("Fail to access appGroupIdentifier: \(String(describing: identifier))")
+            }
         }
+
         container.loadPersistentStores { _, error in
             if let error {
                 Common_Logs.error("Unresolved error \(error), \(error.localizedDescription)")

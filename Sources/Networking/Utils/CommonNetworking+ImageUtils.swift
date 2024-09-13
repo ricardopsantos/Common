@@ -95,6 +95,7 @@ public extension CommonNetworking {
                 }
                 autoreleasepool {
                     if let downsample,
+                       downsample != .zero,
                        let image,
                        let imageDownSample = image.resizeToFitMaxSize(maxWidth: downsample.width, maxHeight: downsample.height) {
                         DispatchQueue.executeInMainTread { completion(imageDownSample, url.absoluteString) }

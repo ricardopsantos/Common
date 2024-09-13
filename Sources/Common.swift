@@ -14,4 +14,6 @@ public extension Common {
     static var bundleIdentifier: String {
         Bundle(for: CommonBundleFinder.self).bundleIdentifier ?? ""
     }
+
+    static var coreDataPersistence: CommonCoreData.Utils.Persistence = .default
 }

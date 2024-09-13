@@ -13,10 +13,11 @@ import Combine
 public class CommonDataBaseRepository: CommonBaseCoreDataManager {
     public static var shared = CommonDataBaseRepository(
         dbName: Common.internalDB,
-        dbBundle: Common.bundleIdentifier
+        dbBundle: Common.bundleIdentifier,
+        persistence: Common.coreDataPersistence
     )
-    override private init(dbName: String, dbBundle: String) {
-        super.init(dbName: dbName, dbBundle: dbBundle)
+    override private init(dbName: String, dbBundle: String, persistence: CommonCoreData.Utils.Persistence) {
+        super.init(dbName: dbName, dbBundle: dbBundle, persistence: persistence)
     }
 
     override public func startFetchedResultsController() {

@@ -12,11 +12,12 @@ public extension Common {
         fileprivate let cancelBag = CancelBag()
         public static var shared = CacheManagerForCodableCoreDataRepository(
             dbName: Common.internalDB,
-            dbBundle: Common.bundleIdentifier
+            dbBundle: Common.bundleIdentifier,
+            persistence: Common.coreDataPersistence
         )
 
-        override public init(dbName: String, dbBundle: String) {
-            super.init(dbName: dbName, dbBundle: dbBundle)
+        override public init(dbName: String, dbBundle: String, persistence: CommonCoreData.Utils.Persistence) {
+            super.init(dbName: dbName, dbBundle: dbBundle, persistence: persistence)
         }
     }
 }
