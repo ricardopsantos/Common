@@ -137,7 +137,7 @@ public extension Common {
             executing(true)
             CommonNetworking.ImageUtils.imageFrom(
                 urlString: urlString,
-                caching: .hot,
+                caching: .memory,
                 downsample: nil
             ) { image, _ in
                 self.image = image!

@@ -17,9 +17,8 @@ public extension CommonNetworking {
 
         public enum StoragePolicy: Int {
             case none // Don't use storage
-            case cold // Use cache, stored and persistent after app is closed (slow access)
-            case hot // Use cache, persistent only while app is open (fast access)
-            case hotElseCold // Use cache, hot first if available, else cold cache
+            case fileManager // Use cache, stored and persistent after app is closed (slow access)
+            case memory // Use cache, persistent only while app is open (fast access)
         }
 
         public static func cleanCache() {
@@ -87,11 +86,14 @@ public extension CommonNetworking {
             let lockEnabled = Bool.false
             let cachedImageName = "\(Self.cachedImagesPrefix)" + "_" + url.absoluteString.sha1 + ".png"
             func returnImage(_ image: UIImage?) {
-                if let image, caching == .cold || caching == .hotElseCold {
-                    _ = Common.ImagesFileManager.saveImageWith(name: cachedImageName, image: image)
-                }
-                if let image, caching == .hot || caching == .hotElseCold {
-                    _imagesCache.setObject(image, forKey: cachedImageName as NSString)
+                if let image {
+                    switch caching {
+                    case .none: ()
+                    case .fileManager:
+                        _ = Common.ImagesFileManager.saveImageWith(name: cachedImageName, image: image)
+                    case .memory:
+                        _imagesCache.setObject(image, forKey: cachedImageName as NSString)
+                    }
                 }
                 autoreleasepool {
                     if let downsample,
@@ -111,16 +113,16 @@ public extension CommonNetworking {
             if lockEnabled {
                 lock.lock(key: cachedImageName)
             }
-            if caching == .hot || caching == .hotElseCold,
-               let cachedImage = _imagesCache.object(forKey: cachedImageName as NSString) {
-                // Found hot cache (faster)
-                returnImage(cachedImage)
-                return nil
-            } else if caching == .cold || caching == .hotElseCold,
-                      let cachedImage = Common.ImagesFileManager.imageWith(name: cachedImageName).image {
-                // Found hot cache (slower)
-                returnImage(cachedImage)
-                return nil
+            switch caching {
+            case .none: ()
+            case .fileManager:
+                if let cachedImage = Common.ImagesFileManager.imageWith(name: cachedImageName).image {
+                    returnImage(cachedImage)
+                }
+            case .memory:
+                if let cachedImage = _imagesCache.object(forKey: cachedImageName as NSString) {
+                    returnImage(cachedImage)
+                }
             }
             guard Common_Utils.existsInternetConnection() else {
                 returnImage(nil)
@@ -135,7 +137,7 @@ public extension CommonNetworking {
                 let image = imageFromData(data: data)
                 if let error = error as NSError? {
                     if error.domain == NSURLErrorDomain, error.code == NSURLErrorCannotFindHost {
-                        Common_Logs.error("ail do download image. Cannot find host. URL may be invalid: \(url)")
+                        Common_Logs.error("Fail do download image. Cannot find host. URL may be invalid: \(url)")
                     } else if error.localizedDescription != "cancelled" {
                         // Task canceled. Don't print error
                         Common_Logs.error("Fail do download image. Error: \(error.localizedDescription))")

@@ -8,6 +8,17 @@
 import Foundation
 import MapKit
 
+extension CLLocationCoordinate2D: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(latitude)
+        hasher.combine(longitude)
+    }
+
+    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
+        lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude
+    }
+}
+
 public extension CLLocationCoordinate2D {
     static var lisbon: Self { CLLocationCoordinate2D(latitude: 38.736946, longitude: -9.142685) }
     static var london: Self { CLLocationCoordinate2D(latitude: 51.507222, longitude: -0.1275) }

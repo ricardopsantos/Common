@@ -63,6 +63,7 @@ public extension Common.InternalUserDefaults {
         return Common.InternalUserDefaults.defaults?.integer(forKey: key) ?? 0
     }
 
+    @discardableResult
     static func numberOfLoginsIncrement() -> Int {
         let current = numberOfLogins + 1
         let key = Common.InternalUserDefaults.Keys.numberOfLogins.defaultsKey

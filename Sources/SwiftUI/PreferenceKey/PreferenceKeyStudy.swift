@@ -21,13 +21,13 @@ public extension Common {
             value += nextValue()
         }
     }
-    
+
     /// https://medium.com/@daviddoswell/anchor-preferences-or-lets-have-some-fun-a30f693d44f9
     struct AnchorPreferenceKey: PreferenceKey {
-        public static var defaultValue: Anchor<CGRect>? = nil
+        public static var defaultValue: Anchor<CGRect>?
         public static func reduce(value: inout Anchor<CGRect>?, nextValue: () -> Anchor<CGRect>?) {
-        value = nextValue()
-      }
+            value = nextValue()
+        }
     }
 }
 
@@ -40,7 +40,7 @@ struct PreferenceKeyStudyTestView: View {
     @State private var myPreferenceValue: String = "123"
     @State private var frameHeight: CGFloat = 20
     @State private var anchorBounds: CGRect = .zero
-    
+
     var body: some View {
         ScrollView {
             VStack {
@@ -67,8 +67,8 @@ struct PreferenceKeyStudyTestView: View {
                 Divider()
                 anchorPreferenceView
                 Spacer()
-              }
-             .onPreferenceChange(Common.ColorSchemePreferenceKey.self) { value in
+            }
+            .onPreferenceChange(Common.ColorSchemePreferenceKey.self) { value in
                 colorScheme = value ?? .light
                 Common_Logs.debug("\(Common.ColorSchemePreferenceKey.self): \(String(describing: value))")
             }
@@ -76,10 +76,8 @@ struct PreferenceKeyStudyTestView: View {
                 Common_Logs.debug("\(Common.IntSumPreferenceKey.self): \(value)")
             }
         }
-
- 
     }
-    
+
     /*
      Anchor Preferences allow you to read and pass layout-related data,
      such as the position or size of a view, and propagate it up the view hierarchy
@@ -90,26 +88,26 @@ struct PreferenceKeyStudyTestView: View {
                 Text("anchorBounds: \(anchorBounds.debugDescription)")
                     .font(.caption)
                 Text("AnchorPreferenceKey")
-                  .padding()
-                  .background(Color.blue)
-                  .foregroundColor(.white)
-                  .cornerRadius(5)
-                  .anchorPreference(key: Common.AnchorPreferenceKey.self,
-                                    value: .bounds,
-                                    transform: { $0 })
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(5)
+                    .anchorPreference(
+                        key: Common.AnchorPreferenceKey.self,
+                        value: .bounds,
+                        transform: { $0 }
+                    )
                 GeometryReader { geometry in
-                  Color.clear
+                    Color.clear
                         .onPreferenceChange(Common.AnchorPreferenceKey.self) { anchor in
-                      if let anchor = anchor {
-                        anchorBounds = geometry[anchor]
-                      }
-                    }
+                            if let anchor = anchor {
+                                anchorBounds = geometry[anchor]
+                            }
+                        }
                 }
             }
         }
-
     }
-
 }
 
 //
