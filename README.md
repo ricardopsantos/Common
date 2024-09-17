@@ -105,6 +105,6 @@ targets:
         
 # 3 party code
 
-[https://github.com/kishikawakatsumi/KeychainAccess](https://github.com/kishikawakatsumi/KeychainAccess)
+* [https://github.com/kishikawakatsumi/KeychainAccess](https://github.com/kishikawakatsumi/KeychainAccess)
 
-[https://github.com/roberthein/TinyConstraints](https://github.com/roberthein/TinyConstraints)
+* [https://github.com/roberthein/TinyConstraints](https://github.com/roberthein/TinyConstraints): At [/Sources/3Party/TinyConstraints](https://github.com/ricardopsantos/Common/tree/main/Sources/3Party/TinyConstraints) there is a changed version of this library with some methods added and also changes (every contraints has a unique ID for an easier get/set of a specific constraint)
