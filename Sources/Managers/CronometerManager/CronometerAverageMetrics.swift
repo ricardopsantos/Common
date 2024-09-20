@@ -43,12 +43,12 @@ public class CronometerAverageMetrics: NSObject {
 public extension CronometerAverageMetrics {
     // Static variable to store the key for UserDefaults, combining the app version and the class name.
     private static var defaultsKey: String {
-        "\(Common.InternalUserDefaults.Keys.averageMetrics.defaultsKey).V\(Common.AppInfo.version).".replace(" ", with: "")
+        "\(Common.UserDefaultsManager.Keys.averageMetrics.defaultsKey).V\(Common.AppInfo.version).".replace(" ", with: "")
     }
 
-    func clear() {
-        let defaults = Common.InternalUserDefaults.defaults
-        let key = Common.InternalUserDefaults.Keys.averageMetrics.defaultsKey
+    func reset() {
+        let defaults = Common.UserDefaultsManager.defaults
+        let key = Common.UserDefaultsManager.Keys.averageMetrics.defaultsKey
         let dictionary = defaults?.dictionaryRepresentation().filter { $0.key.contains(key) }
         dictionary?.keys.forEach { key in
             defaults?.removeObject(forKey: key)
@@ -147,8 +147,8 @@ private extension CronometerAverageMetrics {
         // let encodedData = try? NSKeyedArchiver.archivedData(withRootObject: self, requiringSecureCoding: false)
         // Common.InternalUserDefaults.defaults?.set(encodedData, forKey: Self.defaultsKey)
         if let encodedData = try? NSKeyedArchiver.archivedData(withRootObject: self, requiringSecureCoding: false) {
-            Common.InternalUserDefaults.defaults?.set(encodedData, forKey: Self.defaultsKey)
-            Common.InternalUserDefaults.defaults?.synchronize()
+            Common.UserDefaultsManager.defaults?.set(encodedData, forKey: Self.defaultsKey)
+            Common.UserDefaultsManager.defaults?.synchronize()
         }
     }
 
@@ -160,7 +160,7 @@ private extension CronometerAverageMetrics {
          } else {
              return CronometerAverageMetrics()
          } */
-        guard let encodedData = Common.InternalUserDefaults.defaults?.data(forKey: defaultsKey) else {
+        guard let encodedData = Common.UserDefaultsManager.defaults?.data(forKey: defaultsKey) else {
             return CronometerAverageMetrics()
         }
         guard let instance = try? NSKeyedUnarchiver.unarchivedObject(ofClass: CronometerAverageMetrics.self, from: encodedData) else {

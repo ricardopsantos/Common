@@ -24,6 +24,10 @@ public final class CacheManagerForCodableNSCacheRepository<Key: Hashable, Value>
         wrapped.delegate = keyTracker
     }
 
+    public func reset() {
+        wrapped.removeAllObjects()
+    }
+    
     public func insert(_ value: Value, forKey key: Key) {
         let date = dateProvider().addingTimeInterval(entryLifetime)
         let entry = Entry(key: key, value: value, expirationDate: date)
@@ -225,7 +229,7 @@ extension CacheManagerForCodableNSCacheRepository {
 
         // Load a cache from disk
         do {
-            let fileManager = FileManager.default
+            let fileManager = Common.FileManager.default
             let folderURLs = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)
             let fileURL = folderURLs[0].appendingPathComponent("myCache.cache")
             let data = try Data(contentsOf: fileURL)

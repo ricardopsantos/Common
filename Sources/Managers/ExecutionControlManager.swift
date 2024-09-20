@@ -7,6 +7,7 @@ public extension Common {
             throttleTimestamps.removeAll()
             debounceTimers.forEach { $0.value.invalidate() }
             debounceTimers.removeAll()
+            blockReferenceCount.removeAll()
         }
 
         // Thread-safe storage for throttle timestamps
@@ -14,7 +15,16 @@ public extension Common {
         // Thread-safe storage for debounce timers
         @PWThreadSafe private static var debounceTimers: [String: Timer] = [:]
         @PWThreadSafe private static var blockReferenceCount: [String: Int] = [:]
-
+        
+        @discardableResult
+        public static func executeOnce(token: String, block: @escaping () -> Void, onIgnoredClosure: () -> Void = {}) -> Bool {
+            if !takeFirst(n: 1, operationId: #function, block: block) {
+                onIgnoredClosure()
+                return false
+            }
+            return true
+        }
+        
         /**
          Throttles the execution of a closure. The closure will only be executed if the specified time interval has elapsed since the last execution with the same operation ID.
 
@@ -91,6 +101,28 @@ public extension Common {
             }
             refCount += 1
             blockReferenceCount[operationId] = refCount
+        }
+        
+        public static func takeFirst(
+            n: Int,
+            operationId: String,
+            block: @escaping () -> Void
+        ) -> Bool {
+            guard n > 0 else {
+                return false
+            }
+            var refCount = blockReferenceCount[operationId] ?? 0
+            if refCount >= n {
+                // Executed
+                block()
+                refCount += 1
+                blockReferenceCount[operationId] = refCount
+                return true
+            } else {
+                refCount += 1
+                blockReferenceCount[operationId] = refCount
+                return false
+            }
         }
     }
 }

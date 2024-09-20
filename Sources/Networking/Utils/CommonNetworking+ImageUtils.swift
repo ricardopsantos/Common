@@ -21,9 +21,9 @@ public extension CommonNetworking {
             case memory // Use cache, persistent only while app is open (fast access)
         }
 
-        public static func cleanCache() {
+        public static func reset() {
             _imagesCache.removeAllObjects()
-            Common.ImagesFileManager.deleteAll(namePart: Self.cachedImagesPrefix)
+            Common.FileManager.Images.deleteAll(namePart: Self.cachedImagesPrefix)
         }
 
         public static func imageFrom(
@@ -82,7 +82,7 @@ public extension CommonNetworking {
                 DispatchQueue.executeInMainTread { completion(nil, url?.absoluteString ?? "") }
                 return nil
             }
-            let lock = Common.UnfairLockManagerWithKey()
+            let lock = Common.UnfairLockThreadingManagerWithKey()
             let lockEnabled = Bool.false
             let cachedImageName = "\(Self.cachedImagesPrefix)" + "_" + url.absoluteString.sha1 + ".png"
             func returnImage(_ image: UIImage?) {
@@ -90,7 +90,7 @@ public extension CommonNetworking {
                     switch caching {
                     case .none: ()
                     case .fileManager:
-                        _ = Common.ImagesFileManager.saveImageWith(name: cachedImageName, image: image)
+                        _ = Common.FileManager.Images.saveImageWith(name: cachedImageName, image: image)
                     case .memory:
                         _imagesCache.setObject(image, forKey: cachedImageName as NSString)
                     }
@@ -116,7 +116,7 @@ public extension CommonNetworking {
             switch caching {
             case .none: ()
             case .fileManager:
-                if let cachedImage = Common.ImagesFileManager.imageWith(name: cachedImageName).image {
+                if let cachedImage = Common.FileManager.Images.imageWith(name: cachedImageName).image {
                     returnImage(cachedImage)
                 }
             case .memory:

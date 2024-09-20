@@ -6,6 +6,21 @@
 import Foundation
 
 public extension Encodable {
+    
+    func toData() throws -> Data {
+        try JSONEncoder().encode(self)
+    }
+
+    var sizeInMB: Double {
+        do {
+            let dataSizeInBytes = try Double(toData().count)
+            let sizeInMB = dataSizeInBytes / (1024 * 1024)
+            return sizeInMB
+        } catch {
+            return 0
+        }
+    }
+    
     /**
      struct Person: Codable {
          let name: String

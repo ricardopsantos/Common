@@ -15,7 +15,7 @@ public extension CommonNetworking {
 
         /// No authentication at all
         public init(session: URLSession) {
-            urlSession = URLSession(
+            self.urlSession = URLSession(
                 configuration: session.configuration,
                 delegate: nil,
                 delegateQueue: nil)
@@ -25,8 +25,8 @@ public extension CommonNetworking {
         public init(
             session: URLSession,
             credential: URLCredential) {
-            authenticationHandler = .init(credential: credential)
-            urlSession = URLSession(
+            self.authenticationHandler = .init(credential: credential)
+            self.urlSession = URLSession(
                 configuration: session.configuration,
                 delegate: authenticationHandler,
                 delegateQueue: nil)
@@ -36,8 +36,8 @@ public extension CommonNetworking {
         public init(
             session: URLSession,
             serverPublicHashKeys: [String]) {
-            authenticationHandler = .init(serverPublicHashKeys: serverPublicHashKeys)
-            urlSession = URLSession(
+            self.authenticationHandler = .init(serverPublicHashKeys: serverPublicHashKeys)
+            self.urlSession = URLSession(
                 configuration: session.configuration,
                 delegate: authenticationHandler,
                 delegateQueue: nil)
@@ -47,8 +47,8 @@ public extension CommonNetworking {
         public init(
             session: URLSession,
             pathToCertificates: [String]) {
-            authenticationHandler = .init(pathToCertificates: pathToCertificates)
-            urlSession = URLSession(
+            self.authenticationHandler = .init(pathToCertificates: pathToCertificates)
+            self.urlSession = URLSession(
                 configuration: session.configuration,
                 delegate: authenticationHandler,
                 delegateQueue: nil)

@@ -12,37 +12,9 @@ import Foundation
 public extension DispatchQueue {
     static let defaultDelay: Double = Common.Constants.defaultAnimationsTime
 
-    enum Tread { case main
+    enum Tread { 
+        case main
         case background
-    }
-
-    @PWThreadSafe private static var _onceTracker = [String]()
-    static func onceTrackerClean() {
-        Common_Logs.warning("\(DispatchQueue.self)._onceTracker FULL clean...")
-        objc_sync_enter(self); defer { objc_sync_exit(self) }
-        _onceTracker = []
-    }
-
-    static func onceTrackerClean(tracker: String) {
-        objc_sync_enter(self); defer { objc_sync_exit(self) }
-        _onceTracker = _onceTracker.filter { $0 != tracker }
-    }
-
-    func synced(_ lock: Any, closure: () -> Void) {
-        objc_sync_enter(lock)
-        closure()
-        objc_sync_exit(lock)
-    }
-
-    @discardableResult static func executeOnce(token: String, block: () -> Void, onIgnoredClosure: () -> Void = {}) -> Bool {
-        objc_sync_enter(self); defer { objc_sync_exit(self) }
-        guard !_onceTracker.contains(token) else {
-            onIgnoredClosure()
-            return false
-        }
-        _onceTracker.append(token)
-        block()
-        return true
     }
 
     static func executeWithDelay(tread: Tread = Tread.main, delay: Double = defaultDelay, block: @escaping () -> Void) {

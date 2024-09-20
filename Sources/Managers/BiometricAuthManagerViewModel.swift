@@ -13,7 +13,7 @@ import Combine
 //
 
 public extension Common {
-    class AuthManagerViewModel: ObservableObject {
+    class BiometricAuthManagerViewModel: ObservableObject {
         public enum UserFriendlyError: Error {
             case none
             case unknown
@@ -32,7 +32,7 @@ public extension Common {
             self.context = LAContext()
         }
 
-        public static var shared = AuthManagerViewModel()
+        public static var shared = BiometricAuthManagerViewModel()
         @Published public private(set) var biometricType: LABiometryType = .none // faceID, touchId, none
         @Published public private(set) var userIsAuthenticated: Bool = false
         @Published public private(set) var userNeedsToAllowPermissionOnAppSettings: Bool = false
@@ -53,7 +53,7 @@ public extension Common {
 // MARK: - Private
 //
 
-fileprivate extension Common.AuthManagerViewModel {
+fileprivate extension Common.BiometricAuthManagerViewModel {
     func handle(userFriendlyError: UserFriendlyError?) {
         guard let userFriendlyError else {
             error = .none

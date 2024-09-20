@@ -18,12 +18,30 @@ public extension Common {
                 // Fallback cache directory
                 return NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? ""
             }
-            
+
             if !fileManager.fileExists(atPath: documentsDirectory) {
                 // Fallback cache directory
                 return NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? ""
             }
             return documentsDirectory
+        }
+        
+        static func reset() {
+            let fileManager = FileManager.default
+            var folderURLs: [URL] = []
+            folderURLs.append(contentsOf: fileManager.urls(for: .documentDirectory, in: .userDomainMask))
+            folderURLs.append(contentsOf: fileManager.urls(for: .cachesDirectory, in: .userDomainMask))
+
+            if let directory = folderURLs.first {
+                do {
+                    let fileURLs = try fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
+                    for fileURL in fileURLs {
+                        try fileManager.removeItem(at: fileURL)
+                    }
+                } catch {
+                    Common_Logs.error(error)
+                }
+            }
         }
     }
 }

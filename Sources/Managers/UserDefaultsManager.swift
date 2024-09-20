@@ -9,7 +9,7 @@ import Foundation
 import Combine
 import UIKit
 
-public extension Common.InternalUserDefaults {
+public extension Common.UserDefaultsManager {
     enum Keys: String {
         case numberOfLogins
         case locationUtils
@@ -17,7 +17,7 @@ public extension Common.InternalUserDefaults {
         case expiringKeyValueEntity
 
         var keyPrefix: String {
-            "\(Common.self).\(Common.InternalUserDefaults.self)"
+            "\(Common.self).\(Common.UserDefaultsManager.self)"
         }
 
         var defaultsKey: String {
@@ -27,16 +27,15 @@ public extension Common.InternalUserDefaults {
 }
 
 public extension Common {
-
-    struct InternalUserDefaults {
+    struct UserDefaultsManager {
         private init() {}
-        public static var prefix: String { "\(Common.self).\(InternalUserDefaults.self)" }
+        public static var prefix: String { "\(Common.self).\(Self.self)" }
         public static var defaults: UserDefaults? {
             let appGroup = Common.bundleIdentifier
             return UserDefaults(suiteName: appGroup)
         }
 
-        public static func cleanUserDefaults() {
+        public static func reset() {
             let keys = defaults?.dictionaryRepresentation().filter { $0.key.hasPrefix("\(Common.self)") }.map(\.key)
             keys?.forEach { key in
                 defaults?.removeObject(forKey: key)
@@ -46,17 +45,16 @@ public extension Common {
     }
 }
 
-public extension Common.InternalUserDefaults {
+public extension Common.UserDefaultsManager {
     static var numberOfLogins: Int {
-        let key = Common.InternalUserDefaults.Keys.numberOfLogins.defaultsKey
-        return Common.InternalUserDefaults.defaults?.integer(forKey: key) ?? 0
+        let key = Keys.numberOfLogins.defaultsKey
+        return defaults?.integer(forKey: key) ?? 0
     }
 
     @discardableResult
     static func numberOfLoginsIncrement() -> Int {
         let current = numberOfLogins + 1
-        let key = Common.InternalUserDefaults.Keys.numberOfLogins.defaultsKey
-        Common.InternalUserDefaults.defaults?.setValue(current, forKey: key)
+        defaults?.setValue(current, forKey: Keys.numberOfLogins.defaultsKey)
         return current
     }
 }

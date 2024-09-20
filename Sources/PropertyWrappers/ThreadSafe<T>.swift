@@ -14,7 +14,7 @@ public extension Common_PropertyWrappers {
      */
     @propertyWrapper
     final class ThreadSafeUnfairLock<T> {
-        private let lock = Common.UnfairLockManager()
+        private let lock = Common.UnfairLockThreadingManager()
         private var value: T
 
         public init(wrappedValue: T) {

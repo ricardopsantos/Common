@@ -16,16 +16,6 @@ public extension Error {
     }
 }
 
-/**
- # Inspired by:
- https://kandelvijaya.com/2018/04/21/blog_equalityonerror/
- */
-enum ErrorUtility {
-    public static func areEqual(_ lhs: Error, _ rhs: Error) -> Bool {
-        lhs.reflectedString == rhs.reflectedString
-    }
-}
-
 public extension Error {
     var reflectedString: String {
         String(reflecting: self)

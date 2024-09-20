@@ -20,14 +20,6 @@ public extension UIView {
 
     static let defaultShadowOffset = CGSize(width: 1, height: 5) // Shadow bellow
 
-    func addDropShadow(color: UIColor = UIView.defaultShadowColor, shadowType: Common.FilterStrength = .heavy) {
-        layer.shadowColor = color.cgColor
-        layer.shadowOpacity = Float(shadowType.rawValue)
-        layer.shadowOffset = CGSize(width: 2, height: 4)
-        layer.shadowRadius = 5
-        layer.shouldRasterize = false
-    }
-
     //
     // More about shadows : https://medium.com/swlh/how-to-create-advanced-shadows-in-swift-ios-swift-guide-9d2844b653f8
     //
@@ -36,11 +28,11 @@ public extension UIView {
         color: UIColor = defaultShadowColor,
         offset: CGSize = defaultShadowOffset,
         radius: CGFloat = defaultShadowOffset.height,
-        strength: Common.FilterStrength? = .superLight
+        strength: CGFloat? = 0.95 // [0: 1] - The bigger, the lighter
     ) {
         layer.shadowColor = color.cgColor
         if let strength = strength {
-            layer.shadowOpacity = Float(1 - strength.rawValue)
+            layer.shadowOpacity = Float(1 - strength)
         }
         layer.shadowOffset = offset
         layer.shadowRadius = radius

@@ -15,9 +15,12 @@ import os
   On Apple’s platforms, the os_unfair_lock is the most performance-efficient lock available.
   */
 
+public typealias ThreadingManager = Common.UnfairLockThreadingManager
+public typealias ThreadingManagerWithKey = Common.UnfairLockThreadingManagerWithKey
+
 public extension Common {
     // A class that provides thread synchronization using os_unfair_lock
-    final class UnfairLockManager {
+    final class UnfairLockThreadingManager {
         // Initializes the os_unfair_lock
         public init() {
             self.pointer = .allocate(capacity: 1)
@@ -78,7 +81,7 @@ public extension Common {
 
 public extension Common {
     /// A wrapper class for managing multiple locks with unique IDs.
-    final class UnfairLockManagerWithKey {
+    final class UnfairLockThreadingManagerWithKey {
         // Dictionary to hold locks associated with their keys
         private var locks: [String: UnsafeMutablePointer<os_unfair_lock>] = [:]
 

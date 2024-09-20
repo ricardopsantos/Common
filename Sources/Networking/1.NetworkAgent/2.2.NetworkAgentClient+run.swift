@@ -155,3 +155,16 @@ fileprivate extension CommonNetworking.NetworkAgentClient {
         }
     }
 }
+
+public extension URLRequest {
+    var cronometerId: String {
+        var id: String = ""
+        if let httpMethod {
+            id += "\(httpMethod)".uppercased()
+        }
+        if let absoluteString = url?.absoluteString {
+            id += "|\(absoluteString))"
+        }
+        return id
+    }
+}

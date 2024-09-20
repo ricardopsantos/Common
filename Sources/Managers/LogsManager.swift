@@ -16,8 +16,8 @@ public extension Common {
 
         public static var maxLogSize = 2_000
         @PWThreadSafe private static var debugCounter: Int = 0
-        public static func cleanStoredLogs() {
-            StorageUtils.deleteAllLogs()
+        public static func reset() {
+            Persistence.reset()
         }
 
         public static func debug(
@@ -96,7 +96,7 @@ public extension Common {
                 print(logMessage.prefix(maxLogSize) + "\n")
             }
             if Common_Utils.false {
-                StorageUtils.appendToFileEnd(String(logMessage.prefix(maxLogSize)))
+                Persistence.appendToFileEnd(String(logMessage.prefix(maxLogSize)))
             }
             #endif
         }
@@ -106,7 +106,7 @@ public extension Common {
 // MARK: - Logger (Private)
 
 public extension Common.LogsManager {
-    enum StorageUtils {
+    enum Persistence {
         /**
          In Swift, it's generally not recommended to perform file I/O operations on the main thread, especially if those operations are time-consuming
          or can potentially block the UI. File I/O can be slow, and performing it on the main thread can result in a poor user experience, including unresponsive user interfaces.
@@ -137,12 +137,10 @@ public extension Common.LogsManager {
         }
 
         public static func deleteLastLog() {
-            Self.dispatchQueue.async {
-                deleteAllLogs()
-            }
+            reset()
         }
 
-        public static func deleteAllLogs() {
+        public static func reset() {
             Self.dispatchQueue.async {
                 guard let logsFolder else {
                     return

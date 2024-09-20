@@ -16,45 +16,8 @@ public extension Common {
         public static var `true`: Bool { true }
         public static var `false`: Bool { false }
 
-        public static func onceWithDelay(token: String, block: @escaping () -> Void) {
-            DispatchQueue.executeOnce(token: token, block: {
-                DispatchQueue.executeWithDelay { block() }
-            })
-        }
-
         public static func delay(_ delay: Double = 0.1, block: @escaping () -> Void) {
             DispatchQueue.executeWithDelay(delay: delay) { block() }
-        }
-
-        public static func executeWithDebounce(
-            _ timeInterval: TimeInterval,
-            operationId: String,
-            closure: @escaping () -> Void
-        ) {
-            Common.ExecutionControlManager.debounce(
-                timeInterval,
-                operationId: operationId,
-                closure: closure
-            )
-        }
-
-        public static func executeWithThrottle(
-            _ timeInterval: TimeInterval,
-            operationId: String,
-            closure: () -> Void,
-            onIgnoredClosure: () -> Void = {}
-        ) {
-            Common.ExecutionControlManager.throttle(
-                timeInterval,
-                operationId: operationId,
-                closure: closure,
-                onIgnoredClosure: onIgnoredClosure
-            )
-        }
-
-        @discardableResult
-        public static func executeOnce(token: String, block: () -> Void, onIgnoredClosure: () -> Void = {}) -> Bool {
-            DispatchQueue.executeOnce(token: token, block: { block() }, onIgnoredClosure: onIgnoredClosure)
         }
 
         public static var onUnitTests: Bool {
@@ -151,16 +114,6 @@ public extension Common {
                     line: line
                 )
             }
-        }
-
-        static func cleanAll() {
-            CommonNetworking.ImageUtils.cleanCache()
-            CronometerAverageMetrics.shared.clear()
-            Common.LocationUtils.clear()
-            CacheManagerForCodableUserDefaultsRepository.shared.syncClearAll()
-            CommonDataBaseRepository.shared.syncClearAll()
-            Common.CacheManagerForCodableCoreDataRepository.shared.syncClearAll()
-            Common.InternalUserDefaults.cleanUserDefaults()
         }
     }
 }

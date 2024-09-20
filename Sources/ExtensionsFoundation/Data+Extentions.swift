@@ -5,22 +5,6 @@
 
 import Foundation
 
-public extension Encodable {
-    func toData() throws -> Data {
-        try JSONEncoder().encode(self)
-    }
-
-    var sizeInMB: Double {
-        do {
-            let dataSizeInBytes = try Double(toData().count)
-            let sizeInMB = dataSizeInBytes / (1024 * 1024)
-            return sizeInMB
-        } catch {
-            return 0
-        }
-    }
-}
-
 public extension Data {
     var utf8String: String? {
         String(data: self, encoding: .utf8)

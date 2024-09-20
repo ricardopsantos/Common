@@ -87,7 +87,7 @@ public extension Common.ExpiringKeyValueEntity {
 
     static func composedKey(_ key: String, _ keyParams: [any Hashable]) -> String {
         let keyParams2 = keyParams.map { "\($0)".sha1 }
-        return "\(Common.InternalUserDefaults.Keys.expiringKeyValueEntity.defaultsKey)_\(key)_[" + keyParams2.joined(separator: ",") + "]"
+        return "\(Common.UserDefaultsManager.Keys.expiringKeyValueEntity.defaultsKey)_\(key)_[" + keyParams2.joined(separator: ",") + "]"
     }
 
     var isExpired: Bool { valueData == nil }
