@@ -27,17 +27,6 @@ public extension Common.InternalUserDefaults {
 }
 
 public extension Common {
-    enum Storage {
-        public static func cleanAll() {
-            CommonNetworking.ImageUtils.cleanCache()
-            CronometerAverageMetrics.shared.clear()
-            Common.LocationUtils.clear()
-            CacheManagerForCodableUserDefaultsRepository.shared.syncClearAll()
-            CommonDataBaseRepository.shared.syncClearAll()
-            Common.CacheManagerForCodableCoreDataRepository.shared.syncClearAll()
-            Common.InternalUserDefaults.cleanUserDefaults()
-        }
-    }
 
     struct InternalUserDefaults {
         private init() {}

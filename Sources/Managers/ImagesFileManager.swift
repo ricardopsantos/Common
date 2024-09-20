@@ -4,29 +4,8 @@
 //
 
 import UIKit
-import MobileCoreServices
 
 public extension Common {
-    enum FileManager {
-        public static var `default` = Foundation.FileManager.default
-        public static var defaultSearchPath: Foundation.FileManager.SearchPathDirectory { .documentDirectory }
-
-        public static var defaultFolder: String {
-            let fileManager = FileManager.default
-            let paths = NSSearchPathForDirectoriesInDomains(defaultSearchPath, .userDomainMask, true)
-            guard let documentsDirectory = paths.first else {
-                // Fallback cache directory
-                return NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? ""
-            }
-
-            if !fileManager.fileExists(atPath: documentsDirectory) {
-                // Fallback cache directory
-                return NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first ?? ""
-            }
-            return documentsDirectory
-        }
-    }
-
     enum ImagesFileManager {
         public static func allImageNames(in folderPath: String = Common.FileManager.defaultFolder) -> [String]? {
             var result: [String] = []

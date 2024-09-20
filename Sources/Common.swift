@@ -16,4 +16,16 @@ public extension Common {
     }
 
     static var coreDataPersistence: CommonCoreData.Utils.Persistence = .default
+    
+    static func cleanAllData() {
+        CommonNetworking.ImageUtils.cleanCache()
+        CronometerAverageMetrics.shared.clear()
+        Common.LocationUtils.clear()
+        CacheManagerForCodableUserDefaultsRepository.shared.syncClearAll()
+        Common.CacheManagerForCodableCoreDataRepository.shared.syncClearAll()
+        CommonDataBaseRepository.shared.syncClearAll()
+        Common.InternalUserDefaults.cleanUserDefaults()
+        Common.LogsManager.StorageUtils.deleteAllLogs()
+        Common.ImagesFileManager.deleteAll()
+    }
 }

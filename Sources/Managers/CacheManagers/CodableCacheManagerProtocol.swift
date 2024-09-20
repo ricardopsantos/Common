@@ -6,7 +6,6 @@
 import Foundation
 import Combine
 
-public typealias Common_SimpleCacheManagerForCodable = Common.CacheManagerForCodableUserDefaultsRepository
 public typealias Commom_ExpiringKeyValueEntity = Common.ExpiringKeyValueEntity
 
 //

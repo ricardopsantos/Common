@@ -27,7 +27,7 @@ public extension Common {
             _ serviceKey: String,
             _ serviceParams: [any Hashable],
             _ timeToLiveMinutes: Int? = nil,
-            _ cacheManager: CodableCacheManagerProtocol = Common_SimpleCacheManagerForCodable.shared,
+            _ cacheManager: CodableCacheManagerProtocol = Common.CacheManagerForCodableUserDefaultsRepository.shared,
             _ onCachedRecordNotFound: OnCachedRecordNotFound = .returnEmpty) -> Common_GenericRequestWithCacheResponse<T1, E1> {
             let lock = {
                 Common_AvailabilityState.lockForServiceKey(serviceKey)

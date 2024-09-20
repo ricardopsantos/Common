@@ -6,12 +6,12 @@
 import Foundation
 
 extension CommonNetworking {
-    struct Utils {
+    struct ParsingUtils {
         static func parseCSV(data: Data) throws -> Data {
             let dataString: String! = String(data: data, encoding: .utf8)
 
             guard let jsonKeys: [String] = dataString.components(separatedBy: "\n").first?.components(separatedBy: ",") else {
-                throw APIError.parsing(description: "\(Utils.self) CSV parsing fail", data: data)
+                throw APIError.parsing(description: "\(Self.self) CSV parsing fail", data: data)
             }
 
             var parsedCSV: [[String: String]] = dataString
@@ -29,7 +29,7 @@ extension CommonNetworking {
             parsedCSV.removeFirst()
 
             guard let jsonData = try? JSONSerialization.data(withJSONObject: parsedCSV, options: []) else {
-                throw APIError.parsing(description: "\(Utils.self) CSV parsing fail", data: data)
+                throw APIError.parsing(description: "\(Self.self) CSV parsing fail", data: data)
             }
 
             return jsonData

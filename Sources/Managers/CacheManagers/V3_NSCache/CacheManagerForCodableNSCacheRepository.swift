@@ -7,7 +7,7 @@ import Foundation
 
 // MARK: - Cache
 
-public final class CacheManager<Key: Hashable, Value> {
+public final class CacheManagerForCodableNSCacheRepository<Key: Hashable, Value> {
     private let wrapped = NSCache<WrappedKey, Entry>()
     private let dateProvider: () -> Date
     private let entryLifetime: TimeInterval
@@ -59,7 +59,7 @@ public final class CacheManager<Key: Hashable, Value> {
 
 // MARK: - Cache Subscript
 
-public extension CacheManager {
+public extension CacheManagerForCodableNSCacheRepository {
     subscript(key: Key) -> Value? {
         get { value(forKey: key) }
         set {
@@ -77,7 +77,7 @@ public extension CacheManager {
 
 // MARK: Cache.WrappedKey
 
-private extension CacheManager {
+private extension CacheManagerForCodableNSCacheRepository {
     final class WrappedKey: NSObject {
         let key: Key
 
@@ -97,7 +97,7 @@ private extension CacheManager {
 
 // MARK: Cache.Entry
 
-private extension CacheManager {
+private extension CacheManagerForCodableNSCacheRepository {
     final class Entry {
         let key: Key
         let value: Value
@@ -113,7 +113,7 @@ private extension CacheManager {
 
 // MARK: Cache.KeyTracker
 
-private extension CacheManager {
+private extension CacheManagerForCodableNSCacheRepository {
     final class KeyTracker: NSObject, NSCacheDelegate {
         var keys = Set<Key>()
 
@@ -132,9 +132,9 @@ private extension CacheManager {
 
 // MARK: - Cache.Entry + Codable
 
-extension CacheManager.Entry: Codable where Key: Codable, Value: Codable {}
+extension CacheManagerForCodableNSCacheRepository.Entry: Codable where Key: Codable, Value: Codable {}
 
-private extension CacheManager {
+private extension CacheManagerForCodableNSCacheRepository {
     func entry(forKey key: Key) -> Entry? {
         guard let entry = wrapped.object(forKey: WrappedKey(key)) else {
             return nil
@@ -156,7 +156,7 @@ private extension CacheManager {
 
 // MARK: - Cache + Codable
 
-extension CacheManager: Codable where Key: Codable, Value: Codable {
+extension CacheManagerForCodableNSCacheRepository: Codable where Key: Codable, Value: Codable {
     public convenience init(from decoder: Decoder) throws {
         self.init()
 
@@ -173,7 +173,7 @@ extension CacheManager: Codable where Key: Codable, Value: Codable {
 
 // MARK: - Cache Save To Disk
 
-extension CacheManager where Key: Codable, Value: Codable {
+extension CacheManagerForCodableNSCacheRepository where Key: Codable, Value: Codable {
     func saveToDisk(
         with name: String,
         using fileManager: FileManager = .default
@@ -189,10 +189,10 @@ extension CacheManager where Key: Codable, Value: Codable {
     }
 }
 
-extension CacheManager {
+extension CacheManagerForCodableNSCacheRepository {
     static func sampleUsage() {
         // Create a cache instance
-        let cache = CacheManager<String, Int>()
+        let cache = CacheManagerForCodableNSCacheRepository<String, Int>()
 
         // Insert a value for a key
         cache.insert(42, forKey: "answer")
@@ -229,7 +229,7 @@ extension CacheManager {
             let folderURLs = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)
             let fileURL = folderURLs[0].appendingPathComponent("myCache.cache")
             let data = try Data(contentsOf: fileURL)
-            let decodedCache = try JSONDecoder().decodeFriendly(CacheManager<String, Int>.self, from: data)
+            let decodedCache = try JSONDecoder().decodeFriendly(CacheManagerForCodableNSCacheRepository<String, Int>.self, from: data)
             Common_Logs.debug("Loaded cache from disk: \(decodedCache)")
         } catch {
             Common_Logs.debug("Error loading cache from disk: \(error)")

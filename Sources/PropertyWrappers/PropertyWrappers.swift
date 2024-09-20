@@ -26,12 +26,11 @@ import Foundation
  * Every Property Wrapper has to have wrappedValue. In our case, it has a generic type T;
  */
 
-public typealias PWKeyboardState = Common_PropertyWrappers.KeyboardState
+public typealias PWPartialState = Common_PropertyWrappers.PartialState
 public typealias PWThreadSafe = Common_PropertyWrappers.ThreadSafeUnfairLock
 public typealias PWUserDefaults = Common_PropertyWrappers.UserDefaults
 public typealias PWKeychainStorageV1 = Common_PropertyWrappers.KeychainStorageV1
 public typealias PWKeychainStorageV2 = Common_PropertyWrappers.KeychainStorageV2
-public typealias PWBundleFile = Common_PropertyWrappers.BundleFile
 public typealias PWProjectedOnChange = Common_PropertyWrappers.ProjectedOnChange
 public typealias PWProjectedOnChangeWithCodingKey = Common_PropertyWrappers.ProjectedOnChangeWithCodingKey
 

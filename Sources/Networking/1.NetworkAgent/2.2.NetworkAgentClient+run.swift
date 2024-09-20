@@ -150,7 +150,7 @@ fileprivate extension CommonNetworking.NetworkAgentClient {
         case .json:
             return try decoder.decodeFriendly(T.self, from: data ?? Data(), printError: printError)
         case .csv:
-            let data = try CommonNetworking.Utils.parseCSV(data: data ?? Data())
+            let data = try CommonNetworking.ParsingUtils.parseCSV(data: data ?? Data())
             return try decoder.decodeFriendly(T.self, from: data)
         }
     }

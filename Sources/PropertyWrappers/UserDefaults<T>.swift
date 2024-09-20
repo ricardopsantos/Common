@@ -92,7 +92,6 @@ public extension Common_PropertyWrappers {
                 if let optional = newValue as? AnyOptional, optional.isNil {
                     container.removeObject(forKey: key)
                 } else {
-                    // container.set(to, forKey: key)
                     let data = try? JSONEncoder().encode(newValue)
                     container.setValue(data, forKey: key)
                 }
