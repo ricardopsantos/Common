@@ -3,12 +3,13 @@
 //
 
 import Foundation
-
+//
+@testable import Common
 //
 // Mappers
 //
-public extension CDataSinger {
-    var mapToModel: CommonCoreData.Utils.Sample.Singer {
+extension CDataSinger {
+    var mapToModel: CoreDataSampleUsageNamespace.Singer {
         var artistSongs: [CDataSong] = []
         if let some = songs?.allObjects as? [CDataSong] {
             artistSongs = some
@@ -21,7 +22,7 @@ public extension CDataSinger {
     }
 }
 
-public extension CommonCoreData.Utils.Sample.Singer {
+extension CoreDataSampleUsageNamespace.Singer {
     var mapToDic: [String: Any] {
         [
             "id": id,

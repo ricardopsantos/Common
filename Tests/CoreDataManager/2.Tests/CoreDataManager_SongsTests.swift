@@ -15,7 +15,7 @@ class CommonCoreData_SongsTests: XCTestCase {
     }
 
     // Database repository instance, shared across tests
-    var bd: CommonDataBaseRepository = {
+    var bd: DatabaseRepository = {
         .shared
     }()
 
@@ -119,7 +119,7 @@ extension CommonCoreData_SongsTests {
         }
         bd.deleteAllSingers() // Clear all existing singers
         let singer: CDataSinger = saveRandomCDataSinger(songs: 1) // Save a singer with one song
-        let singerModel: CommonCoreData.Utils.Sample.Singer = singer.mapToModel // Map singer to model
+        let singerModel: CoreDataSampleUsageNamespace.Singer = singer.mapToModel // Map singer to model
         let cascadeSongsCount: Int = singerModel.cascadeSongs?.count ?? 0
         // Assert the singer has one song and the mapping to model retains that relation
         XCTAssert(singer.songs?.count == 1)
@@ -135,8 +135,8 @@ extension CommonCoreData_SongsTests {
         }
         bd.deleteAllSingers() // Clear all existing singers
         let singer: CDataSinger = saveRandomCDataSinger(songs: 1) // Save a singer with one song
-        let songModelWithSinger: CommonCoreData.Utils.Sample.Song? = bd.allSongs().first?.mapToModel(cascade: true)
-        let songModelWithoutSinger: CommonCoreData.Utils.Sample.Song? = bd.allSongs().first?.mapToModel(cascade: false)
+        let songModelWithSinger: CoreDataSampleUsageNamespace.Song? = bd.allSongs().first?.mapToModel(cascade: true)
+        let songModelWithoutSinger: CoreDataSampleUsageNamespace.Song? = bd.allSongs().first?.mapToModel(cascade: false)
 
         // Assert the song is correctly mapped with or without the singer relation
         XCTAssert(singer.songs?.count == 1)

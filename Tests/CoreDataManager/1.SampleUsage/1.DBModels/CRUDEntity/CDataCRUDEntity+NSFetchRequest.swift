@@ -4,6 +4,7 @@
 
 import Foundation
 import CoreData
+@testable import Common
 
 //
 // NSFetchRequest Utils

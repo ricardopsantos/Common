@@ -4,6 +4,7 @@
 
 import Foundation
 import CoreData
+@testable import Common
 
 /**
 
@@ -22,7 +23,7 @@ import CoreData
 //
 // MARK: - Async Methods
 //
-extension CommonDataBaseRepository {
+extension DatabaseRepository {
     //
     // MARK: - Singer
     //

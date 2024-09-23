@@ -11,7 +11,7 @@ import Nimble
 @testable import Common
 
 final class UnfairLockManager_Tests: XCTestCase {
-    let lockManager = Common.UnfairLockManager()
+    let lockManager = Common.UnfairLockThreadingManager()
 
     func testLockUnlock() {
         var value = 0

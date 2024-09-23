@@ -4,6 +4,7 @@
 
 import Foundation
 import CoreData
+@testable import Common
 
 /**
 
@@ -22,8 +23,9 @@ import CoreData
 //
 // MARK: - CRUDEntityDBRepository / Sync Methods
 //
-public extension CommonDataBaseRepository {
-    func syncStore(_ model: CommonCoreData.Utils.Sample.CRUDEntity) {
+
+extension DatabaseRepository {
+    func syncStore(_ model: CoreDataSampleUsageNamespace.CRUDEntity) {
         typealias DBEntity = CDataCRUDEntity
         let context = viewContext
         let newInstance: DBEntity = DBEntity(context: context)
@@ -33,7 +35,7 @@ public extension CommonDataBaseRepository {
         CommonCoreData.Utils.save(viewContext: context)
     }
 
-    func syncStoreBatch(_ models: [CommonCoreData.Utils.Sample.CRUDEntity]) {
+    func syncStoreBatch(_ models: [CoreDataSampleUsageNamespace.CRUDEntity]) {
         typealias DBEntity = CDataCRUDEntity
         let context = viewContext
         let batchRequest = NSBatchInsertRequest(entity: DBEntity.entity(), objects: models.map { model in
@@ -44,7 +46,7 @@ public extension CommonDataBaseRepository {
         }
     }
 
-    func syncUpdate(_ model: CommonCoreData.Utils.Sample.CRUDEntity) {
+    func syncUpdate(_ model: CoreDataSampleUsageNamespace.CRUDEntity) {
         typealias DBEntity = CDataCRUDEntity
         let context = viewContext
         let instances = try? context.fetch(DBEntity.fetchRequestWith(id: model.id))
@@ -55,7 +57,7 @@ public extension CommonDataBaseRepository {
         }
     }
 
-    func syncDelete(_ model: CommonCoreData.Utils.Sample.CRUDEntity) {
+    func syncDelete(_ model: CoreDataSampleUsageNamespace.CRUDEntity) {
         typealias DBEntity = CDataCRUDEntity
         let context = viewContext
         let instances = try? context.fetch(DBEntity.fetchRequestWith(id: model.id))
@@ -78,7 +80,7 @@ public extension CommonDataBaseRepository {
         CommonCoreData.Utils.batchDelete(context: context, request: DBEntity.fetchRequest())
     }
 
-    func syncRetrieve(key: String) -> CommonCoreData.Utils.Sample.CRUDEntity? {
+    func syncRetrieve(key: String) -> CoreDataSampleUsageNamespace.CRUDEntity? {
         typealias DBEntity = CDataCRUDEntity
         let context = viewContext
         do {

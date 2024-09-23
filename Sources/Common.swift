@@ -30,7 +30,7 @@ public struct Common {
         CommonNetworking.ImageUtils.reset()
         CacheManagerForCodableUserDefaultsRepository.shared.syncClearAll()
         Common.CacheManagerForCodableCoreDataRepository.shared.syncClearAll()
-        CommonDataBaseRepository.shared.syncClearAll()
+        //CommonDataBaseRepository.shared.syncClearAll()
     }
 }
 

@@ -4,6 +4,7 @@
 
 import Foundation
 import CoreData
+@testable import Common
 
 /**
 
@@ -22,8 +23,8 @@ import CoreData
 //
 // MARK: - CRUDEntityDBRepository / Async Methods
 //
-extension CommonDataBaseRepository {
-    func aSyncStore(_ model: CommonCoreData.Utils.Sample.CRUDEntity) async {
+extension DatabaseRepository {
+    func aSyncStore(_ model: CoreDataSampleUsageNamespace.CRUDEntity) async {
         typealias DBEntity = CDataCRUDEntity
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         await withCheckedContinuation { [weak context] continuation in
@@ -47,7 +48,7 @@ extension CommonDataBaseRepository {
         }
     }
 
-    func aSyncStoreBatch(_ models: [CommonCoreData.Utils.Sample.CRUDEntity]) async {
+    func aSyncStoreBatch(_ models: [CoreDataSampleUsageNamespace.CRUDEntity]) async {
         typealias DBEntity = CDataCRUDEntity
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         await withCheckedContinuation { [weak context] continuation in
@@ -66,7 +67,7 @@ extension CommonDataBaseRepository {
         }
     }
 
-    func aSyncUpdate(_ model: CommonCoreData.Utils.Sample.CRUDEntity) async {
+    func aSyncUpdate(_ model: CoreDataSampleUsageNamespace.CRUDEntity) async {
         typealias DBEntity = CDataCRUDEntity
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         await withCheckedContinuation { [weak context] continuation in
@@ -91,7 +92,7 @@ extension CommonDataBaseRepository {
         }
     }
 
-    func aSyncDelete(_ model: CommonCoreData.Utils.Sample.CRUDEntity) async {
+    func aSyncDelete(_ model: CoreDataSampleUsageNamespace.CRUDEntity) async {
         typealias DBEntity = CDataCRUDEntity
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         await withCheckedContinuation { [weak context] continuation in
@@ -144,7 +145,7 @@ extension CommonDataBaseRepository {
         }
     }
 
-    func aSyncRetrieve(key: String) async -> CommonCoreData.Utils.Sample.CRUDEntity? {
+    func aSyncRetrieve(key: String) async -> CoreDataSampleUsageNamespace.CRUDEntity? {
         typealias DBEntity = CDataCRUDEntity
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         return await withCheckedContinuation { [weak context] continuation in

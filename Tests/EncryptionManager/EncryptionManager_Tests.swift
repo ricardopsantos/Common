@@ -31,7 +31,7 @@ class EncryptionManager_Tests: XCTestCase {
     }
 
     func test_data() {
-        let entity: CommonCoreData.Utils.Sample.CRUDEntity = .random
+        let entity: CoreDataSampleUsageNamespace.CRUDEntity = .random
         let data = try? JSONEncoder().encode(entity)
 
         let aesCBCEncrypted = Common.EncryptionManager.encrypt(data: data, method: .aesCBC)
@@ -52,7 +52,7 @@ class EncryptionManager_Tests: XCTestCase {
     }
 
     func test_dataExtension() {
-        let entity: CommonCoreData.Utils.Sample.CRUDEntity = .random
+        let entity: CoreDataSampleUsageNamespace.CRUDEntity = .random
         if let data = try? JSONEncoder().encode(entity) {
             let encrypted = data.encrypted
             let decrypted = encrypted?.decrypted

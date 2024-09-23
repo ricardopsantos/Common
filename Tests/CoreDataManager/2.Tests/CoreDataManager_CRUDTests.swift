@@ -9,12 +9,12 @@ import Combine
 import Nimble
 //
 @testable import Common
-class CommonCoreData_CRUDTests: XCTestCase {
+class CoreDataManager_CRUDTests: XCTestCase {
     func enabled() -> Bool {
         true
     }
 
-    var bd: CommonDataBaseRepository = {
+    var bd: DatabaseRepository = {
         .shared
     }()
 
@@ -29,7 +29,7 @@ class CommonCoreData_CRUDTests: XCTestCase {
 //
 // MARK: - CRUD
 //
-extension CommonCoreData_CRUDTests {
+extension CoreDataManager_CRUDTests {
     func testA1_syncCRUD() {
         guard enabled() else {
             XCTAssert(true)
@@ -48,7 +48,7 @@ extension CommonCoreData_CRUDTests {
 
         // Insert
         bd.syncClearAll()
-        var toStore: CommonCoreData.Utils.Sample.CRUDEntity = .random
+        var toStore: CoreDataSampleUsageNamespace.CRUDEntity = .random
         bd.syncStore(toStore)
         XCTAssert(bd.syncRecordCount() == 1)
         XCTAssert(bd.syncRecordCount() == bd.syncAllIds().count)
@@ -101,7 +101,7 @@ extension CommonCoreData_CRUDTests {
         bd.syncClearAll()
 
         // Insert
-        var toStore: CommonCoreData.Utils.Sample.CRUDEntity = .random
+        var toStore: CoreDataSampleUsageNamespace.CRUDEntity = .random
         await bd.aSyncStore(toStore)
 
         // Records count
@@ -148,7 +148,7 @@ extension CommonCoreData_CRUDTests {
 //
 // MARK: - Others
 //
-extension CommonCoreData_CRUDTests {
+extension CoreDataManager_CRUDTests {
     func testC1_mergeContext1() async {
         guard enabled() else {
             XCTAssert(true)
@@ -183,7 +183,7 @@ extension CommonCoreData_CRUDTests {
         var didInsertedContent = (value: false, id: "")
         var didChangedContent = 0
         var didFinishChangeContent = 0
-        let toStore = CommonCoreData.Utils.Sample.CRUDEntity.random
+        let toStore = CoreDataSampleUsageNamespace.CRUDEntity.random
         bd.output()
             .sink { event in
                 switch event {

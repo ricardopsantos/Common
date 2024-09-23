@@ -3,13 +3,15 @@
 //
 
 import Foundation
+@testable import Common
 
 //
 // Mappers
 //
-public extension CDataSong {
+
+extension CDataSong {
     /// `cascade` to avoid dead lock on map (artists adding songs and songs adding back artists)
-    func mapToModel(cascade: Bool) -> CommonCoreData.Utils.Sample.Song {
+    func mapToModel(cascade: Bool) -> CoreDataSampleUsageNamespace.Song {
         .init(
             id: id ?? "",
             title: title ?? "",
@@ -19,7 +21,7 @@ public extension CDataSong {
     }
 }
 
-public extension CommonCoreData.Utils.Sample.Song {
+extension CoreDataSampleUsageNamespace.Song {
     var mapToDic: [String: Any] {
         [
             "releaseDate": releaseDate,

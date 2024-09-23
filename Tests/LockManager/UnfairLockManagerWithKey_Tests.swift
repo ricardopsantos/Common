@@ -11,11 +11,11 @@ import Nimble
 @testable import Common
 
 class UnfairLockManagerWithKey_Tests: XCTestCase {
-    var lockManager: Common.UnfairLockManagerWithKey!
+    var lockManager: Common.UnfairLockThreadingManagerWithKey!
 
     override func setUp() {
         super.setUp()
-        lockManager = Common.UnfairLockManagerWithKey()
+        lockManager = Common.UnfairLockThreadingManagerWithKey()
     }
 
     override func tearDown() {

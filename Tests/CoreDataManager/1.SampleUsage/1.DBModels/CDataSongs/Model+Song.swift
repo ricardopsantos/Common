@@ -3,22 +3,23 @@
 //
 
 import Foundation
+@testable import Common
 
 //
 // MARK: - Song
 //
 
-public extension CommonCoreData.Utils.Sample {
+extension CoreDataSampleUsageNamespace {
     struct Song: Equatable, Codable {
         public var id: String
         public var title: String
         public var releaseDate: Date
-        public var cascadeSinger: CommonCoreData.Utils.Sample.Singer?
+        public var cascadeSinger: CoreDataSampleUsageNamespace.Singer?
         public init(
             id: String,
             title: String,
             releaseDate: Date,
-            cascadeSinger: CommonCoreData.Utils.Sample.Singer?
+            cascadeSinger: CoreDataSampleUsageNamespace.Singer?
         ) {
             self.id = id
             self.title = title
@@ -28,7 +29,7 @@ public extension CommonCoreData.Utils.Sample {
     }
 }
 
-public extension CommonCoreData.Utils.Sample.Song {
+extension CoreDataSampleUsageNamespace.Song {
     static var random: Self {
         Self(
             id: UUID().uuidString,

@@ -5,13 +5,14 @@
 import Foundation
 import CoreData
 import Combine
+@testable import Common
 
 //
 // MARK: - CommonDataBaseRepository
 //
 
-public class CommonDataBaseRepository: CommonBaseCoreDataManager {
-    public static var shared = CommonDataBaseRepository(
+public class DatabaseRepository: CommonBaseCoreDataManager {
+    public static var shared = DatabaseRepository(
         dbName: Common.internalDB,
         dbBundle: Common.bundleIdentifier,
         persistence: Common.coreDataPersistence

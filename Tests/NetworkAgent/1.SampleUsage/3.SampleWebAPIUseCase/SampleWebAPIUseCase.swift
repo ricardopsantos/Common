@@ -9,7 +9,7 @@ import Combine
 
 public class SampleWebAPIUseCase {
     private let webAPI: SampleWebAPIProtocol = SampleWebAPI(session: .defaultForNetworkAgent)
-    private let codableCacheManager = Common_SimpleCacheManagerForCodable.shared
+    private let codableCacheManager = Common.CacheManagerForCodableUserDefaultsRepository.shared
 
     public typealias EmployeesAvailabilityResponse = AnyPublisher<
         ResponseDto.EmployeeServiceAvailability,

@@ -3,8 +3,10 @@
 //
 
 import Foundation
+//
+@testable import Common
 
-public extension CommonCoreData.Utils.Sample {
+extension CoreDataSampleUsageNamespace {
     struct CRUDEntity: Equatable, Codable {
         public let id: String
         public var name: String
@@ -17,7 +19,7 @@ public extension CommonCoreData.Utils.Sample {
     }
 }
 
-public extension CommonCoreData.Utils.Sample.CRUDEntity {
+extension CoreDataSampleUsageNamespace.CRUDEntity {
     static var random: Self {
         Self(
             id: UUID().uuidString,

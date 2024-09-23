@@ -3,17 +3,18 @@
 //
 
 import Foundation
+@testable import Common
 
 //
 // Mappers
 //
-public extension CDataCRUDEntity {
-    var mapToModel: CommonCoreData.Utils.Sample.CRUDEntity? {
+extension CDataCRUDEntity {
+    var mapToModel: CoreDataSampleUsageNamespace.CRUDEntity? {
         .init(id: id ?? "", name: name ?? "", recordDate: recordDate ?? Date())
     }
 }
 
-public extension CommonCoreData.Utils.Sample.CRUDEntity {
+extension CoreDataSampleUsageNamespace.CRUDEntity {
     var mapToDic: [String: Any] {
         [
             "id": id,

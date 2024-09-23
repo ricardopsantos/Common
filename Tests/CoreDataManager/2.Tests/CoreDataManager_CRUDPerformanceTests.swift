@@ -9,7 +9,7 @@ import Combine
 import Nimble
 //
 @testable import Common
-class CommonCoreData_CRUDPerformanceTests: XCTestCase {
+class CoreDataManager_CRUDPerformanceTests: XCTestCase {
     let iterations = 20
     let maxDeviation = 1.1
     let stressLoadValue = 1_000
@@ -18,7 +18,7 @@ class CommonCoreData_CRUDPerformanceTests: XCTestCase {
         true
     }
 
-    var bd: CommonDataBaseRepository = {
+    var bd: DatabaseRepository = {
         .shared
     }()
 
@@ -64,7 +64,7 @@ class CommonCoreData_CRUDPerformanceTests: XCTestCase {
         let expectedTime: Double = [0.0063312768936157225, 0.006880849599838257, 0.006965309381484985].max()!
         let expectation = expectation(description: #function)
         var averageTime: Double = 0
-        let records: [CommonCoreData.Utils.Sample.CRUDEntity] = (1...stressLoadValue).map { _ in .random }
+        let records: [CoreDataSampleUsageNamespace.CRUDEntity] = (1...stressLoadValue).map { _ in .random }
         averageOperationTime(iterations: iterations) {
             bd.syncClearAll()
         } operation: {

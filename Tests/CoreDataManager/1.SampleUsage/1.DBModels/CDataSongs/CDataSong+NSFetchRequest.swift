@@ -4,11 +4,13 @@
 
 import Foundation
 import CoreData
+@testable import Common
 
 //
 // NSFetchRequest Utils
 //
-public extension CDataSong {
+
+extension CDataSong {
     typealias DBEntity = CDataSong
 
     static var idFields: [String] { ["id"] }

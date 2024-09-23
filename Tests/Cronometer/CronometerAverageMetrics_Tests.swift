@@ -20,7 +20,7 @@ final class CronometerAverageMetrics_Tests: XCTestCase {
     }
 
     func test_basicUsageSingleOperation() {
-        CronometerAverageMetrics.shared.clear()
+        CronometerAverageMetrics.shared.reset()
 
         let key = #function
 
@@ -36,7 +36,7 @@ final class CronometerAverageMetrics_Tests: XCTestCase {
     }
 
     func test_basicUsageMultipleOperationsT1() {
-        CronometerAverageMetrics.shared.clear()
+        CronometerAverageMetrics.shared.reset()
 
         let key = #function
 
@@ -56,7 +56,7 @@ final class CronometerAverageMetrics_Tests: XCTestCase {
     }
 
     func testReportV1() {
-        CronometerAverageMetrics.shared.clear()
+        CronometerAverageMetrics.shared.reset()
 
         let key1 = "\(#function)_1"
         let key2 = "\(#function)_2"
