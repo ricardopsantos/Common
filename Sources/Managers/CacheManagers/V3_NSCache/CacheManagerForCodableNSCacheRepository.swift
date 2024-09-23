@@ -27,7 +27,7 @@ public final class CacheManagerForCodableNSCacheRepository<Key: Hashable, Value>
     public func reset() {
         wrapped.removeAllObjects()
     }
-    
+
     public func insert(_ value: Value, forKey key: Key) {
         let date = dateProvider().addingTimeInterval(entryLifetime)
         let entry = Entry(key: key, value: value, expirationDate: date)

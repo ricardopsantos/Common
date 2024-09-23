@@ -60,10 +60,7 @@ public extension Common_PropertyWrappers {
      */
     @propertyWrapper
     struct ThreadSafeDispatchQueue<T> {
-        private let synchronizedQueue = DispatchQueue(
-            label: "\(Common.self)_\(T.self)_\(UUID().uuidString)",
-            attributes: .concurrent
-        )
+        private let synchronizedQueue = DispatchQueue.synchronizedQueue(label: "\(Common.self)_\(T.self)_\(UUID().uuidString)")
         private var objectValue: T!
 
         public init(wrappedValue value: T) {

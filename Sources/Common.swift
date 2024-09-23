@@ -30,7 +30,7 @@ public struct Common {
         CommonNetworking.ImageUtils.reset()
         CacheManagerForCodableUserDefaultsRepository.shared.syncClearAll()
         Common.CacheManagerForCodableCoreDataRepository.shared.syncClearAll()
-        //CommonDataBaseRepository.shared.syncClearAll()
+        // CommonDataBaseRepository.shared.syncClearAll()
     }
 }
 
@@ -39,7 +39,7 @@ public struct Common {
 //
 
 internal class CommonBundleFinder {}
-public struct Common_Preview { }
+public struct Common_Preview {}
 
 //
 // MARK: - Alias: Main

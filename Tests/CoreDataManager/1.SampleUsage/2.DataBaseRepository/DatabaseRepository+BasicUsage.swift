@@ -5,7 +5,7 @@
 import Foundation
 
 extension DatabaseRepository {
-    struct BasicUsage {
+    enum BasicUsage {
         static func crudTest() {
             crudTestSync()
             Task {
@@ -20,7 +20,7 @@ extension DatabaseRepository {
             if bd.syncRecordCount() != 0 {
                 fatalError("Should be 0")
             }
-            
+
             let storedUser: CoreDataSampleUsageNamespace.CRUDEntity = .random
             bd.syncStore(storedUser)
             bd.syncStore(.random)
@@ -87,5 +87,4 @@ extension DatabaseRepository {
             }
         }
     }
-
 }

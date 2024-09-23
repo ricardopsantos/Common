@@ -5,14 +5,18 @@
 
 import Foundation
 
-//
-// https://blog.nfnlabs.in/run-tasks-on-background-thread-swift-5d3aec272140
-//
-
 public extension DispatchQueue {
     static let defaultDelay: Double = Common.Constants.defaultAnimationsTime
 
-    enum Tread { 
+    static func synchronizedQueue(label: String = "\(Common.self)_\(UUID().uuidString)") -> DispatchQueue {
+        DispatchQueue(
+            label: label,
+            qos: .unspecified,
+            attributes: .concurrent
+        )
+    }
+
+    enum Tread {
         case main
         case background
     }
@@ -25,7 +29,7 @@ public extension DispatchQueue {
                 executeInMainTread(block)
             }
         } else {
-            DispatchQueue.global(qos: DispatchQoS.QoSClass.background).asyncAfter(deadline: .now() + delay) { block() }
+            DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + delay) { block() }
         }
     }
 

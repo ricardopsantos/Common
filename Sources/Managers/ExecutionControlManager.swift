@@ -15,7 +15,7 @@ public extension Common {
         // Thread-safe storage for debounce timers
         @PWThreadSafe private static var debounceTimers: [String: Timer] = [:]
         @PWThreadSafe private static var blockReferenceCount: [String: Int] = [:]
-        
+
         @discardableResult
         public static func executeOnce(token: String, block: @escaping () -> Void, onIgnoredClosure: () -> Void = {}) -> Bool {
             if !takeFirst(n: 1, operationId: #function, block: block) {
@@ -24,7 +24,7 @@ public extension Common {
             }
             return true
         }
-        
+
         /**
          Throttles the execution of a closure. The closure will only be executed if the specified time interval has elapsed since the last execution with the same operation ID.
 
@@ -102,7 +102,7 @@ public extension Common {
             refCount += 1
             blockReferenceCount[operationId] = refCount
         }
-        
+
         public static func takeFirst(
             n: Int,
             operationId: String,

@@ -7,4 +7,4 @@
 
 import Foundation
 
-struct CoreDataSampleUsageNamespace { }
+struct CoreDataSampleUsageNamespace {}

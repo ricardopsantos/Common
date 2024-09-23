@@ -81,7 +81,7 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
     public func reset() {
         syncClearAll()
     }
-    
+
     public func syncClearAll() {
         let context = viewContext
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = CDataExpiringKeyValueEntity.fetchRequest()

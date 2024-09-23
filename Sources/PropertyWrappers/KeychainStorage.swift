@@ -60,10 +60,7 @@ public extension Common_PropertyWrappers {
             self.onChange = onChange
         }
 
-        private let synchronizedQueue = DispatchQueue(
-            label: "\(Common.self)_\(Self.self)",
-            attributes: .concurrent
-        )
+        private let synchronizedQueue = DispatchQueue.synchronizedQueue(label: "\(Common.self)_\(Self.self)")
 
         /// The underlying value wrapped by the bindable state.
         /// The property that stores the wrapped value of the property. It is the value that is accessed when the property is read or written.
@@ -147,7 +144,6 @@ fileprivate extension Common_Preview {
     }
 }
 
-@available(iOS 17, *)
 #Preview {
     Common_Preview.KeyChainTestViewView()
 }

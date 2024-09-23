@@ -6,7 +6,6 @@
 import Foundation
 
 public extension Encodable {
-    
     func toData() throws -> Data {
         try JSONEncoder().encode(self)
     }
@@ -20,7 +19,7 @@ public extension Encodable {
             return 0
         }
     }
-    
+
     /**
      struct Person: Codable {
          let name: String

@@ -62,7 +62,7 @@ struct NSLockVsDispatchBarrier {
     /// (add or remove items), it blocks all other reads and writes until it’s done.
     class ThreadSafeArrayNSLockDispatchBarrier<T> {
         private var array = [T]()
-        private let queue = DispatchQueue(label: "com.example.arrayQueue", attributes: .concurrent)
+        private let queue = DispatchQueue.synchronizedQueue(label: "")
 
         func append(_ element: T) {
             queue.async(flags: .barrier) { // Block other threads during a write

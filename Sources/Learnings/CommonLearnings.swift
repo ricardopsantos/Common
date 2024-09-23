@@ -17,7 +17,6 @@ public struct CommonLearnings {
 //
 
 #if canImport(SwiftUI) && DEBUG
-@available(iOS 17, *)
 #Preview {
     ScrollView {
         VStack {

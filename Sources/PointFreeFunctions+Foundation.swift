@@ -46,10 +46,10 @@ public func syncedV1<T>(_ lock: Any, closure: () -> T) -> T {
      }
      ```
      */
-    
+
     /**
      __What is the reason behind objc_sync_enter doesn't work well with struct, but works well with class?__
-     
+
      The `objc_sync_enter/objc_sync_exit` functions take an object instance and use its identity (i.e., address in memory)
      in order to allocate and associate a lock in memory — and use that lock to protect the code between the enter and exit calls.
      However, structs are not objects, and don't have reference semantics which would allow them to be used in this way

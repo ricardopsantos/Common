@@ -25,7 +25,7 @@ public extension Common {
             }
             return documentsDirectory
         }
-        
+
         static func reset() {
             let fileManager = FileManager.default
             var folderURLs: [URL] = []

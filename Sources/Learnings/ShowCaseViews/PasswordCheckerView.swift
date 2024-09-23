@@ -178,7 +178,6 @@ extension CommonLearnings {
 // MARK: - Preview
 //
 #if canImport(SwiftUI) && DEBUG
-@available(iOS 17, *)
 #Preview {
     CommonLearnings.PasswordCheckerView()
 }
