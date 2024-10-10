@@ -30,15 +30,25 @@ __Guys love tools, this is my Swift toolbox (UIKit, Foundation, SwiftUI & Combin
 Common contains things like:
 
 * Extensions
+   * UIKit / SwiftUI
+   * Combine
+   * Foundation
 * Reachability manager
 * App and device info utilities
+* Utils Managers (or ViewModels)
+   * CacheManager
+   * CronometerManager
+   * FilesManager
+   * LocationManager
+   * CameraManager
+   * CloudKitManager
+   * EncryptionManager
+   * LogsManager
+   * UserDefaultsManager
 * Generic utilities 
    * Networking
-   * AuthManager
-   * CacheManager
-   * EncryptionManager
-   * LocationManager
-   * App Logger
+   * CoreData wrapper
+   * Property Wrappers
    * Data types conversion tools
 
 ---
@@ -59,7 +69,7 @@ $ brew install carthage
 To integrate Common into your Xcode project using Carthage, specify it in your `Cartfile`:
 
 ```ogdl
-github "https://github.com/ricardopsantos/Common" "1.0.0"
+github "https://github.com/ricardopsantos/Common" "1.4.0"
 ```
 
 or for beta
@@ -76,7 +86,7 @@ __Install using SPM On Xcode__
 
 Add the following to your Package.swift file's dependencies:
 
-`.package(url: "https://github.com/ricardopsantos/Common.git", from: "1.0.0")`
+`.package(url: "https://github.com/ricardopsantos/Common.git", from: "1.4.0")`
 
 ---
 
@@ -87,7 +97,7 @@ packages:
   Common:
     url: https://github.com/ricardopsantos/Common
     branch: main
-    #minVersion: 1.0.0, maxVersion: 2.0.0
+    #minVersion: 1.0.0, maxVersion: 1.5.0
     
 targets:
   YourAppTargetName:
