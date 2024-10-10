@@ -22,7 +22,7 @@ import UIKit
 // MARK: - KeyPathStudy
 //
 
-extension Common {
+extension CommonLearnings {
     struct KeyPathStudy {
         private init() {}
         struct Person: KeyPathConfigurationProtocol {
@@ -56,7 +56,7 @@ extension UIView: KeyPathConfigurationProtocol {}
 // MARK: - Sample
 //
 
-extension Common.KeyPathStudy {
+extension CommonLearnings.KeyPathStudy {
     static func part1_AccessData() {
         let person = Person(
             name: "John",

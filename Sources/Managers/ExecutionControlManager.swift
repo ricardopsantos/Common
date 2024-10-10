@@ -103,6 +103,7 @@ public extension Common {
             blockReferenceCount[operationId] = refCount
         }
 
+        @discardableResult
         public static func takeFirst(
             n: Int,
             operationId: String,
@@ -112,7 +113,7 @@ public extension Common {
                 return false
             }
             var refCount = blockReferenceCount[operationId] ?? 0
-            if refCount >= n {
+            if refCount < n {
                 // Executed
                 block()
                 refCount += 1

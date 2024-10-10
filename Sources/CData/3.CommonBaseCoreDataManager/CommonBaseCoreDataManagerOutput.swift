@@ -13,6 +13,7 @@ import Combine
 
 public enum CommonBaseCoreDataManagerOutput: Hashable {
     public enum Generic: Hashable, Sendable {
+        case databaseReloaded
         case databaseDidInsertedContentOn(_ dbModelName: String, id: String?) // Inserted record
         case databaseDidUpdatedContentOn(_ dbModelName: String, id: String?) // Updated record
         case databaseDidDeletedContentOn(_ dbModelName: String, id: String?) // Delete record

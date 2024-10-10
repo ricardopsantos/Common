@@ -15,7 +15,7 @@ public struct Common {
         Bundle(for: CommonBundleFinder.self).bundleIdentifier ?? ""
     }
 
-    static var coreDataPersistence: CommonCoreData.Utils.Persistence = .default
+    static var coreDataPersistence: CommonCoreData.Utils.Persistence = .default(iCloudEnabled: false)
 
     public static func cleanAllData() {
         WKWebView.cleanAllCookies()

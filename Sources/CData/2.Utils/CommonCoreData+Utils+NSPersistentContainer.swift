@@ -12,8 +12,8 @@ import CoreData
 
 public extension CommonCoreData.Utils {
     enum Persistence {
-        case `default`
-        case memory
+        case `default`(iCloudEnabled: Bool)
+        case memory(iCloudEnabled: Bool)
         case directory(value: FileManager.SearchPathDirectory)
         case appGroup(identifier: String)
     }
@@ -25,21 +25,41 @@ public extension CommonCoreData.Utils {
         managedObjectModel: NSManagedObjectModel,
         persistence: Persistence
     ) -> NSPersistentContainer? {
-        let container = NSPersistentContainer(name: dbName, managedObjectModel: managedObjectModel)
+        var container: NSPersistentContainer!
         switch persistence {
-        case .default:
-            ()
-        case .memory:
+        case .default(iCloudEnabled: let iCloudEnabled):
+            if iCloudEnabled {
+                container = NSPersistentCloudKitContainer(
+                    name: dbName,
+                    managedObjectModel: managedObjectModel
+                )
+            } else {
+                container = NSPersistentContainer(name: dbName, managedObjectModel: managedObjectModel)
+            }
+        case .memory(iCloudEnabled: let iCloudEnabled):
+            if iCloudEnabled {
+                container = NSPersistentCloudKitContainer(
+                    name: dbName,
+                    managedObjectModel: managedObjectModel
+                )
+            } else {
+                container = NSPersistentContainer(name: dbName, managedObjectModel: managedObjectModel)
+            }
             let description = NSPersistentStoreDescription()
             description.url = URL(fileURLWithPath: "/dev/null")
             container.persistentStoreDescriptions = [description]
         case .directory(value: let value):
+            container = NSPersistentContainer(name: dbName, managedObjectModel: managedObjectModel)
             if let defaultStoreURL = FileManager.default.urls(for: value, in: .userDomainMask).first {
                 let storeURL = defaultStoreURL.appendingPathComponent("\(dbName).sqlite")
                 let description = NSPersistentStoreDescription(url: storeURL)
                 container.persistentStoreDescriptions = [description]
             }
         case .appGroup(identifier: let identifier):
+            container = NSPersistentContainer(
+                name: dbName,
+                managedObjectModel: managedObjectModel
+            )
             if let sharedContainerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: identifier) {
                 let storeURL = sharedContainerURL.appendingPathComponent("\(dbName).sqlite")
                 let description = NSPersistentStoreDescription(url: storeURL)

@@ -70,9 +70,11 @@ public extension Common_Preview {
         public init() {}
         public var body: some View {
             VStack {
+                // swiftlint:disable line_length
                 Text(
                     "When changing @State, even if the that property (name) is not used on the view, will trigger a view reload. When using @PartialState, when we change the property, and its not used on the view, no reload is trigger"
                 )
+                // swiftlint:enable line_length
                 Spacer()
                 Divider()
                 Text(state.age.description)
