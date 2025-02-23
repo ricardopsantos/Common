@@ -107,7 +107,7 @@ fileprivate extension Common.BiometricAuthManagerViewModel {
                     self?.handle(userFriendlyError: nil)
                     completion(.success(true))
                 } else {
-                    Common_Logs.error("Not and error and not success")
+                    Common_Logs.error("Not and error and not success", "\(Self.self)")
                 }
             }
         }
@@ -119,7 +119,7 @@ fileprivate extension Common.BiometricAuthManagerViewModel {
         }
         let ignoreLog = error.code == .biometryNotEnrolled && Common_Utils.onSimulator
         if !ignoreLog {
-            Common_Logs.error("\(error.code) | \(error.localizedDescription)")
+            Common_Logs.error("\(error.code) | \(error.localizedDescription)", "\(Self.self)")
         }
         switch error.code {
         case .userCancel:

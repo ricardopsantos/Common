@@ -19,15 +19,15 @@ struct DispatchQueueVsOperationQueue {
         let queue = DispatchQueue(label: "com.cafe.orderQueue")
 
         queue.async {
-            Common_Logs.debug("Taking order from customer 1")
+            Common_Logs.debug("Taking order from customer 1", "\(Self.self)")
         }
 
         queue.async {
-            Common_Logs.debug("Making coffee for customer 2")
+            Common_Logs.debug("Making coffee for customer 2", "\(Self.self)")
         }
 
         queue.async {
-            Common_Logs.debug("Cleaning table for customer 3")
+            Common_Logs.debug("Cleaning table for customer 3", "\(Self.self)")
         }
     }
 
@@ -43,15 +43,15 @@ struct DispatchQueueVsOperationQueue {
         let operationQueue = OperationQueue()
 
         let takeOrder = BlockOperation {
-            Common_Logs.debug("Taking order from customer 1")
+            Common_Logs.debug("Taking order from customer 1", "\(Self.self)")
         }
 
         let makeCoffee = BlockOperation {
-            Common_Logs.debug("Making coffee for customer 2")
+            Common_Logs.debug("Making coffee for customer 2", "\(Self.self)")
         }
 
         let cleanTable = BlockOperation {
-            Common_Logs.debug("Cleaning table for customer 3")
+            Common_Logs.debug("Cleaning table for customer 3", "\(Self.self)")
         }
 
         // You can set dependencies so that tasks happen in a specific order:

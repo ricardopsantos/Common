@@ -26,7 +26,7 @@ public extension CommonNetworking.NetworkAgentClient {
         let prefix = logger.prefix.isEmpty ? "" : "\(logger.prefix): "
 
         if !Common_Utils.existsInternetConnection() {
-            Common_Logs.error("⤴️ Request\(number) ⤴️ \(prefix)\(request) : No Internet connection")
+            Common_Logs.error("⤴️ Request\(number) ⤴️ \(prefix)\(request) : No Internet connection", "\(Self.self)")
         }
 
         let requestDebug = "\(request) -> \(T.self).type"
@@ -37,7 +37,7 @@ public extension CommonNetworking.NetworkAgentClient {
                     Common_CronometerManager.startTimerWith(identifier: cronometerId)
                 }
                 if logger.dumpRequest {
-                    Common_Logs.debug("⤴️ Request\(number) ⤴️ \(prefix)\(request)")
+                    Common_Logs.debug("⤴️ Request\(number) ⤴️ \(prefix)\(request)", "\(Self.self)")
                     request.curlCommand(doPrint: true)
                 }
             })
@@ -56,7 +56,7 @@ public extension CommonNetworking.NetworkAgentClient {
                     let status = "Status: \(statusCode), \(httpStatusCode)"
                     let responseDebug = String(decoding: result.data, as: UTF8.self)
                     let logMessage = "# ⤵️ Response\(number) ⤵️ \(status) | \(prefix) [\(requestDebug)]\n# \(responseDebug)"
-                    Common_Logs.debug(logMessage)
+                    Common_Logs.debug(logMessage, "\(Self.self)")
                 }
 
                 //

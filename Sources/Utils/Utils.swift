@@ -108,7 +108,7 @@ public extension Common {
             }
             if !value() {
                 LogsManager.error(
-                    "Assert condition not meeted! \(message())" as AnyObject,
+                    "Assert condition not meeted! \(message())", "\(Self.self)",
                     function: "\(function)",
                     file: "\(file)",
                     line: line

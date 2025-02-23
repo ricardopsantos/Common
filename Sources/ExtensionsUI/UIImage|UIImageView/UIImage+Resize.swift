@@ -33,7 +33,7 @@ public extension UIImage {
     ) -> UIImage? {
         let imageSourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
         guard let imageSource = CGImageSourceCreateWithURL(imageURL as CFURL, imageSourceOptions) else {
-            Common_Logs.error("Failed on CGImageSourceCreateWithURL")
+            Common_Logs.error("Failed on CGImageSourceCreateWithURL", "\(Self.self)")
             return nil
         }
         guard let cgImage = CGImageSourceCreateImageAtIndex(imageSource, 0, nil) else {

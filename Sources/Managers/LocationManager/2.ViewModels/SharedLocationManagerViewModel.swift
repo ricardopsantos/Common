@@ -39,15 +39,15 @@ public extension Common {
             }
             let using = refCount.filter(\.value).map(\.key)
             if using.isEmpty {
-                Common_Logs.debug("\(Self.self) stoped")
+                Common_Logs.debug("\(Self.self) stoped", "\(Self.self)")
                 SharedLocationManager.shared.stopUpdatingLocation()
             } else {
-                Common_Logs.debug("\(Self.self) stop by [\(sender)] ignored. On use by \(using)")
+                Common_Logs.debug("\(Self.self) stop by [\(sender)] ignored. On use by \(using)", "\(Self.self)")
             }
         }
 
         public func start(sender: String) {
-            Common_Logs.debug("\(Self.self) started")
+            Common_Logs.debug("\(Self.self) started", "\(Self.self)")
             let onLocationLost = { [weak self] in
                 self?.coordinates = nil
             }

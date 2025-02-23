@@ -125,9 +125,9 @@ fileprivate extension Common_Preview {
                 }
                 VStack {
                     // swiftlint:disable logs_rule_1
-                    performAndReturnEmptyIfSimulator { Common_Logs.debug("perfomed_1") }
-                    performAndReturnEmpty { Common_Logs.debug("perfomed_2") }
-                    performAndReturnEmpty(if: condition) { Common_Logs.debug("perfomed_3") }
+                    performAndReturnEmptyIfSimulator { Common_Logs.debug("perfomed_1", "\(Self.self)") }
+                    performAndReturnEmpty { Common_Logs.debug("perfomed_2", "\(Self.self)") }
+                    performAndReturnEmpty(if: condition) { Common_Logs.debug("perfomed_3", "\(Self.self)") }
                     // swiftlint:enable logs_rule_1
                 }
                 Divider()

@@ -151,15 +151,15 @@ public extension CommonNetworking {
             didReceive challenge: URLAuthenticationChallenge,
             completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
         ) {
-            Common_Logs.debug("\(CommonNetworking.NetworkAgentClient.self): Received URLAuthenticationChallenge for \(session)")
+            Common_Logs.debug("\(CommonNetworking.NetworkAgentClient.self): Received URLAuthenticationChallenge for \(session)", "\(Self.self)")
             // Handle HTTP Basic Authentication challenges.
             if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodHTTPBasic {
                 guard let credential = credential else {
-                    Common_Logs.error("\(CommonNetworking.NetworkAgentClient.self): No credentials provided for challenge \(challenge)")
+                    Common_Logs.error("\(CommonNetworking.NetworkAgentClient.self): No credentials provided for challenge \(challenge)", "\(Self.self)")
                     completionHandler(.cancelAuthenticationChallenge, nil)
                     return
                 }
-                Common_Logs.debug("\(CommonNetworking.NetworkAgentClient.self): Authenticated with Credentials")
+                Common_Logs.debug("\(CommonNetworking.NetworkAgentClient.self): Authenticated with Credentials", "\(Self.self)")
                 completionHandler(.useCredential, credential)
                 return
             }
@@ -174,15 +174,15 @@ public extension CommonNetworking {
             guard let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0),
                   let serverPublicKey = SecCertificateCopyKey(serverCertificate),
                   let serverPublicKeyData = SecKeyCopyExternalRepresentation(serverPublicKey, nil) else {
-                Common_Logs.error("\(CommonNetworking.NetworkAgentClient.self): Invalid serverCertificate")
+                Common_Logs.error("\(CommonNetworking.NetworkAgentClient.self): Invalid serverCertificate", "\(Self.self)")
                 completionHandler(.cancelAuthenticationChallenge, nil)
                 return
             }
 
             // Helper function to log and cancel the authentication challenge.
             func cancelAuthenticationChallengeWithLog(key: String, value: String) {
-                Common_Logs.debug("\(CommonNetworking.NetworkAgentClient.self): ServerPublicKey: \(serverPublicKey)\nServerPublicKeyData: \(serverPublicKeyData)")
-                Common_Logs.error("\(CommonNetworking.NetworkAgentClient.self): Unexpected \(key): [\(value)]")
+                Common_Logs.debug("\(CommonNetworking.NetworkAgentClient.self): ServerPublicKey: \(serverPublicKey)\nServerPublicKeyData: \(serverPublicKeyData)", "\(Self.self)")
+                Common_Logs.error("\(CommonNetworking.NetworkAgentClient.self): Unexpected \(key): [\(value)]", "\(Self.self)")
                 completionHandler(.cancelAuthenticationChallenge, nil)
             }
 
@@ -208,7 +208,7 @@ public extension CommonNetworking {
                 if serverPublicHashKeys.contains(serverPublicKeyDataHash) {
                     // Public key hash matches, authentication successful.
                     completionHandler(.useCredential, URLCredential(trust: serverTrust))
-                    Common_Logs.debug("\(CommonNetworking.NetworkAgentClient.self): Authenticated with Server Public Key")
+                    Common_Logs.debug("\(CommonNetworking.NetworkAgentClient.self): Authenticated with Server Public Key", "\(Self.self)")
                     return
                 } else {
                     cancelAuthenticationChallengeWithLog(
@@ -240,7 +240,7 @@ public extension CommonNetworking {
                 if isServerTrusted, existsMatchingLocalCer {
                     // Certificate matches, authentication successful.
                     let credential: URLCredential = URLCredential(trust: serverTrust)
-                    Common_Logs.debug("\(CommonNetworking.NetworkAgentClient.self): Authenticated with Local Certificate")
+                    Common_Logs.debug("\(CommonNetworking.NetworkAgentClient.self): Authenticated with Local Certificate", "\(Self.self)")
                     completionHandler(.useCredential, credential)
                     return
                 } else {

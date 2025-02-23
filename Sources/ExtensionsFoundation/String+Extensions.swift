@@ -435,7 +435,7 @@ public extension String {
                 documentAttributes: nil
             )
         } catch {
-            Common_Logs.error("\(error)")
+            Common_Logs.error("\(error)", "\(Self.self)")
             return nil
         }
         /**

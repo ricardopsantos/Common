@@ -197,6 +197,8 @@ extension CoreDataManager_CRUDTests {
                     case .databaseDidDeletedContentOn: ()
                     case .databaseDidFinishChangeContentItemsOn:
                         didFinishChangeContent += 1
+                    case .databaseReloaded:
+                        ()
                     }
                 }
             }.store(in: TestsGlobal.cancelBag)
@@ -242,6 +244,8 @@ extension CoreDataManager_CRUDTests {
                     case .databaseDidDeletedContentOn: ()
                     case .databaseDidFinishChangeContentItemsOn:
                         didFinishChangeContent += 1
+                    case .databaseReloaded:
+                        ()
                     }
                 }
             }.store(in: TestsGlobal.cancelBag)

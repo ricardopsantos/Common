@@ -48,7 +48,7 @@ fileprivate extension Common {
 
         switcher.isOn = true
         switcher.sendActions(for: .valueChanged)
-        LogsManager.debug(submitButton.isEnabled)
+        LogsManager.debug(submitButton.isEnabled.description, "\(Self.self)")
     }
 }
 

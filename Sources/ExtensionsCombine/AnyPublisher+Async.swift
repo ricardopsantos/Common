@@ -57,7 +57,7 @@ public extension AnyPublisher {
                     switch result {
                     case .finished:
                         if finishedWithoutValue {
-                            Common_Logs.error("\(sender) : Finish without value - \(continuation)")
+                            Common_Logs.error("\(sender) : Finish without value - \(continuation)", "\(Self.self)")
                             continuation.resume(throwing: AsyncError.finishedWithoutValue)
                         }
                     case let .failure(error):

@@ -65,13 +65,13 @@ public extension CommonCoreData.Utils {
                 let description = NSPersistentStoreDescription(url: storeURL)
                 container.persistentStoreDescriptions = [description]
             } else {
-                Common_Logs.error("Fail to access appGroupIdentifier: \(String(describing: identifier))")
+                Common_Logs.error("Fail to access appGroupIdentifier: \(String(describing: identifier))", "\(Self.self)")
             }
         }
 
         container.loadPersistentStores { _, error in
             if let error {
-                Common_Logs.error("Unresolved error \(error), \(error.localizedDescription)")
+                Common_Logs.error("Unresolved error \(error), \(error.localizedDescription)", "\(Self.self)")
             } else {
                 CommonCoreData.Utils.printDBReport(
                     dbName: dbName,
@@ -104,10 +104,10 @@ public extension CommonCoreData.Utils {
                       • tables: \(tables)
                       • size: \(fileSizeInMB) MB
                     """
-                    Common_Logs.debug("\(report)")
+                    Common_Logs.debug("\(report)", "\(Self.self)")
                 }
             } catch {
-                Common_Logs.error("\(error.localizedDescription)")
+                Common_Logs.error("\(error.localizedDescription)", "\(Self.self)")
             }
         }
     }

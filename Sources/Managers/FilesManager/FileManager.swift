@@ -39,7 +39,7 @@ public extension Common {
                         try fileManager.removeItem(at: fileURL)
                     }
                 } catch {
-                    Common_Logs.error(error)
+                    Common_Logs.error(error, "\(Self.self)")
                 }
             }
         }

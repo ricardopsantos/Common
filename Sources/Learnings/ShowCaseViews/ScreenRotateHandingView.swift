@@ -100,9 +100,14 @@ struct DynamicStackV3<Content: View>: View {
     /// `ViewThatFits` view type to automatically pick the best layout. By providing both HStack and
     /// VStack as candidates, it will select the one that fits the context.
     var body: some View {
-        ViewThatFits {
-            HStack { content() }
-            VStack { content() }
+        if #available(iOS 16.0, *) {
+            ViewThatFits {
+                HStack { content() }
+                VStack { content() }
+            }
+        } else {
+            // Fallback on earlier versions
+            EmptyView()
         }
     }
 }

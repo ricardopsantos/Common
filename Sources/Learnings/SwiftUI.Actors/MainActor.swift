@@ -272,7 +272,7 @@ public extension CommonLearnings.AsyncAwaitMainActorView {
         }
     }
 
-    struct Account: Hashable, Identifiable {
+    struct Account: Hashable, Identifiable, Sendable {
         public let id: String
         let name: String
         static var random: Self {

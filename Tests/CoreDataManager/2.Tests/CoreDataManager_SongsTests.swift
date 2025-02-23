@@ -213,6 +213,8 @@ extension CommonCoreData_SongsTests {
                     case .databaseDidDeletedContentOn: ()
                     case .databaseDidFinishChangeContentItemsOn:
                         didFinishChangeContent += 1
+                    case .databaseReloaded:
+                        ()
                     }
                 }
             }.store(in: TestsGlobal.cancelBag)

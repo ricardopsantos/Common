@@ -61,27 +61,27 @@ public extension CloudKitManager {
                 completion(true)
             case .noAccount:
                 if loggerEnabled() {
-                    Common_Logs.debug("No iCloud account is signed in.")
+                    Common_Logs.debug("No iCloud account is signed in.", "\(Self.self)")
                 }
                 completion(false)
             case .restricted:
                 if loggerEnabled() {
-                    Common_Logs.debug("iCloud access is restricted.")
+                    Common_Logs.debug("iCloud access is restricted.", "\(Self.self)")
                 }
                 completion(false)
             case .couldNotDetermine:
                 if let error = error {
-                    Common_Logs.error("Error determining iCloud status: \(error.localizedDescription)")
+                    Common_Logs.error("Error determining iCloud status: \(error.localizedDescription)", "\(Self.self)")
                 }
                 completion(false)
             case .temporarilyUnavailable:
                 if loggerEnabled() {
-                    Common_Logs.debug("iCloud access is temporarily unavailable.")
+                    Common_Logs.debug("iCloud access is temporarily unavailable.", "\(Self.self)")
                 }
                 completion(false)
             @unknown default:
                 if loggerEnabled() {
-                    Common_Logs.debug("Unknown iCloud account status.")
+                    Common_Logs.debug("Unknown iCloud account status.", "\(Self.self)")
                 }
                 completion(false)
             }
@@ -110,11 +110,11 @@ public extension CloudKitManager {
                         switch result {
                         case .success:
                             if loggerEnabled() {
-                                Common_Logs.debug("Zone created: \(zoneID)")
+                                Common_Logs.debug("Zone created: \(zoneID)", "\(Self.self)")
                             }
                             completion(true)
                         case .failure(let error):
-                            Common_Logs.error("Error creating zone: \(error)")
+                            Common_Logs.error("Error creating zone: \(error)", "\(Self.self)")
                             completion(false)
                         }
                     }
@@ -122,7 +122,7 @@ public extension CloudKitManager {
                     self.privateCloudDatabase.add(operation)
                 } else {
                     // Handle other errors (e.g., network errors)
-                    Common_Logs.error("Error fetching zone: \(error?.localizedDescription ?? "Unknown error")")
+                    Common_Logs.error("Error fetching zone: \(error?.localizedDescription ?? "Unknown error")", "\(Self.self)")
                     completion(false)
                 }
             }
@@ -147,7 +147,7 @@ public extension CloudKitManager {
                     recordFound = true
                     completion(record)
                 case .failure(let error):
-                    Common_Logs.error(error)
+                    Common_Logs.error(error, "\(Self.self)")
                     completion(nil)
                 }
             }
@@ -161,7 +161,7 @@ public extension CloudKitManager {
                         completion(nil)
                     }
                 case .failure(let error):
-                    Common_Logs.error(error)
+                    Common_Logs.error(error, "\(Self.self)")
                     completion(nil)
                 }
             }
@@ -185,11 +185,11 @@ public extension CloudKitManager {
                 switch result {
                 case .success:
                     if loggerEnabled() {
-                        Common_Logs.debug("Record updated: \(record.recordType)")
+                        Common_Logs.debug("Record updated: \(record.recordType)", "\(Self.self)")
                     }
                     completion(true)
                 case .failure(let error):
-                    Common_Logs.debug("Error updating: \(error)")
+                    Common_Logs.debug("Error updating: \(error)", "\(Self.self)")
                     completion(false)
                 }
             }
@@ -216,11 +216,11 @@ public extension CloudKitManager {
                 guard let self = self else { return }
                 Common_CronometerManager.timeElapsed(identifier, print: loggerEnabled())
                 if let error = error {
-                    Common_Logs.debug("Error adding: \(error)")
+                    Common_Logs.debug("Error adding: \(error)", "\(Self.self)")
                     completion(false)
                 } else {
                     if loggerEnabled() {
-                        Common_Logs.debug("Record added: \(record.recordType)")
+                        Common_Logs.debug("Record added: \(record.recordType)", "\(Self.self)")
                     }
                     completion(true)
                 }

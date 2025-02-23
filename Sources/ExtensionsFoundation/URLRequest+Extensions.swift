@@ -56,7 +56,7 @@ public extension URLRequest {
         headerValues: [String: String]?
     ) -> URLRequest? {
         guard let theURL = URL(string: "\(urlString)") else {
-            Common_Logs.warning("Invalid url [\(urlString)]")
+            Common_Logs.error("Invalid url [\(urlString)]", "\(Self.self)")
             return nil
         }
         var request = URLRequest(url: theURL)
@@ -73,7 +73,7 @@ public extension URLRequest {
             } else if !httpBody.keys.isEmpty {
                 request.httpBody = try? JSONSerialization.data(withJSONObject: httpBody, options: .prettyPrinted)
                 if !httpBody.isEmpty, request.httpBody == nil {
-                    Common_Logs.error("Fail to serialize httpBody:\n\n\(httpBody)")
+                    Common_Logs.error("Fail to serialize httpBody:\n\n\(httpBody)", "\(Self.self)")
                 }
             }
         }

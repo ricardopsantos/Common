@@ -168,15 +168,15 @@ extension CLAuthorizationStatus {
 private extension Common.SharedLocationManager {
     static func sampleUsage() {
         Common.SharedLocationManager.shared.startUpdatingLocation {
-            Common_Logs.debug("User location start updating")
+            Common_Logs.debug("User location start updating", "\(Self.self)")
         } onDidUpdateLocation: { location in
             if let location {
-                Common_Logs.debug("User location updated to \(location)")
+                Common_Logs.debug("User location updated to \(location)", "\(Self.self)")
             } else {
-                Common_Logs.debug("User location lost?")
+                Common_Logs.debug("User location lost?", "\(Self.self)")
             }
         } onLocationLost: {
-            Common_Logs.debug("User location lost")
+            Common_Logs.debug("User location lost", "\(Self.self)")
         }
     }
 }

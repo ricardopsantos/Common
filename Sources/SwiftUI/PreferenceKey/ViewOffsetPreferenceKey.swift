@@ -70,7 +70,7 @@ struct ViewOffsetPreferenceKeyTestView: View {
         }
         .coordinateSpace(name: coordinateSpaceKey)
         .onReceive(preferenceChangePublisher) {
-            Common_Logs.debug("Stopped on: \($0)")
+            Common_Logs.debug("Stopped on: \($0)", "\(Self.self)")
             originY = $0
         }
     }

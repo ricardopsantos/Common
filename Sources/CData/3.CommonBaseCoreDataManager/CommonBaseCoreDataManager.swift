@@ -132,17 +132,17 @@ public extension CommonBaseCoreDataManager {
 
     func unloadDatabase() {
         guard let storeURL = persistentContainer.persistentStoreDescriptions.first?.url else {
-            Common_Logs.error("Persistent store URL not found")
+            Common_Logs.error("Persistent store URL not found", "\(Self.self)")
             return
         }
         let persistentStoreCoordinator = persistentContainer.persistentStoreCoordinator
         do {
             if let store = persistentStoreCoordinator.persistentStore(for: storeURL) {
                 try persistentStoreCoordinator.remove(store)
-                Common_Logs.debug("Successfully unloaded the database at \(storeURL)")
+                Common_Logs.debug("Successfully unloaded the database at \(storeURL)", "\(Self.self)")
             }
         } catch {
-            Common_Logs.error("Failed to unload database: \(error)")
+            Common_Logs.error("Failed to unload database: \(error)", "\(Self.self)")
         }
     }
 
@@ -153,20 +153,20 @@ public extension CommonBaseCoreDataManager {
             let oldDatabaseURL = databaseURL
             if fileManager.fileExists(atPath: oldDatabaseURL.path) {
                 try fileManager.removeItem(at: oldDatabaseURL)
-                Common_Logs.debug("Old database at \(oldDatabaseURL) deleted.")
+                Common_Logs.debug("Old database at \(oldDatabaseURL) deleted.", "\(Self.self)")
             }
 
             // Copy the new database to the same location
             try fileManager.copyItem(at: newDatabaseURL, to: oldDatabaseURL)
-            Common_Logs.debug("New database copied to \(oldDatabaseURL).")
+            Common_Logs.debug("New database copied to \(oldDatabaseURL).", "\(Self.self)")
         } catch {
-            Common_Logs.error("Error replacing database: \(error)")
+            Common_Logs.error("Error replacing database: \(error)", "\(Self.self)")
         }
     }
 
     func reloadDatabase() {
         guard let persistentStoreDescription = persistentContainer.persistentStoreDescriptions.first else {
-            Common_Logs.error("Persistent store description not found")
+            Common_Logs.error("Persistent store description not found", "\(Self.self)")
             return
         }
         let persistentStoreCoordinator = persistentContainer.persistentStoreCoordinator
@@ -178,9 +178,9 @@ public extension CommonBaseCoreDataManager {
                 at: persistentStoreDescription.url,
                 options: persistentStoreDescription.options
             )
-            Common_Logs.debug("Successfully reloaded the new database.")
+            Common_Logs.debug("Successfully reloaded the new database.", "\(Self.self)")
         } catch {
-            Common_Logs.error("Failed to unload database: \(error)")
+            Common_Logs.error("Failed to unload database: \(error)", "\(Self.self)")
         }
     }
 }

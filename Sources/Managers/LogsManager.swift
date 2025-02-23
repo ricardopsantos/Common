@@ -11,95 +11,150 @@ import UIKit
 // MARK: - Logger (Public)
 
 public extension Common {
-    struct LogsManager {
+    class LogsManager {
         private init() {}
-
-        public static var maxLogSize = 2_000
-        @PWThreadSafe private static var debugCounter: Int = 0
-        public static func reset() {
-            Persistence.reset()
+        public static var counterTotal = 0
+        public static var counterErrors = 0
+        public static var maxLogSize = 5000
+        public enum LogTemplate {
+            case log(_ any: Any)
+            case flow(name: String, message: String)
+            case viewInit(_ origin: String, function: String = #function)
+            case appLifeCycle(_ message: Any)
+            case warning(_ message: Any)
+            case retry(_ message: Any, i: Int, maxI: Int = 1, error: Any)
+            case valueChanged(_ origin: String, _ key: String, _ value: String?)
+            case screenIn(_ origin: String)
+            case screenOut(_ origin: String)
+            case onAppear(_ origin: String)
+            case onDisappear(_ origin: String)
+            case tapped(_ origin: String, _ message: String)
+            var log: String {
+                switch self {
+                case .retry(let message, i: let i, maxI: let maxI, error: let error):
+                    if i == 1, maxI == 1 {
+                        return "⚠️ Will retry once [\(message)] ⚠️\n\(error)"
+                    } else if i != maxI {
+                        return "⚠️ Will retry [\(i)/\(maxI)] [\(message)] ⚠️\n\(error)"
+                    } else if i == maxI {
+                        return "⚠️ Will retry LAST [\(message)] ⚠️\n\(error)"
+                    } else {
+                        return "⚠️ Will retry [\(message)] ⚠️\n\(error)"
+                    }
+                case .warning(let message):
+                    return "⚠️ \(message) ⚠️\n"
+                case .log(let any):
+                    return "\(any)"
+                case .viewInit(let origin, let function):
+                    return "👶🏻 \(origin) 👶🏻 \(function)"
+                case .appLifeCycle(let message):
+                    return "🔀 🔀 App Life Cycle 🔀 🔀: \(message)"
+                case .flow(let name, let message):
+                    return "🔑 Flow: \(name) 🔑 \(message)"
+                case .screenIn(let origin):
+                    return "➡️ Screen In ➡️ \(origin)"
+                case .screenOut(let origin):
+                    return "⬅️ Screen Out ⬅️ \(origin)"
+                case .onAppear(let origin):
+                    return "➡️ onAppear ➡️ \(origin)"
+                case .onDisappear(let origin):
+                    return "⬅️ onDisappear ⬅️ \(origin)"
+                case .tapped(let origin, let message):
+                    return "👆 \(origin) 👆 Tapped [\(message)] 👆"
+                case .valueChanged(let origin, let key, let value):
+                    if value == nil {
+                        return "💾 \(origin) 💾 Value of [\(key)] was deleted"
+                    }
+                    guard let value else {
+                        return ""
+                    }
+                    if value.isEmpty {
+                        return "💾 \(origin) 💾 Value of [\(key)] changed"
+                    } else {
+                        return "💾 \(origin) 💾 Value of [\(key)] changed/updated to [\(value)]"
+                    }
+                }
+            }
         }
 
-        public static func debug(
-            _ message: Any?,
+        /// Things that must be fixed and shouldn't happen. This logs will always be printed (unless Prod apps)
+        public static func error(
+            _ any: any Error,
+            _ tag: String,
             function: String = #function,
             file: String = #file,
             line: Int = #line
         ) {
-            guard message != nil else {
-                return
-            }
-            let prefix = "🟢 "
-            private_print("\(prefix)\(message!)", function: function, file: file, line: line)
-        }
-
-        public static func warning(
-            _ message: Any?,
-            function: String = #function,
-            file: String = #file,
-            line: Int = #line
-        ) {
-            guard message != nil else {
-                return
-            }
-            let prefix = "🟡 "
-            private_print("\(prefix)\(message!)", function: function, file: file, line: line)
+            error("\(any)", tag, function: function, file: file, line: line)
         }
 
         public static func error(
-            _ message: Any?,
-            shouldCrash: Bool = false,
+            _ any: String,
+            _ tag: String,
             function: String = #function,
             file: String = #file,
             line: Int = #line
         ) {
-            guard message != nil else {
+            guard canLog(any, tag) else {
                 return
             }
-            let prefix = "🔴 "
-            private_print("\(prefix)\(message!)", function: function, file: file, line: line)
+            log(prefix: "🟥", log: "\(any)".replace("\\", with: ""), tag: tag, function: function, file: file, line: line)
         }
 
-        //
-        // Log to console/terminal
-        //
-
-        public static func prettyPrinted(
-            _ message: @autoclosure () -> String,
-            function: String = #function,
-            file: String = #file,
-            line: Int = #line
-        ) -> String {
-            debugCounter += 1
-            let senderCodeId = Common_Utils.senderCodeId(function, file: file, line: line)
-            let date = Date.utcNow
-            let logMessage = """
-            ⚙️ \(Common.self).Log_\(debugCounter) @ (\(date)) \(senderCodeId)
-            ⚙️ \(message())
-            """
-            return logMessage
-        }
-
-        private static func private_print(
-            _ message: @autoclosure () -> String,
+        public static func debug(
+            _ string: String,
+            _ tag: String,
             function: String = #function,
             file: String = #file,
             line: Int = #line
         ) {
-            // When performed on physical device, NSLog statements appear in the device's console whereas
-            // print only appears in the debugger console.
-            #if DEBUG
-            let logMessage = prettyPrinted(message(), function: function, file: file, line: line).replace(" +0000", with: "")
-            if Common_Utils.onSimulator {
-                print(logMessage + "\n")
-            } else {
-                print(logMessage.prefix(maxLogSize) + "\n")
-            }
-            if Common_Utils.false {
-                Persistence.appendToFileEnd(String(logMessage.prefix(maxLogSize)))
-            }
-            #endif
+            Self.debug(.log(string), tag, function: function, file: file, line: line)
         }
+
+        public static func debug(
+            _ any: LogTemplate,
+            _ tag: String,
+            function: String = #function,
+            file: String = #file,
+            line: Int = #line
+        ) {
+            guard canLog(any, tag) else {
+                return
+            }
+            log(prefix: "🟢", log: any.log, tag: tag, function: function, file: file, line: line)
+        }
+    }
+
+
+}
+
+private extension Common.LogsManager {
+    static func log(
+        prefix: String,
+        log: String,
+        tag: String,
+        function: String = #function,
+        file: String = #file,
+        line: Int = #line
+
+    ) {
+        counterTotal += 1
+        let sender = Common.Utils.senderCodeId(function, file: file, line: line)
+        let log = "\n\n\(prefix) Log_\(counterTotal) \(Date.utcNow)) @ \(sender)|\(tag)\n\(log)".replace(" +0000", with: "").replace("Optional", with: "")
+        // swiftlint:disable logs_rule_1
+        print(log)
+        Persistence.appendToFileEnd(log)
+        // swiftlint:enable logs_rule_1
+    }
+
+    static func canLog(_ any: Any?, _ tag: String) -> Bool {
+        //guard FeatureFlag.logsEnabled.isEnabled else {
+        //    return false
+        //}
+        guard any != nil else {
+            return false
+        }
+        return true
     }
 }
 

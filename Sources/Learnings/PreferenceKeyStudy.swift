@@ -119,7 +119,7 @@ struct PreferenceKeyStudyTestView: View {
                 Spacer()
             }
             .onPreferenceChange(Common.IntSumPreferenceKey.self) { value in
-                Common_Logs.debug("\(Common.IntSumPreferenceKey.self): \(value)")
+                Common_Logs.debug("\(Common.IntSumPreferenceKey.self): \(value)", "\(Self.self)")
             }
         }
     }

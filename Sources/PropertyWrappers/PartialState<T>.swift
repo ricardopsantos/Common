@@ -88,11 +88,11 @@ public extension Common_Preview {
                 Spacer()
             }
             .onChange(of: _partialState.projectedValue.wrappedValue.name, perform: { newValue in
-                Common_Logs.debug("\(newValue)")
+                Common_Logs.debug("\(newValue)", "\(Self.self)")
             })
             // Track changes to partialState.name without triggering a view reload
             .onPartialChange(of: _partialState, at: \.name) { newValue in
-                Common_Logs.debug("\(newValue)")
+                Common_Logs.debug("\(newValue)", "\(Self.self)")
             }
             .debugBackground()
         }

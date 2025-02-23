@@ -84,7 +84,7 @@ public extension JSONDecoder {
             debugMessage = "\(debugMessage)\n# \(error.localizedDescription)"
             debugMessage = "\(debugMessage)\n# \(error)"
             if printError {
-                Common_Logs.error("\(debugMessage)")
+                Common_Logs.error("\(debugMessage)", "\(Self.self)")
             }
             throw error
         }

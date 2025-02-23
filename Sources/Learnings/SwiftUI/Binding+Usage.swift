@@ -73,7 +73,7 @@ private struct BindingSampleView: View {
             }
             .pickerStyle(SegmentedPickerStyle())
             .onChange(of: selected) { value in
-                Common_Logs.debug(value)
+                Common_Logs.debug(value, "\(Self.self)")
             }
         }
     }

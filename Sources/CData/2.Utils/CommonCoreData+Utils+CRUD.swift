@@ -25,37 +25,84 @@ public extension CommonCoreData.Utils {
             return true
         } catch {
             context.rollback()
-            Common_Logs.error("Couldn't delete the entities " + error.localizedDescription)
+            if CommonCoreData.Utils.logsEnabled {
+                Common_Logs.error("Couldn't delete the entities " + error.localizedDescription, "\(Self.self)")
+            }
             return false
         }
     }
 
-    @discardableResult
     /// Saves the context, at the same time it prints debug messages
-    static func save(viewContext: NSManagedObjectContext?) -> Bool {
+    @discardableResult
+    static func save(viewContext: NSManagedObjectContext?, canEmitChanges: Bool = true) -> Bool {
+        guard let viewContext else { return false }
+        var result: Bool?
+        let semaphore = DispatchSemaphore(value: 0)
+        asyncSave(viewContext: viewContext, canEmitChanges: canEmitChanges) { recordsChanged in
+            result = recordsChanged > 0
+            semaphore.signal()
+        }
+        _ = semaphore.wait(timeout: .now() + 0.1)
+        return result ?? false
+    }
+
+    static func asyncSave(
+        viewContext: NSManagedObjectContext?,
+        canEmitChanges: Bool = true,
+        completion: @escaping (Int) -> Void
+    ) {
         guard let viewContext, viewContext.hasChanges else {
-            return false
+            completion(0)
+            return
+        }
+        enum DBOperation: String {
+            case insert = "Inserted"
+            case delete = "Deleted"
+            case update = "Updated"
         }
         var saveSuccess = false
         let threadInfo: String = (Thread.isMain ? "Main" : "Background") + " Thread"
-        var changes = ""
-        #if DEBUG
-        if !viewContext.insertedObjects.isEmpty {
-            let relatedObjects = viewContext.insertedObjects
-            let className = relatedObjects.first?.entity.name ?? ""
-            changes = "# Inserted \(relatedObjects.count) of \(className)"
+        var changes: [(dbModelName: String, id: String?, operation: DBOperation)] = []
+
+        func buildInfo(managedObject: NSManagedObject) -> (dbModelName: String, id: String?) {
+            let dbModelName = managedObject.entity.name ?? ""
+            let id = managedObject.extractId()
+            return (dbModelName, id)
         }
-        if !viewContext.deletedObjects.isEmpty {
-            let relatedObjects = viewContext.deletedObjects
-            let className = relatedObjects.first?.entity.name ?? ""
-            changes = "# Deleted \(relatedObjects.count) of \(className)"
+        viewContext.insertedObjects.forEach { managedObject in
+            let info = buildInfo(managedObject: managedObject)
+            changes.append((info.dbModelName, info.id, .insert))
         }
-        if !viewContext.updatedObjects.isEmpty {
-            let relatedObjects = viewContext.updatedObjects
-            let className = relatedObjects.first?.entity.name ?? ""
-            changes = "# Updated \(relatedObjects.count) of \(className)"
+        viewContext.deletedObjects.forEach { managedObject in
+            let info = buildInfo(managedObject: managedObject)
+            changes.append((info.dbModelName, info.id, .delete))
         }
-        #endif
+        viewContext.updatedObjects.forEach { managedObject in
+            let info = buildInfo(managedObject: managedObject)
+            changes.append((info.dbModelName, info.id, .update))
+        }
+
+        func emitChanges() {
+            guard canEmitChanges, saveSuccess else { return }
+            changes.forEach { (dbModelName: String, id: String?, operation: DBOperation) in
+                switch operation {
+                case .insert:
+                    output.send(.databaseDidInsertRecord(dbModelName, id: id))
+                case .delete:
+                    output.send(.databaseDidDeleteRecord(dbModelName, id: id))
+                case .update:
+                    output.send(.databaseDidUpdateRecord(dbModelName, id: id))
+                }
+            }
+            #if DEBUG
+            if CommonCoreData.Utils.logsEnabled {
+                changes.forEach { (dbModelName: String, _, operation: DBOperation) in
+                    Common_Logs.debug(" 💾 \(operation.rawValue) record @ [\(dbModelName)] on [\(threadInfo)]", "\(Self.self)")
+                }
+            }
+            #endif
+        }
+
         switch viewContext.concurrencyType {
         case .privateQueueConcurrencyType, .confinementConcurrencyType:
             let privateContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
@@ -65,11 +112,15 @@ public extension CommonCoreData.Utils {
                     try privateContext?.save()
                     try viewContext?.save()
                     saveSuccess = true
+                    emitChanges()
                 } catch {
                     viewContext?.rollback()
                     let nserror = error as NSError
-                    Common_Logs.error("Unresolved error \(nserror), \(nserror.userInfo)")
+                    if CommonCoreData.Utils.logsEnabled {
+                        Common_Logs.error("Unresolved error \(nserror), \(nserror.userInfo)", "\(Self.self)")
+                    }
                 }
+                completion(saveSuccess ? changes.count : 0)
             }
         case .mainQueueConcurrencyType:
             do {
@@ -78,16 +129,24 @@ public extension CommonCoreData.Utils {
                     try parent.save()
                 }
                 saveSuccess = true
+                emitChanges()
             } catch {
                 viewContext.rollback()
                 let nserror = error as NSError
-                Common_Logs.error("Unresolved error \(nserror), \(nserror.userInfo)")
+                if CommonCoreData.Utils.logsEnabled {
+                    Common_Logs.error("Unresolved error \(nserror), \(nserror.userInfo)", "\(Self.self)")
+                }
+            }
+            if Thread.isMainThread {
+                completion(saveSuccess ? changes.count : 0)
+            } else {
+                let mergeContextDelay: TimeInterval = 0.01
+                DispatchQueue.executeWithDelay(delay: mergeContextDelay) {
+                    completion(saveSuccess ? changes.count : 0)
+                }
             }
         @unknown default:
             ()
         }
-        if logsEnabled, !changes.isEmpty, !Common.Utils.onUITests /* , !Common.Utils.onUnitTests */ {
-            Common_Logs.debug(" 💾 \(changes) @ \(threadInfo)") }
-        return saveSuccess
     }
 }

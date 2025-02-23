@@ -49,7 +49,7 @@ class CoreDataManager_CRUDPerformanceTests: XCTestCase {
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: expectedTime * Double(iterations) * maxDeviation)
-        Common_Logs.debug("# Average \(#function): \(averageTime)")
+        Common_Logs.debug("# Average \(#function): \(averageTime)", "\(Self.self)")
         XCTAssert(averageTime < expectedTime * maxDeviation) // Allow a max of 10% increase comparing to expected value
     }
 
@@ -74,7 +74,7 @@ class CoreDataManager_CRUDPerformanceTests: XCTestCase {
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: expectedTime * Double(iterations) * maxDeviation)
-        Common_Logs.debug("# Average \(#function): \(averageTime)")
+        Common_Logs.debug("# Average \(#function): \(averageTime)", "\(Self.self)")
         XCTAssert(averageTime < expectedTime * maxDeviation) // Allow a max of 10% increase comparing to expected value
     }
 
@@ -99,7 +99,7 @@ class CoreDataManager_CRUDPerformanceTests: XCTestCase {
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: expectedTime * Double(iterations) * maxDeviation)
-        Common_Logs.debug("# Average \(#function): \(averageTime)")
+        Common_Logs.debug("# Average \(#function): \(averageTime)", "\(Self.self)")
         XCTAssert(averageTime < expectedTime * maxDeviation) // Allow a max of 10% increase comparing to expected value
     }
 }

@@ -28,12 +28,12 @@ extension Common {
 
         // Because we’ve already specified the .unlimited number of values, we return .none so the max limit remains the same.
         func receive(_ input: T) -> Subscribers.Demand {
-            LogsManager.debug("Received: \(input), \(T.self)")
+            LogsManager.debug("Received: \(input), \(T.self)", "\(Self.self)")
             return .none
         }
 
         func receive(completion: Subscribers.Completion<Never>) {
-            LogsManager.debug("Completion event: \(completion)")
+            LogsManager.debug("Completion event: \(completion)", "\(Self.self)")
         }
     }
 }
@@ -51,12 +51,12 @@ extension Common {
 
         // Because we’ve already specified the .unlimited number of values, we return .none so the max limit remains the same.
         func receive(_ input: String) -> Subscribers.Demand {
-            LogsManager.debug("Received: \(input) Transformed into: \(input.uppercased())")
+            LogsManager.debug("Received: \(input) Transformed into: \(input.uppercased())", "\(Self.self)")
             return .none
         }
 
         func receive(completion: Subscribers.Completion<Never>) {
-            LogsManager.debug("Completion event: \(completion)")
+            LogsManager.debug("Completion event: \(completion)", "\(Self.self)")
         }
     }
 }

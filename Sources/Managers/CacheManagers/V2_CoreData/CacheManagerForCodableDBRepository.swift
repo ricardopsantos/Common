@@ -91,7 +91,7 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
         }
         let success = CommonCoreData.Utils.batchDelete(context: context, request: fetchRequest)
         if !success {
-            Common_Logs.error("Failed to delete \(CDataExpiringKeyValueEntity.self) records")
+            Common_Logs.error("Failed to delete \(CDataExpiringKeyValueEntity.self) records", "\(Self.self)")
         }
     }
 
@@ -131,7 +131,7 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
                     try context.parent?.save()
                     continuation.resume()
                 } catch {
-                    Common_Logs.error("Failed to delete \(CDataExpiringKeyValueEntity.self) records: \(error.localizedDescription)")
+                    Common_Logs.error("Failed to delete \(CDataExpiringKeyValueEntity.self) records: \(error.localizedDescription)", "\(Self.self)")
                     context.rollback()
                     continuation.resume()
                 }
@@ -160,10 +160,12 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
                     }
 
                     // If no record was found, return nil
-                    continuation.resume(returning: nil)
+                    #warning("Commentes code - Ricardo 22 Fev 2025")
+                    // FIX:
+                    //continuation.resume(returning: nil)
                 } catch {
                     // Handle any errors and return nil
-                    Common_Logs.error("Failed to fetch records: \(error.localizedDescription)")
+                    Common_Logs.error("Failed to fetch records: \(error.localizedDescription)", "\(Self.self)")
                     continuation.resume(returning: nil)
                 }
             }
@@ -185,7 +187,7 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
 
         // Check if the key is valid
         guard let key = toStore.key, !key.isEmpty else {
-            Common_Logs.error("Invalid key provided for storage.")
+            Common_Logs.error("Invalid key provided for storage.", "\(Self.self)")
             return
         }
 
@@ -211,7 +213,7 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
                         try context.save()
                         try context.parent?.save()
                     } catch {
-                        Common_Logs.error("Failed to save changes in viewContext: \(error.localizedDescription)")
+                        Common_Logs.error("Failed to save changes in viewContext: \(error.localizedDescription)", "\(Self.self)")
                     }
                 }
 

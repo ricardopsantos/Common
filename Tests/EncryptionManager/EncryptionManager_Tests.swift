@@ -17,31 +17,26 @@ class EncryptionManager_Tests: XCTestCase {
         TestsGlobal.cancelBag.cancel()
     }
 
-    func test_string() {
+    func test_string_1() {
         let string = String.randomWithSpaces(1000)
-
-        let aesCBCEncrypted = Common.EncryptionManager.encrypt(string: string, method: .aesCBC).base64Encoded
-        let aesGCMEncrypted = Common.EncryptionManager.encrypt(string: string, method: .aesGCM).base64Encoded
-
-        let aesCBCDecrypted = Common.EncryptionManager.decrypt(base64String: aesCBCEncrypted, method: .aesCBC)
-        let aesGCMDecrypted = Common.EncryptionManager.decrypt(base64String: aesGCMEncrypted, method: .aesGCM)
-
-        XCTAssert(aesCBCDecrypted == string)
-        XCTAssert(aesGCMDecrypted == string)
+        let encrypted = string.encrypted
+        let decrypted = encrypted?.decrypted
+        XCTAssert(decrypted == string)
+    }
+    
+    func test_string_2() {
+        let string = String.randomWithSpaces(1000)
+        let encrypted = Common.EncryptionManager.encrypt(string: string, method: .aesGCM)?.1 ?? ""
+        let decrypted = Common.EncryptionManager.decrypt(base64String: encrypted, method: .aesGCM)?.1 ?? ""
+        XCTAssert(decrypted == string)
     }
 
     func test_data() {
         let entity: CoreDataSampleUsageNamespace.CRUDEntity = .random
         let data = try? JSONEncoder().encode(entity)
-
-        let aesCBCEncrypted = Common.EncryptionManager.encrypt(data: data, method: .aesCBC)
-        let aesGCMEncrypted = Common.EncryptionManager.encrypt(data: data, method: .aesGCM)
-
-        let aesCBCDecrypted = Common.EncryptionManager.decrypt(data: aesCBCEncrypted, method: .aesCBC)
-        let aesGCMDecrypted = Common.EncryptionManager.decrypt(data: aesGCMEncrypted, method: .aesGCM)
-
-        XCTAssert(aesCBCDecrypted == data)
-        XCTAssert(aesGCMDecrypted == data)
+        let encrypted = Common.EncryptionManager.encrypt(data: data, method: .aesGCM)
+        let decrypted = Common.EncryptionManager.decrypt(data: encrypted, method: .aesGCM)
+        XCTAssert(decrypted == data)
     }
 
     func test_stringExtension() {

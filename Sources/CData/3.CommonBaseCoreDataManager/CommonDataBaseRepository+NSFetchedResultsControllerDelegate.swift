@@ -74,7 +74,7 @@ extension CommonBaseCoreDataManager: NSFetchedResultsControllerDelegate {
             }
             Self.emit(event: .generic(.databaseDidChangedContentItemOn(dbModelName)))
         } else {
-            Common_Logs.error("Not predicted for \(anObject)")
+            Common_Logs.error("Not predicted for \(anObject)", "\(Self.self)")
         }
     }
 
@@ -91,7 +91,7 @@ extension CommonBaseCoreDataManager: NSFetchedResultsControllerDelegate {
         if let dbModelName = dbModelName {
             Self.emit(event: .generic(.databaseDidFinishChangeContentItemsOn(dbModelName)))
         } else {
-            Common_Logs.error("Not predicted for \(controller)")
+            Common_Logs.error("Not predicted for \(controller)", "\(Self.self)")
         }
     }
 }

@@ -114,13 +114,13 @@ fileprivate extension Common_Preview {
                     .onDragDismissKeyboardV1()
                     .onTapDismissKeyboard()
                     .onChange(of: keyboardManagerV1.keyboardHeight, perform: { newValue in
-                        Common_Logs.debug("keyboardHeightV1: \(newValue)")
+                        Common_Logs.debug("keyboardHeightV1: \(newValue)", "\(Self.self)")
                         withAnimation {
                             keyboardHeight = newValue
                         }
                     })
                     .onChange(of: keyboardManagerV2.keyboardHeight, perform: { newValue in
-                        Common_Logs.debug("keyboardHeightV2: \(newValue)")
+                        Common_Logs.debug("keyboardHeightV2: \(newValue)", "\(Self.self)")
                     })
                 }
             }

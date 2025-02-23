@@ -137,14 +137,14 @@ public extension CommonNetworking {
                 let image = imageFromData(data: data)
                 if let error = error as NSError? {
                     if error.domain == NSURLErrorDomain, error.code == NSURLErrorCannotFindHost {
-                        Common_Logs.error("Fail do download image. Cannot find host. URL may be invalid: \(url)")
+                        Common_Logs.error("Fail do download image. Cannot find host. URL may be invalid: \(url)", "\(Self.self)")
                     } else if error.localizedDescription != "cancelled" {
                         // Task canceled. Don't print error
-                        Common_Logs.error("Fail do download image. Error: \(error.localizedDescription))")
+                        Common_Logs.error("Fail do download image. Error: \(error.localizedDescription))", "\(Self.self)")
                     }
                     returnImage(nil)
                 } else if image == nil {
-                    Common_Logs.error("Fail do download image. Image is nil: \(String(describing: url))")
+                    Common_Logs.error("Fail do download image. Image is nil: \(String(describing: url))", "\(Self.self)")
                     returnImage(nil)
                 } else {
                     returnImage(image)

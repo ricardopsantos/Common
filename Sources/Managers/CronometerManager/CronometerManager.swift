@@ -19,7 +19,7 @@ public extension Common {
             operation()
             let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
             if printResult {
-                LogsManager.debug("Time elapsed: \(timeElapsed)s")
+                LogsManager.debug("Time elapsed: \(timeElapsed)s", "\(Self.self)")
             }
             return timeElapsed
         }
@@ -61,7 +61,7 @@ public extension Common {
                     timeElapsedString = timeElapsedString.replacingOccurrences(of: "\\.?0*$", with: "", options: .regularExpression)
                     // let prefix = "            "
                     let prefix = "      "
-                    LogsManager.debug("⏰ ⏰ Operation: \(identifier) ⏰ ⏰\n\(prefix)⏰ ⏰ Time: \(timeElapsedString) s ⏰ ⏰" as AnyObject)
+                    LogsManager.debug("⏰ ⏰ Operation: \(identifier) ⏰ ⏰\n\(prefix)⏰ ⏰ Time: \(timeElapsedString) s ⏰ ⏰", "\(Self.self)")
                 }
                 result = Double(timeElapsed)
             }

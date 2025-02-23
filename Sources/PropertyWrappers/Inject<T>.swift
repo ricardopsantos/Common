@@ -30,7 +30,7 @@ public extension Common_PropertyWrappers {
             let sDescribing = String(describing: type.self)
             let isResolved = factoryDict.keys.filter { $0 == sDescribing }.count == 1
             if !isResolved {
-                Common_Logs.error("\(Self.self) - Will fail resolving [\(type)] using [\(factoryDict.keys)]")
+                Common_Logs.error("\(Self.self) - Will fail resolving [\(type)] using [\(factoryDict.keys)]", "\(Self.self)")
             }
             let block = factoryDict[sDescribing]
             return block?() as? Service
