@@ -20,9 +20,7 @@ let package = Package(
     targets: [
         .target(
             name: "Common",
-            dependencies: [
-                //    .product(name: "NukeUI", package: "Nuke"),
-            ],
+            dependencies: [],
             resources: [
                 .process("Resources/Assets.xcassets"),
                 .process("Resources/CommonDB.xcdatamodeld"),
@@ -49,7 +47,10 @@ for target in package.targets {
     target.swiftSettings = target.swiftSettings ?? []
     target.swiftSettings?.append(
         .unsafeFlags([
-            "-Xfrontend", "-warn-long-function-bodies=200", "-Xfrontend", "-warn-long-expression-type-checking=200"
+            "-Xfrontend", 
+            "-warn-long-function-bodies=200",
+            "-Xfrontend",
+            "-warn-long-expression-type-checking=200"
         ])
     )
 }

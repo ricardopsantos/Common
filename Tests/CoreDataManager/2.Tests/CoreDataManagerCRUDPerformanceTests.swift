@@ -5,11 +5,9 @@
 import XCTest
 import Foundation
 import Combine
-//
-import Nimble
-//
+
 @testable import Common
-class CoreDataManager_CRUDPerformanceTests: XCTestCase {
+class CoreDataManagerCRUDPerformanceTests: XCTestCase {
     let iterations = 20
     let maxDeviation = 1.1
     let stressLoadValue = 1_000
@@ -25,11 +23,9 @@ class CoreDataManager_CRUDPerformanceTests: XCTestCase {
     override func setUp() {
         super.setUp()
         continueAfterFailure = false
-        TestsGlobal.loadedAny = nil
-        TestsGlobal.cancelBag.cancel()
     }
 
-    func test_bulkInsertSinglePerformance() {
+    func testPerformanceBulkInsertSingle() {
         guard enabled() else {
             XCTAssert(true)
             return
@@ -53,7 +49,7 @@ class CoreDataManager_CRUDPerformanceTests: XCTestCase {
         XCTAssert(averageTime < expectedTime * maxDeviation) // Allow a max of 10% increase comparing to expected value
     }
 
-    func test_bulkInsertBatchPerformance() {
+    func testPerformanceBulkInsertBatch() {
         guard enabled() else {
             XCTAssert(true)
             return
@@ -78,7 +74,7 @@ class CoreDataManager_CRUDPerformanceTests: XCTestCase {
         XCTAssert(averageTime < expectedTime * maxDeviation) // Allow a max of 10% increase comparing to expected value
     }
 
-    func test_deletePerformance() {
+    func testPerformanceDelete() {
         guard enabled() else {
             XCTAssert(true)
             return

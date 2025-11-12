@@ -57,14 +57,10 @@ public extension CommonLearnings.AsyncAwaitMainActorView {
         func load() async {
             do {
                 let accounts = try await loader.load()
-                DispatchQueue.main.async {
-                    self.accounts = accounts
-                    self.message = nil
-                }
+                self.accounts = accounts
+                self.message = nil
             } catch {
-                DispatchQueue.main.async {
-                    self.message = "Unable to load"
-                }
+                self.message = "Unable to load"
             }
         }
     }

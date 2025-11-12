@@ -8,7 +8,8 @@
 import Foundation
 import MapKit
 
-extension CLLocationCoordinate2D: Hashable {
+extension CLLocationCoordinate2D: @retroactive Equatable {}
+extension CLLocationCoordinate2D: @retroactive Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(latitude)
         hasher.combine(longitude)

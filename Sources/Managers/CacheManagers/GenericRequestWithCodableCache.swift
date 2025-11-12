@@ -9,7 +9,7 @@ import Combine
 internal typealias Common_AvailabilityState = Common.RepositoryAvailabilityState
 public typealias Common_GenericRequestWithCacheResponse<T1: Codable, E1: Error> = AnyPublisher<T1, E1>
 
-extension String: Error {}
+extension String: @retroactive Error {}
 
 public extension Common {
     struct GenericRequestWithCodableCache {
@@ -119,10 +119,18 @@ public extension Common {
                     return cacheDontLoad()
                 }
                 return noCacheDoLoadOrWait()
+            //case .cacheAndLoad:
+            //    let cacheDontLoad = cacheDontLoad().onErrorCompleteV2()
+            //        .setFailureType(to: E1.self).eraseToAnyPublisher()
+            //    return Publishers.Merge(cacheDontLoad, noCacheDoLoadOrWait()).eraseToAnyPublisher()
             case .cacheAndLoad:
-                let cacheDontLoad = cacheDontLoad().onErrorCompleteV2()
-                    .setFailureType(to: E1.self).eraseToAnyPublisher()
-                return Publishers.Merge(cacheDontLoad, noCacheDoLoadOrWait()).eraseToAnyPublisher()
+                let cachePublisher = cacheDontLoad()
+                    .onErrorCompleteV2()
+                    .setFailureType(to: E1.self)
+                    .eraseToAnyPublisher()
+                let networkPublisher = noCacheDoLoadOrWait()
+                return Publishers.Concatenate(prefix: cachePublisher, suffix: networkPublisher)
+                    .eraseToAnyPublisher()
             case .cacheDontLoad:
                 return cacheDontLoad()
             }

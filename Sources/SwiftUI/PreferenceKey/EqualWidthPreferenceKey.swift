@@ -108,18 +108,6 @@ struct EqualWidthPreferenceKeyTestView: View {
 //
 
 #if canImport(SwiftUI) && DEBUG
-#Preview("CustomWidthViewModifier") {
-    VStack {
-        CommonLearnings.TwoViewSameSizeProblemSolution1()
-        Divider()
-        CommonLearnings.TwoViewSameSizeProblemSolution2()
-        Divider()
-        CommonLearnings.TwoViewSameSizeProblemSolution3()
-        Divider()
-        CommonLearnings.TwoViewSameSizeProblemSolution4()
-    }
-}
-
 #Preview("EqualWidthPreferenceKeyTestView") {
     EqualWidthPreferenceKeyTestView()
 }

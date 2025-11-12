@@ -17,8 +17,8 @@ public struct Common {
 
     static var coreDataPersistence: CommonCoreData.Utils.Persistence = .default(iCloudEnabled: false)
 
-    public static func cleanAllData() {
-        WKWebView.cleanAllCookies()
+    public static func cleanAllData() async {
+        await WKWebView.cleanAllCookies()
         CommonNetworking.ImageUtils.reset()
         CronometerAverageMetrics.shared.reset()
         Common.LocationUtils.reset()

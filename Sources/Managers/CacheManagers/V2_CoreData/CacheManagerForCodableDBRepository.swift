@@ -8,9 +8,8 @@ import CoreData
 import Combine
 
 public extension Common {
-    class CacheManagerForCodableCoreDataRepository: CommonBaseCoreDataManager {
-        fileprivate let cancelBag = CancelBag()
-        public static var shared = CacheManagerForCodableCoreDataRepository(
+    final class CacheManagerForCodableCoreDataRepository: CommonBaseCoreDataManager {
+        public static let shared = CacheManagerForCodableCoreDataRepository(
             dbName: Common.internalDB,
             dbBundle: Common.bundleIdentifier,
             persistence: Common.coreDataPersistence
@@ -22,32 +21,31 @@ public extension Common {
     }
 }
 
-//
 // MARK: - CodableCacheManagerProtocol
-//
 extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerProtocol {
-    //
+
+    // MARK: - Private helpers
+    private func latestRecordFetchRequest(for composedKey: String) -> NSFetchRequest<CDataExpiringKeyValueEntity> {
+        let req: NSFetchRequest<CDataExpiringKeyValueEntity> = CDataExpiringKeyValueEntity.fetchRequest()
+        req.predicate = NSPredicate(format: "key == %@", composedKey)
+        req.sortDescriptors = [NSSortDescriptor(key: #keyPath(CDataExpiringKeyValueEntity.recordDate), ascending: false)]
+        req.fetchLimit = 1
+        return req
+    }
+
     // MARK: - Sync
-    //
-
     public func syncRetrieve<T: Codable>(_ some: T.Type, key: String, params: [any Hashable]) -> (model: T, recordDate: Date)? {
-        // Faster
-        // Test: test_fetchingRecordFrom_1000000Records() -> 0.07s
         let composedKey = Commom_ExpiringKeyValueEntity.composedKey(key, params)
+        let context = viewContext
         do {
-            let context = viewContext
-            let record = try? context
-                .fetch(CDataExpiringKeyValueEntity.fetchRequestWith(key: composedKey))
-                .compactMap(\.asExpiringKeyValueEntity)
-                .sorted(by: { a, b in
-                    a.recordDate > b.recordDate
-                })
-                .first
-            if let record = record, let extracted = record.extract(T.self) {
-                return (extracted, record.recordDate)
+            let request = latestRecordFetchRequest(for: composedKey)
+            if let record = try context.fetch(request).first,
+               let model = record.asExpiringKeyValueEntity?.extract(T.self) {
+                return (model, record.recordDate ?? .distantPast)
             }
+        } catch {
+            Common_Logs.error("syncRetrieve failed: \(error.localizedDescription)", "\(Self.self)")
         }
-
         return nil
     }
 
@@ -63,18 +61,23 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
             params: params,
             timeToLiveMinutes: timeToLiveMinutes
         )
-        guard let key = toStore.key, !key.isEmpty else {
-            return
-        }
-        let newInstance: CDataExpiringKeyValueEntity = CDataExpiringKeyValueEntity(context: viewContext)
-        newInstance.key = toStore.key
-        newInstance.recordDate = toStore.recordDate
-        newInstance.expireDate = toStore.expireDate
-        newInstance.encoding = Int16(toStore.encoding)
-        newInstance.object = toStore.object
-        newInstance.objectType = toStore.objectType
-        if viewContext.hasChanges {
-            try? viewContext.save()
+        guard let composedKey = toStore.key, !composedKey.isEmpty else { return }
+
+        let context = viewContext
+        let entity = CDataExpiringKeyValueEntity(context: context)
+        entity.key = toStore.key
+        entity.recordDate = toStore.recordDate
+        entity.expireDate = toStore.expireDate
+        entity.encoding = Int16(toStore.encoding)
+        entity.object = toStore.object
+        entity.objectType = toStore.objectType
+
+        guard context.hasChanges else { return }
+        do {
+            try context.save()
+        } catch {
+            context.rollback()
+            Common_Logs.error("syncStore save failed: \(error.localizedDescription)", "\(Self.self)")
         }
     }
 
@@ -85,9 +88,11 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
     public func syncClearAll() {
         let context = viewContext
         let fetchRequest: NSFetchRequest<NSFetchRequestResult> = CDataExpiringKeyValueEntity.fetchRequest()
-        let recordCount = try? context.count(for: fetchRequest)
-        guard recordCount ?? 0 > 0 else {
-            return
+        do {
+            let count = try context.count(for: fetchRequest)
+            guard count > 0 else { return }
+        } catch {
+            // If count fails, still attempt a batch delete — Core Data can handle it.
         }
         let success = CommonCoreData.Utils.batchDelete(context: context, request: fetchRequest)
         if !success {
@@ -100,38 +105,36 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
         let fetchRequest: NSFetchRequest<CDataExpiringKeyValueEntity> = CDataExpiringKeyValueEntity.fetchRequest()
         do {
             let records = try context.fetch(fetchRequest)
-            return records.compactMap { ($0.key!, $0.recordDate!) }.sorted(by: { $0.0 > $1.0 })
+            return records.compactMap { rec in
+                if let k = rec.key, let d = rec.recordDate { return (k, d) }
+                return nil
+            }
+            .sorted { $0.1 > $1.1 } // newest first by recordDate
         } catch {
+            Common_Logs.error("syncAllCachedKeys failed: \(error.localizedDescription)", "\(Self.self)")
             return []
         }
     }
 
-    //
     // MARK: - Async
-    //
-
     public func aSyncClearAll() async {
+        let context = backgroundContext
         await withCheckedContinuation { continuation in
-            // Use the background context to perform the delete operation
-            let context = backgroundContext
-            context.performAndWait { [weak context] in
-                guard let context = context else {
-                    return
-                }
+            context.perform {
                 let fetchRequest: NSFetchRequest<NSFetchRequestResult> = CDataExpiringKeyValueEntity.fetchRequest()
-                let recordCount = try? context.count(for: fetchRequest)
-                guard recordCount ?? 0 > 0 else {
-                    continuation.resume()
-                    return
-                }
-                let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
                 do {
-                    try context.execute(batchDeleteRequest)
+                    let count = try context.count(for: fetchRequest)
+                    guard count > 0 else {
+                        continuation.resume()
+                        return
+                    }
+                    let delete = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+                    try context.execute(delete)
                     try context.save()
                     try context.parent?.save()
                     continuation.resume()
                 } catch {
-                    Common_Logs.error("Failed to delete \(CDataExpiringKeyValueEntity.self) records: \(error.localizedDescription)", "\(Self.self)")
+                    Common_Logs.error("aSyncClearAll failed: \(error.localizedDescription)", "\(Self.self)")
                     context.rollback()
                     continuation.resume()
                 }
@@ -140,32 +143,22 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
     }
 
     public func aSyncRetrieve<T: Codable>(_ type: T.Type, key: String, params: [any Hashable]) async -> (model: T, recordDate: Date)? {
-        await withCheckedContinuation { continuation in
-            // Perform the fetch operation asynchronously on the viewContext
-            viewContext.perform {
+        let composedKey = Commom_ExpiringKeyValueEntity.composedKey(key, params)
+        let context = backgroundContext
+        return await withCheckedContinuation { continuation in
+            context.perform {
                 do {
-                    let composedKey = Commom_ExpiringKeyValueEntity.composedKey(key, params)
-                    let records = try self.viewContext
-                        .fetch(CDataExpiringKeyValueEntity.fetchRequestWith(key: composedKey))
-                        .compactMap(\.asExpiringKeyValueEntity)
-                        .sorted(by: { a, b in
-                            a.recordDate > b.recordDate
-                        })
-
-                    // Get the first record, if it exists
-                    if let record = records.first, let extracted = record.extract(T.self) {
-                        // Return the model and the record date
-                        continuation.resume(returning: (extracted, record.recordDate))
-                        return
+                    let request = self.latestRecordFetchRequest(for: composedKey)
+                    if let record = try context.fetch(request).first,
+                       let exp = record.asExpiringKeyValueEntity,
+                       let model = exp.extract(T.self),
+                       let when = record.recordDate {
+                        continuation.resume(returning: (model, when))
+                    } else {
+                        continuation.resume(returning: nil)
                     }
-
-                    // If no record was found, return nil
-                    #warning("Commentes code - Ricardo 22 Fev 2025")
-                    // FIX:
-                    //continuation.resume(returning: nil)
                 } catch {
-                    // Handle any errors and return nil
-                    Common_Logs.error("Failed to fetch records: \(error.localizedDescription)", "\(Self.self)")
+                    Common_Logs.error("aSyncRetrieve failed: \(error.localizedDescription)", "\(Self.self)")
                     continuation.resume(returning: nil)
                 }
             }
@@ -185,70 +178,75 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
             timeToLiveMinutes: timeToLiveMinutes
         )
 
-        // Check if the key is valid
-        guard let key = toStore.key, !key.isEmpty else {
+        guard let composedKey = toStore.key, !composedKey.isEmpty else {
             Common_Logs.error("Invalid key provided for storage.", "\(Self.self)")
             return
         }
 
-        // Use a background context to perform the save operation asynchronously
         let context = backgroundContext
-        await withCheckedContinuation { [weak context] continuation in
-            context?.performAndWait { [weak context] in
-                guard let context = context else {
+        await withCheckedContinuation { continuation in
+            context.perform {
+                let entity = CDataExpiringKeyValueEntity(context: context)
+                entity.key = toStore.key
+                entity.recordDate = toStore.recordDate
+                entity.expireDate = toStore.expireDate
+                entity.encoding = Int16(toStore.encoding)
+                entity.object = toStore.object
+                entity.objectType = toStore.objectType
+
+                guard context.hasChanges else {
+                    continuation.resume()
                     return
                 }
 
-                // Create a new instance of the entity
-                let newInstance = CDataExpiringKeyValueEntity(context: context)
-                newInstance.key = toStore.key
-                newInstance.recordDate = toStore.recordDate
-                newInstance.expireDate = toStore.expireDate
-                newInstance.encoding = Int16(toStore.encoding)
-                newInstance.object = toStore.object
-                newInstance.objectType = toStore.objectType
-
-                if context.hasChanges {
-                    do {
-                        try context.save()
-                        try context.parent?.save()
-                    } catch {
-                        Common_Logs.error("Failed to save changes in viewContext: \(error.localizedDescription)", "\(Self.self)")
-                    }
+                do {
+                    try context.save()
+                    try context.parent?.save()
+                    continuation.resume()
+                } catch {
+                    Common_Logs.error("aSyncStore save failed: \(error.localizedDescription)", "\(Self.self)")
+                    context.rollback()
+                    continuation.resume()
                 }
-
-                continuation.resume()
             }
         }
     }
 
     public func aSyncAllCachedKeys() async -> [(String, Date)] {
         let context = backgroundContext
-        var keys: [(String, Date)] = []
-        context.performAndWait {
-            let fetchRequest: NSFetchRequest<CDataExpiringKeyValueEntity> = CDataExpiringKeyValueEntity.fetchRequest()
-            do {
-                let records = try context.fetch(fetchRequest)
-                keys = records.compactMap { ($0.key!, $0.recordDate!) }
-            } catch {}
+        return await withCheckedContinuation { continuation in
+            context.perform {
+                let fetchRequest: NSFetchRequest<CDataExpiringKeyValueEntity> = CDataExpiringKeyValueEntity.fetchRequest()
+                do {
+                    let records = try context.fetch(fetchRequest)
+                    let keys: [(String, Date)] = records.compactMap { rec in
+                        if let k = rec.key, let d = rec.recordDate { return (k, d) }
+                        return nil
+                    }
+                    .sorted { $0.1 > $1.1 }
+                    continuation.resume(returning: keys)
+                } catch {
+                    continuation.resume(returning: [])
+                }
+            }
         }
-        return keys.sorted(by: { $0.0 > $1.0 })
     }
 }
 
-//
 // MARK: - Mappers
-//
-
 public extension CDataExpiringKeyValueEntity {
     var asExpiringKeyValueEntity: Commom_ExpiringKeyValueEntity? {
-        let encoding = Commom_ExpiringKeyValueEntity.ValueEncoding(rawValue: Int(encoding)) ?? .dataPlain
+        guard let key = key,
+              let expireDate = expireDate,
+              let object = object,
+              let objectType = objectType else { return nil }
+        let encodingEnum = Commom_ExpiringKeyValueEntity.ValueEncoding(rawValue: Int(encoding)) ?? .dataPlain
         return Commom_ExpiringKeyValueEntity(
-            key: key!,
-            expireDate: expireDate!,
-            object: object!,
-            objectType: objectType!,
-            encoding: encoding
+            key: key,
+            expireDate: expireDate,
+            object: object,
+            objectType: objectType,
+            encoding: encodingEnum
         )
     }
 }

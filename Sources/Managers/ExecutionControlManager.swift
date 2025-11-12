@@ -3,84 +3,60 @@ import UIKit
 
 public extension Common {
     enum ExecutionControlManager {
+
+        // MARK: - Types
+
+        public enum ThrottlePolicy {
+            case leading
+            case trailing
+            case leadingAndTrailing
+        }
+
+        public enum DebouncePolicy {
+            case trailing
+            case leading
+        }
+
+        // MARK: - State (thread-safe via your property wrapper)
+
+        @PWThreadSafe private static var throttleTimestamps: [String: TimeInterval] = [:] // systemUptime
+        @PWThreadSafe private static var throttlePendingTimers: [String: Timer] = [:]
+        @PWThreadSafe private static var debounceTimers: [String: Timer] = [:]
+        @PWThreadSafe private static var blockReferenceCount: [String: Int] = [:]
+
+        // MARK: - Reset
+
         public static func reset() {
             throttleTimestamps.removeAll()
-            debounceTimers.forEach { $0.value.invalidate() }
+            throttlePendingTimers.values.forEach { $0.invalidate() }
+            throttlePendingTimers.removeAll()
+            debounceTimers.values.forEach { $0.invalidate() }
             debounceTimers.removeAll()
             blockReferenceCount.removeAll()
         }
 
-        // Thread-safe storage for throttle timestamps
-        @PWThreadSafe private static var throttleTimestamps: [String: TimeInterval] = [:]
-        // Thread-safe storage for debounce timers
-        @PWThreadSafe private static var debounceTimers: [String: Timer] = [:]
-        @PWThreadSafe private static var blockReferenceCount: [String: Int] = [:]
+        public static func reset(operationId: String) {
+            throttleTimestamps[operationId] = nil
+            if let t = throttlePendingTimers[operationId] { t.invalidate() }
+            throttlePendingTimers[operationId] = nil
+            if let t = debounceTimers[operationId] { t.invalidate() }
+            debounceTimers[operationId] = nil
+            blockReferenceCount[operationId] = nil
+        }
+
+        // MARK: - Execute once / counting
 
         @discardableResult
-        public static func executeOnce(token: String, block: @escaping () -> Void, onIgnoredClosure: () -> Void = {}) -> Bool {
-            if !takeFirst(n: 1, operationId: #function, block: block) {
+        public static func executeOnce(
+            token: String,
+            block: @escaping () -> Void,
+            onIgnoredClosure: () -> Void = {}
+        ) -> Bool {
+            if !takeFirst(n: 1, operationId: token, block: block) {
                 onIgnoredClosure()
                 return false
             }
             return true
-        }
-
-        /**
-         Throttles the execution of a closure. The closure will only be executed if the specified time interval has elapsed since the last execution with the same operation ID.
-
-         - Parameters:
-            - timeInterval: The minimum time interval between successive executions.
-            - operationId: A unique identifier for the operation being throttled.
-            - closure: The closure to be executed.
-            - onIgnoredClosure: An optional closure to be executed if the main closure is throttled.
-         */
-        public static func throttle(
-            _ timeInterval: TimeInterval = Common.Constants.defaultThrottle,
-            operationId: String,
-            closure: () -> Void,
-            onIgnoredClosure: () -> Void = {}
-        ) {
-            let currentTime = Date().timeIntervalSince1970
-            if let lastTimestamp = throttleTimestamps[operationId], currentTime - lastTimestamp < timeInterval {
-                onIgnoredClosure()
-                return
-            }
-            closure()
-            throttleTimestamps[operationId] = currentTime
-        }
-
-        /**
-         Debounces the execution of a closure. The closure will only be executed after the specified time interval has elapsed since the last call with the same operation ID.
-
-         - Parameters:
-            - timeInterval: The time interval to wait before executing the closure.
-            - operationId: A unique identifier for the operation being debounced.
-            - closure: The closure to be executed.
-         */
-        public static func debounce(
-            _ timeInterval: TimeInterval = Common.Constants.defaultDebounce,
-            operationId: String,
-            closure: @escaping () -> Void
-        ) {
-            if let scheduledTimer = debounceTimers[operationId] {
-                // Invalidate any existing timer for the given operation ID
-                scheduledTimer.invalidate()
-            }
-
-            // Schedule a new timer to execute the closure after the specified time interval
-            let timer = Timer.scheduledTimer(
-                withTimeInterval: timeInterval,
-                repeats: false
-            ) { _ in
-                closure()
-                if let scheduledTimer = debounceTimers[operationId] {
-                    scheduledTimer.invalidate()
-                    debounceTimers[operationId] = nil
-                }
-            }
-
-            // Store the new timer
-            debounceTimers[operationId] = timer
         }
 
         public static func dropFirst(
@@ -88,19 +64,11 @@ public extension Common {
             operationId: String,
             block: @escaping () -> Void
         ) {
-            guard n > 0 else {
-                block()
-                return
-            }
-            var refCount = blockReferenceCount[operationId] ?? 0
-            if refCount >= n {
-                // Executed
-                block()
-            } else {
-                // Dropped...
-            }
-            refCount += 1
-            blockReferenceCount[operationId] = refCount
+            guard n > 0 else { block(); return }
+            var ref = blockReferenceCount[operationId] ?? 0
+            if ref >= n { block() }
+            ref &+= 1
+            blockReferenceCount[operationId] = ref
         }
 
         @discardableResult
@@ -109,38 +77,161 @@ public extension Common {
             operationId: String,
             block: @escaping () -> Void
         ) -> Bool {
-            guard n > 0 else {
-                return false
+            guard n > 0 else { return false }
+            var ref = blockReferenceCount[operationId] ?? 0
+            defer {
+                if ref < .max { ref &+= 1 }
+                blockReferenceCount[operationId] = ref
             }
-            var refCount = blockReferenceCount[operationId] ?? 0
-            if refCount < n {
-                // Executed
+            if ref < n {
                 block()
-                refCount += 1
-                blockReferenceCount[operationId] = refCount
                 return true
-            } else {
-                refCount += 1
-                blockReferenceCount[operationId] = refCount
-                return false
             }
+            return false
+        }
+
+        // MARK: - Throttle
+
+        public static func throttle(
+            _ timeInterval: TimeInterval = Common.Constants.defaultThrottle,
+            operationId: String,
+            policy: ThrottlePolicy = .leading,
+            closure: @escaping () -> Void,
+            onIgnoredClosure: () -> Void = {}
+        ) {
+            let now = ProcessInfo.processInfo.systemUptime
+            let last = throttleTimestamps[operationId]
+
+            // If we have a pending trailing timer and the policy isn't trailing/leadingAndTrailing, clear it
+            if policy == .leading, let pending = throttlePendingTimers[operationId] {
+                pending.invalidate()
+                throttlePendingTimers[operationId] = nil
+            }
+
+            let shouldFireLeading: Bool = {
+                guard let last else { return true }
+                return (now - last) >= timeInterval
+            }()
+
+            switch (policy, shouldFireLeading) {
+            case (_, true):
+                closure()
+                throttleTimestamps[operationId] = now
+                if policy == .leadingAndTrailing {
+                    Task { @MainActor in
+                        scheduleTrailingThrottle(timeInterval, operationId: operationId, closure: closure)
+                    }
+                }
+
+            case (.trailing, false), (.leadingAndTrailing, false):
+                Task { @MainActor in
+                    scheduleTrailingThrottle(timeInterval, operationId: operationId, closure: closure)
+                }
+
+            case (.leading, false):
+                onIgnoredClosure()
+            }
+        }
+
+        @MainActor
+        private static func scheduleTrailingThrottle(
+            _ timeInterval: TimeInterval,
+            operationId: String,
+            closure: @escaping () -> Void
+        ) {
+            if let t = throttlePendingTimers[operationId] {
+                t.invalidate()
+            }
+
+            let now = ProcessInfo.processInfo.systemUptime
+            let last = throttleTimestamps[operationId] ?? now
+            let remaining = max(0, timeInterval - (now - last))
+
+            let timer = Timer(timeInterval: remaining, repeats: false) { _ in
+                closure()
+                throttleTimestamps[operationId] = ProcessInfo.processInfo.systemUptime
+                throttlePendingTimers[operationId]?.invalidate()
+                throttlePendingTimers[operationId] = nil
+            }
+            RunLoop.main.add(timer, forMode: .common)
+            throttlePendingTimers[operationId] = timer
+        }
+
+        // MARK: - Debounce
+
+        public static func debounce(
+            _ timeInterval: TimeInterval = Common.Constants.defaultDebounce,
+            operationId: String,
+            policy: DebouncePolicy = .trailing,
+            closure: @escaping () -> Void
+        ) {
+            switch policy {
+            case .trailing:
+                Task { @MainActor in
+                    scheduleTrailingDebounce(timeInterval, operationId: operationId, closure: closure)
+                }
+            case .leading:
+                // Fire immediately if no quiet window active
+                if debounceTimers[operationId] == nil {
+                    closure()
+                }
+                Task { @MainActor in
+                    scheduleTrailingDebounce(timeInterval, operationId: operationId, closure: {})
+                }
+            }
+        }
+
+        public static func cancelDebounce(operationId: String) {
+            if let t = debounceTimers[operationId] {
+                t.invalidate()
+                debounceTimers[operationId] = nil
+            }
+        }
+
+        public static func isDebounceScheduled(operationId: String) -> Bool {
+            debounceTimers[operationId] != nil
+        }
+
+        @MainActor
+        private static func scheduleTrailingDebounce(
+            _ timeInterval: TimeInterval,
+            operationId: String,
+            closure: @escaping () -> Void
+        ) {
+            if let scheduled = debounceTimers[operationId] {
+                scheduled.invalidate()
+            }
+
+            let timer = Timer(timeInterval: timeInterval, repeats: false) { _ in
+                closure()
+                if let t = debounceTimers[operationId] {
+                    t.invalidate()
+                    debounceTimers[operationId] = nil
+                }
+            }
+            RunLoop.main.add(timer, forMode: .common)
+            debounceTimers[operationId] = timer
         }
     }
 }
 
+// MARK: - Sample usage
 extension Common.ExecutionControlManager {
-    /**
-     Sample usage of the throttle and debounce functions.
-     */
     static func sampleUsage() {
-        // Throttle usage: the closure will only be executed if at least 1 second has passed since the last execution
         Common.ExecutionControlManager.throttle(1, operationId: "myClosure") {
             // "Executing closure..."
         }
 
-        // Debounce usage: the closure will only be executed 1 second after the last call to debounce with this operation ID
         Common.ExecutionControlManager.debounce(1.0, operationId: "myDebouncedClosure") {
             // "Executing debounced closure..."
+        }
+
+        Common.ExecutionControlManager.throttle(0.5, operationId: "search", policy: .trailing) {
+            // Fire once after burst
+        }
+
+        Common.ExecutionControlManager.debounce(0.3, operationId: "tap", policy: .leading) {
+            // Immediate reaction, then coalesce
         }
     }
 }

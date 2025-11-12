@@ -25,9 +25,7 @@ public extension CommonCoreData.Utils {
             return true
         } catch {
             context.rollback()
-            if CommonCoreData.Utils.logsEnabled {
-                Common_Logs.error("Couldn't delete the entities " + error.localizedDescription, "\(Self.self)")
-            }
+            Common.LogsManager.error("Couldn't delete the entities " + error.localizedDescription, "\(Self.self)")
             return false
         }
     }
@@ -95,10 +93,11 @@ public extension CommonCoreData.Utils {
                 }
             }
             #if DEBUG
-            if CommonCoreData.Utils.logsEnabled {
-                changes.forEach { (dbModelName: String, _, operation: DBOperation) in
-                    Common_Logs.debug(" 💾 \(operation.rawValue) record @ [\(dbModelName)] on [\(threadInfo)]", "\(Self.self)")
-                }
+            // ✅ Only log when not running unit tests
+            guard !ProcessInfo.isRunningUnitTests else { return }
+
+            changes.forEach { (dbModelName: String, _, operation: DBOperation) in
+                Common.LogsManager.debug("💾 \(operation.rawValue) record @ [\(dbModelName)] on [\(threadInfo)]", "\(Self.self)")
             }
             #endif
         }
@@ -116,9 +115,7 @@ public extension CommonCoreData.Utils {
                 } catch {
                     viewContext?.rollback()
                     let nserror = error as NSError
-                    if CommonCoreData.Utils.logsEnabled {
-                        Common_Logs.error("Unresolved error \(nserror), \(nserror.userInfo)", "\(Self.self)")
-                    }
+                    Common.LogsManager.error("Unresolved error \(nserror), \(nserror.userInfo)", "\(Self.self)")
                 }
                 completion(saveSuccess ? changes.count : 0)
             }
@@ -133,9 +130,7 @@ public extension CommonCoreData.Utils {
             } catch {
                 viewContext.rollback()
                 let nserror = error as NSError
-                if CommonCoreData.Utils.logsEnabled {
-                    Common_Logs.error("Unresolved error \(nserror), \(nserror.userInfo)", "\(Self.self)")
-                }
+                Common.LogsManager.error("Unresolved error \(nserror), \(nserror.userInfo)", "\(Self.self)")
             }
             if Thread.isMainThread {
                 completion(saveSuccess ? changes.count : 0)

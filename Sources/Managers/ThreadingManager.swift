@@ -1,103 +1,125 @@
 //
 //  Created by Ricardo Santos on 01/01/2023.
-//  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
+//  Copyright © 2019–2024 Ricardo Santos. All rights reserved.
 //
 
 import Foundation
-import UIKit
-import Combine
-import SwiftUI
 import os
 
 /**
+ Mastering thread safety in Swift using os_unfair_lock.
+ 
+ On Apple platforms, `os_unfair_lock` is the most performance-efficient lock available.
+ It provides low-latency mutual exclusion, ideal for high-contention code paths.
+ 
+ Reference:
  https://betterprogramming.pub/mastering-thread-safety-in-swift-with-one-runtime-trick-260c358a7515
-
-  On Apple’s platforms, the os_unfair_lock is the most performance-efficient lock available.
-  */
+ */
 
 public typealias ThreadingManager = Common.UnfairLockThreadingManager
 public typealias ThreadingManagerWithKey = Common.UnfairLockThreadingManagerWithKey
 
 public extension Common {
-    // A class that provides thread synchronization using os_unfair_lock
+
+    // MARK: - Single Lock Manager
+
+    /// A class that provides thread synchronization using `os_unfair_lock`.
     final class UnfairLockThreadingManager {
-        // Initializes the os_unfair_lock
+        // MARK: Private storage
+        private let pointer: os_unfair_lock_t
+
+        // MARK: Init / Deinit
         public init() {
             self.pointer = .allocate(capacity: 1)
-            pointer.initialize(to: os_unfair_lock())
+            self.pointer.initialize(to: os_unfair_lock())
         }
 
-        // Deinitializes and deallocates the os_unfair_lock
         deinit {
             self.pointer.deinitialize(count: 1)
             self.pointer.deallocate()
         }
 
-        // Locks the os_unfair_lock
+        // MARK: Locking API
+
+        /// Locks the unfair lock (blocking).
         public func lock() {
             os_unfair_lock_lock(pointer)
         }
 
-        // Unlocks the os_unfair_lock
+        /// Unlocks the unfair lock.
         public func unlock() {
             os_unfair_lock_unlock(pointer)
         }
 
-        // Tries to lock the os_unfair_lock and returns true if successful
+        /// Tries to acquire the lock (non-blocking).
+        /// - Returns: `true` if lock acquired successfully, otherwise `false`.
+        @discardableResult
         public func tryLock() -> Bool {
             os_unfair_lock_trylock(pointer)
         }
 
-        /**
-         Executes the provided closure within a lock.
-         - Parameter action: The closure to execute.
-         - Returns: The result of the closure.
-         */
+        /// Executes the provided closure within a lock.
+        /// - Parameter action: The closure to execute.
+        /// - Returns: The result of the closure.
         @discardableResult
         @inlinable
         public func execute<T>(_ action: () -> T) -> T {
-            lock(); defer { self.unlock() }
+            lock()
+            defer { unlock() }
             return action()
         }
 
-        /**
-         Tries to execute the provided closure within a lock. If the closure throws an error, it propagates the error.
-         - Parameter action: The closure to execute.
-         - Returns: The result of the closure.
-         - Throws: An error if the closure throws an error.
-         */
+        /// Executes the provided throwing closure within a lock.
+        /// - Parameter action: The closure to execute.
+        /// - Returns: The result of the closure.
+        /// - Throws: Any error thrown by `action`.
         @discardableResult
         @inlinable
         public func tryExecute<T>(_ action: () throws -> T) throws -> T {
-            try execute { Result(catching: action) }.get()
+            lock()
+            defer { unlock() }
+            return try action()
         }
 
-        // MARK: Private
-
-        // Pointer to the os_unfair_lock
-        private let pointer: os_unfair_lock_t
     }
 }
 
 public extension Common {
-    /// A wrapper class for managing multiple locks with unique IDs.
+
+    // MARK: - Multi-key Lock Manager
+
+    /// A wrapper for managing multiple unfair locks identified by string keys.
+    /// Thread-safe and high-performance.
     final class UnfairLockThreadingManagerWithKey {
-        // Dictionary to hold locks associated with their keys
+        // MARK: Private Storage
+
+        /// Protects access to the internal dictionary.
+        private var dictionaryLock = os_unfair_lock_s()
+
+        /// The map of locks for each unique key.
         private var locks: [String: UnsafeMutablePointer<os_unfair_lock>] = [:]
 
-        // Initializes the UnfairLockManagerWithKey
+        // MARK: Init / Deinit
+
         public init() {}
 
-        // Deinitializes and deallocates all os_unfair_locks
         deinit {
+            os_unfair_lock_lock(&dictionaryLock)
             for (_, lockPointer) in locks {
                 lockPointer.deinitialize(count: 1)
                 lockPointer.deallocate()
             }
+            locks.removeAll()
+            os_unfair_lock_unlock(&dictionaryLock)
         }
 
-        // Retrieves or creates a lock for the given key
+        // MARK: Lock Retrieval
+
+        /// Retrieves or creates a lock for the given key (thread-safe).
         private func lockPointer(for key: String) -> UnsafeMutablePointer<os_unfair_lock> {
+            os_unfair_lock_lock(&dictionaryLock)
+            defer { os_unfair_lock_unlock(&dictionaryLock) }
+
             if let lock = locks[key] {
                 return lock
             } else {
@@ -108,30 +130,31 @@ public extension Common {
             }
         }
 
-        // Locks the os_unfair_lock with the given key
+        // MARK: Locking API
+
+        /// Locks the unfair lock associated with a key (blocking).
         public func lock(key: String) {
-            let pointer = lockPointer(for: key)
-            os_unfair_lock_lock(pointer)
+            os_unfair_lock_lock(lockPointer(for: key))
         }
 
-        // Unlocks the os_unfair_lock with the given key
+        /// Unlocks the unfair lock associated with a key.
         public func unlock(key: String) {
-            let pointer = lockPointer(for: key)
-            os_unfair_lock_unlock(pointer)
+            os_unfair_lock_unlock(lockPointer(for: key))
         }
 
-        // Tries to lock the os_unfair_lock with the given key and returns true if successful
+        /// Attempts to acquire the lock for the given key (non-blocking).
+        /// - Returns: `true` if lock acquired successfully, otherwise `false`.
+        @discardableResult
         public func tryLock(key: String) -> Bool {
-            let pointer = lockPointer(for: key)
-            return os_unfair_lock_trylock(pointer)
+            os_unfair_lock_trylock(lockPointer(for: key))
         }
 
-        /**
-         Executes the provided closure within a lock identified by the given key.
-         - Parameter key: The key of the lock to be used.
-         - Parameter action: The closure to execute within the lock.
-         - Returns: The result of the closure.
-         */
+        // MARK: Execute Wrappers
+
+        /// Executes a closure within a lock identified by the given key.
+        /// - Parameter key: The key of the lock to be used.
+        /// - Parameter action: The closure to execute within the lock.
+        /// - Returns: The result of the closure.
         @discardableResult
         public func execute<T>(with key: String, _ action: () -> T) -> T {
             lock(key: key)
@@ -139,13 +162,11 @@ public extension Common {
             return action()
         }
 
-        /**
-         Tries to execute the provided closure within a lock identified by the given key.
-         - Parameter key: The key of the lock to be used.
-         - Parameter action: The closure to execute within the lock.
-         - Returns: The result of the closure if the lock was successfully acquired.
-         - Throws: An error if the closure throws an error.
-         */
+        /// Tries to execute a closure within a lock identified by the given key.
+        /// - Parameter key: The key of the lock to be used.
+        /// - Parameter action: The closure to execute within the lock.
+        /// - Returns: The result of the closure if the lock was successfully acquired.
+        /// - Throws: `LockError.lockNotAcquired` if the lock was not acquired.
         @discardableResult
         public func tryExecute<T>(with key: String, _ action: () throws -> T) throws -> T {
             guard tryLock(key: key) else {
@@ -155,7 +176,8 @@ public extension Common {
             return try action()
         }
 
-        /// Enum representing errors that may occur during lock operations.
+        // MARK: Error Type
+
         public enum LockError: Error {
             case lockNotAcquired
         }
