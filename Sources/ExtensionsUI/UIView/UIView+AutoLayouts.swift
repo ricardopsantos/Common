@@ -15,7 +15,9 @@ public struct LayoutsWrapper {
 }
 
 //
+
 // MARK: Utils
+
 //
 
 public extension NSLayoutConstraint {
@@ -129,7 +131,7 @@ public extension LayoutsWrapper {
     }
 
     func removeConstraints() {
-        allLayoutConstraintsAndSuperConstraints.forEach { constraint in
+        for constraint in allLayoutConstraintsAndSuperConstraints {
             remove(constraint: constraint)
         }
         target.translatesAutoresizingMaskIntoConstraints = true
@@ -174,7 +176,9 @@ public extension LayoutsWrapper {
 }
 
 //
+
 // MARK: Composed
+
 //
 
 public extension LayoutsWrapper {
@@ -185,7 +189,13 @@ public extension LayoutsWrapper {
         fill lastViewShouldFill: Bool,
         margin marginToSuper: CGFloat? = nil
     ) -> [NSLayoutConstraint] {
-        target.stack(views, axis: .vertical, spacing: viewsInnerSpacing, fill: lastViewShouldFill, margin: marginToSuper)
+        target.stack(
+            views,
+            axis: .vertical,
+            spacing: viewsInnerSpacing,
+            fill: lastViewShouldFill,
+            margin: marginToSuper
+        )
     }
 
     @discardableResult
@@ -195,10 +205,17 @@ public extension LayoutsWrapper {
         fill lastViewShouldFill: Bool,
         margin marginToSuper: CGFloat? = nil
     ) -> [NSLayoutConstraint] {
-        target.stack(views, axis: .horizontal, spacing: viewsInnerSpacing, fill: lastViewShouldFill, margin: marginToSuper)
+        target.stack(
+            views,
+            axis: .horizontal,
+            spacing: viewsInnerSpacing,
+            fill: lastViewShouldFill,
+            margin: marginToSuper
+        )
     }
 
-    /// Use when the view that contains the stack/scroll, is a (container) view inside the bigger view (from a UIViewController.view)
+    /// Use when the view that contains the stack/scroll, is a (container) view inside the bigger view (from a
+    /// UIViewController.view)
     @discardableResult
     func addAndSetupOnSubView(
         scrollView: UIScrollView,
@@ -287,7 +304,9 @@ public extension LayoutsWrapper {
 }
 
 //
+
 // MARK: TinyConstraints
+
 //
 
 public extension UILayoutPriority {
@@ -353,7 +372,13 @@ public extension LayoutsWrapper {
         isActive: Bool = true,
         usingSafeArea: Bool = false
     ) -> [NSLayoutConstraint] {
-        target.horizontalToSuperview(insets: insets, relation: relation, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea)
+        target.horizontalToSuperview(
+            insets: insets,
+            relation: relation,
+            priority: priority,
+            isActive: isActive,
+            usingSafeArea: usingSafeArea
+        )
     }
 
     @discardableResult
@@ -364,7 +389,13 @@ public extension LayoutsWrapper {
         isActive: Bool = true,
         usingSafeArea: Bool = false
     ) -> [NSLayoutConstraint] {
-        target.verticalToSuperview(insets: insets, relation: relation, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea)
+        target.verticalToSuperview(
+            insets: insets,
+            relation: relation,
+            priority: priority,
+            isActive: isActive,
+            usingSafeArea: usingSafeArea
+        )
     }
 
     @discardableResult
@@ -385,7 +416,13 @@ public extension LayoutsWrapper {
         isActive: Bool = true,
         usingSafeArea: Bool = false
     ) -> [NSLayoutConstraint] {
-        target.originToSuperview(insets: insets, relation: relation, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea)
+        target.originToSuperview(
+            insets: insets,
+            relation: relation,
+            priority: priority,
+            isActive: isActive,
+            usingSafeArea: usingSafeArea
+        )
     }
 
     @discardableResult
@@ -477,7 +514,14 @@ public extension LayoutsWrapper {
         isActive: Bool = true,
         usingSafeArea: Bool = false
     ) -> NSLayoutConstraint {
-        target.topToSuperview(anchor, offset: offset, relation: relation, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea)
+        target.topToSuperview(
+            anchor,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive,
+            usingSafeArea: usingSafeArea
+        )
     }
 
     @discardableResult
@@ -507,7 +551,13 @@ public extension LayoutsWrapper {
         isActive: Bool = true,
         usingSafeArea: Bool = false
     ) -> NSLayoutConstraint {
-        target.centerXToSuperview(anchor, offset: offset, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea)
+        target.centerXToSuperview(
+            anchor,
+            offset: offset,
+            priority: priority,
+            isActive: isActive,
+            usingSafeArea: usingSafeArea
+        )
     }
 
     @discardableResult
@@ -518,7 +568,13 @@ public extension LayoutsWrapper {
         isActive: Bool = true,
         usingSafeArea: Bool = false
     ) -> NSLayoutConstraint {
-        target.centerYToSuperview(anchor, offset: offset, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea)
+        target.centerYToSuperview(
+            anchor,
+            offset: offset,
+            priority: priority,
+            isActive: isActive,
+            usingSafeArea: usingSafeArea
+        )
     }
 }
 
@@ -558,7 +614,9 @@ extension LayoutsWrapper: TNConstrainable {
     }
 
     @discardableResult
-    public func size(_ size: CGSize, priority: UILayoutPriority = .defaultForTinyConstraints, isActive: Bool = true) -> [NSLayoutConstraint] {
+    public func size(_ size: CGSize, priority: UILayoutPriority = .defaultForTinyConstraints,
+                     isActive: Bool = true) -> [NSLayoutConstraint]
+    {
         target.size(size, priority: priority, isActive: isActive)
     }
 
@@ -571,7 +629,14 @@ extension LayoutsWrapper: TNConstrainable {
         priority: UILayoutPriority = .defaultForTinyConstraints,
         isActive: Bool = true
     ) -> [NSLayoutConstraint] {
-        target.size(to: view, multiplier: multiplier, insets: insets, relation: relation, priority: priority, isActive: isActive)
+        target.size(
+            to: view,
+            multiplier: multiplier,
+            insets: insets,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -614,7 +679,15 @@ extension LayoutsWrapper: TNConstrainable {
         priority: UILayoutPriority = .defaultForTinyConstraints,
         isActive: Bool = true
     ) -> NSLayoutConstraint {
-        target.width(to: view, dimension, multiplier: multiplier, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        target.width(
+            to: view,
+            dimension,
+            multiplier: multiplier,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -626,7 +699,14 @@ extension LayoutsWrapper: TNConstrainable {
         priority: UILayoutPriority = .defaultForTinyConstraints,
         isActive: Bool = true
     ) -> NSLayoutConstraint {
-        target.widthToHeight(of: view, multiplier: multiplier, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        target.widthToHeight(
+            of: view,
+            multiplier: multiplier,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -668,7 +748,15 @@ extension LayoutsWrapper: TNConstrainable {
         priority: UILayoutPriority = .defaultForTinyConstraints,
         isActive: Bool = true
     ) -> NSLayoutConstraint {
-        target.height(to: view, dimension, multiplier: multiplier, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        target.height(
+            to: view,
+            dimension,
+            multiplier: multiplier,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -680,7 +768,14 @@ extension LayoutsWrapper: TNConstrainable {
         priority: UILayoutPriority = .defaultForTinyConstraints,
         isActive: Bool = true
     ) -> NSLayoutConstraint {
-        target.heightToWidth(of: view, multiplier: multiplier, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        target.heightToWidth(
+            of: view,
+            multiplier: multiplier,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -849,7 +944,7 @@ extension LayoutsWrapper: TNConstrainable {
     ) -> [NSLayoutConstraint] {
         [
             centerX(to: view, nil, offset: 0, priority: priority, isActive: isActive),
-            centerY(to: view, nil, offset: 0, priority: priority, isActive: isActive)
+            centerY(to: view, nil, offset: 0, priority: priority, isActive: isActive),
         ]
     }
 

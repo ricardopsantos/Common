@@ -3,9 +3,9 @@
 //  Copyright © 2023 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
-import CoreData
 import Combine
+import CoreData
+import Foundation
 
 public extension Common {
     final class CacheManagerForCodableCoreDataRepository: CommonBaseCoreDataManager {
@@ -22,25 +22,33 @@ public extension Common {
 }
 
 // MARK: - CodableCacheManagerProtocol
-extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerProtocol {
 
+extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerProtocol {
     // MARK: - Private helpers
+
     private func latestRecordFetchRequest(for composedKey: String) -> NSFetchRequest<CDataExpiringKeyValueEntity> {
         let req: NSFetchRequest<CDataExpiringKeyValueEntity> = CDataExpiringKeyValueEntity.fetchRequest()
         req.predicate = NSPredicate(format: "key == %@", composedKey)
-        req.sortDescriptors = [NSSortDescriptor(key: #keyPath(CDataExpiringKeyValueEntity.recordDate), ascending: false)]
+        req.sortDescriptors = [NSSortDescriptor(
+            key: #keyPath(CDataExpiringKeyValueEntity.recordDate),
+            ascending: false
+        )]
         req.fetchLimit = 1
         return req
     }
 
     // MARK: - Sync
-    public func syncRetrieve<T: Codable>(_ some: T.Type, key: String, params: [any Hashable]) -> (model: T, recordDate: Date)? {
+
+    public func syncRetrieve<T: Codable>(_: T.Type, key: String,
+                                         params: [any Hashable]) -> (model: T, recordDate: Date)?
+    {
         let composedKey = Commom_ExpiringKeyValueEntity.composedKey(key, params)
         let context = viewContext
         do {
             let request = latestRecordFetchRequest(for: composedKey)
             if let record = try context.fetch(request).first,
-               let model = record.asExpiringKeyValueEntity?.extract(T.self) {
+               let model = record.asExpiringKeyValueEntity?.extract(T.self)
+            {
                 return (model, record.recordDate ?? .distantPast)
             }
         } catch {
@@ -49,8 +57,8 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
         return nil
     }
 
-    public func syncStore<T: Codable>(
-        _ codable: T,
+    public func syncStore(
+        _ codable: some Codable,
         key: String,
         params: [any Hashable],
         timeToLiveMinutes: Int? = nil
@@ -117,6 +125,7 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
     }
 
     // MARK: - Async
+
     public func aSyncClearAll() async {
         let context = backgroundContext
         await withCheckedContinuation { continuation in
@@ -142,7 +151,9 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
         }
     }
 
-    public func aSyncRetrieve<T: Codable>(_ type: T.Type, key: String, params: [any Hashable]) async -> (model: T, recordDate: Date)? {
+    public func aSyncRetrieve<T: Codable>(_: T.Type, key: String,
+                                          params: [any Hashable]) async -> (model: T, recordDate: Date)?
+    {
         let composedKey = Commom_ExpiringKeyValueEntity.composedKey(key, params)
         let context = backgroundContext
         return await withCheckedContinuation { continuation in
@@ -152,7 +163,8 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
                     if let record = try context.fetch(request).first,
                        let exp = record.asExpiringKeyValueEntity,
                        let model = exp.extract(T.self),
-                       let when = record.recordDate {
+                       let when = record.recordDate
+                    {
                         continuation.resume(returning: (model, when))
                     } else {
                         continuation.resume(returning: nil)
@@ -165,8 +177,8 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
         }
     }
 
-    public func aSyncStore<T: Codable>(
-        _ codable: T,
+    public func aSyncStore(
+        _ codable: some Codable,
         key: String,
         params: [any Hashable],
         timeToLiveMinutes: Int? = nil
@@ -216,7 +228,8 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
         let context = backgroundContext
         return await withCheckedContinuation { continuation in
             context.perform {
-                let fetchRequest: NSFetchRequest<CDataExpiringKeyValueEntity> = CDataExpiringKeyValueEntity.fetchRequest()
+                let fetchRequest: NSFetchRequest<CDataExpiringKeyValueEntity> = CDataExpiringKeyValueEntity
+                    .fetchRequest()
                 do {
                     let records = try context.fetch(fetchRequest)
                     let keys: [(String, Date)] = records.compactMap { rec in
@@ -234,12 +247,13 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
 }
 
 // MARK: - Mappers
+
 public extension CDataExpiringKeyValueEntity {
     var asExpiringKeyValueEntity: Commom_ExpiringKeyValueEntity? {
-        guard let key = key,
-              let expireDate = expireDate,
-              let object = object,
-              let objectType = objectType else { return nil }
+        guard let key,
+              let expireDate,
+              let object,
+              let objectType else { return nil }
         let encodingEnum = Commom_ExpiringKeyValueEntity.ValueEncoding(rawValue: Int(encoding)) ?? .dataPlain
         return Commom_ExpiringKeyValueEntity(
             key: key,

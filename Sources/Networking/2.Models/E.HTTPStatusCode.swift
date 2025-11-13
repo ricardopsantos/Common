@@ -3,13 +3,15 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
-import Security
 import CommonCrypto
+import Foundation
+import Security
 
 //
+
 // MARK: - HTTPStatusCode
+
 //
 
 public extension CommonNetworking {
@@ -88,7 +90,7 @@ public extension CommonNetworking {
         case networkAuthenticationRequired = 511
 
         var isSuccess: Bool {
-            (200...299).contains(rawValue)
+            (200 ... 299).contains(rawValue)
         }
     }
 }

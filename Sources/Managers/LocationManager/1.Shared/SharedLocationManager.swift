@@ -5,12 +5,14 @@
 //  Created by Ricardo Santos on 28/08/2024.
 //
 
-import Foundation
-import CoreLocation
 import Combine
+import CoreLocation
+import Foundation
 
 //
+
 // MARK: - CoreLocationManager
+
 //
 
 public extension Common {
@@ -18,7 +20,10 @@ public extension Common {
         public static var shared = SharedLocationManager()
         @PWThreadSafe private var locationManager: CLLocationManager?
         @PWThreadSafe private static var lastAuthorizationStatus: CLAuthorizationStatus?
-        @PWThreadSafe public private(set) static var lastKnowLocation: (coordinate: Common.LocationUtils.Coordinate, date: Date)?
+        @PWThreadSafe public private(set) static var lastKnowLocation: (
+            coordinate: Common.LocationUtils.Coordinate,
+            date: Date
+        )?
         @PWThreadSafe private var onDidUpdateLocation: ((Common.LocationUtils.Coordinate?) -> Void)?
         @PWThreadSafe private var onLocationLost: (() -> Void)?
         @PWThreadSafe private var onLocationAuthorized: (() -> Void)?
@@ -74,11 +79,13 @@ public extension Common {
 }
 
 //
+
 // MARK: - CLLocationManagerDelegate
+
 //
 
 extension Common.SharedLocationManager: CLLocationManagerDelegate {
-    public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+    public func locationManager(_: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         let lastStatusWasAuthorized = Self.lastAuthorizationStatus?.locationIsAuthorized ?? false
         let newStatusIsAuthorized = status.locationIsAuthorized
         let newStatusIsNotAuthorized = !newStatusIsAuthorized
@@ -94,7 +101,7 @@ extension Common.SharedLocationManager: CLLocationManagerDelegate {
         }
     }
 
-    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    public func locationManager(_: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.last {
             let last: Common.LocationUtils.Coordinate = .init(location: location)
             Self.lastKnowLocation = (last, Date())
@@ -102,7 +109,7 @@ extension Common.SharedLocationManager: CLLocationManagerDelegate {
         }
     }
 
-    public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    public func locationManager(_: CLLocationManager, didFailWithError _: Error) {
         guard !Common_Utils.onSimulator else {
             return
         }
@@ -110,10 +117,12 @@ extension Common.SharedLocationManager: CLLocationManagerDelegate {
 }
 
 //
+
 // MARK: - Private
+
 //
 
-fileprivate extension Common.SharedLocationManager {
+private extension Common.SharedLocationManager {
     var isConfigured: Bool {
         if onDidUpdateLocation == nil || onLocationLost == nil || onLocationAuthorized == nil {
             return false
@@ -136,7 +145,8 @@ fileprivate extension Common.SharedLocationManager {
         case .authorizedAlways: // User has granted authorization to use their location at any time.
             locationManager?.desiredAccuracy = kCLLocationAccuracyBest
             locationManager?.startUpdatingLocation()
-        case .authorizedWhenInUse: // User has granted authorization to use their location only while they are using your app
+        case .authorizedWhenInUse: // User has granted authorization to use their location only while they are using
+            // your app
             locationManager?.desiredAccuracy = kCLLocationAccuracyBest
             locationManager?.startUpdatingLocation()
         @unknown default:
@@ -146,7 +156,9 @@ fileprivate extension Common.SharedLocationManager {
 }
 
 //
+
 // MARK: - CLAuthorizationStatus extension
+
 //
 
 extension CLAuthorizationStatus {
@@ -163,7 +175,9 @@ extension CLAuthorizationStatus {
 }
 
 //
+
 // MARK: - CLAuthorizationStatus extension
+
 //
 private extension Common.SharedLocationManager {
     static func sampleUsage() {

@@ -7,7 +7,9 @@ import Foundation
 import SwiftUI
 
 //
+
 // MARK: Preferences Key
+
 //
 
 public extension Common {
@@ -20,7 +22,9 @@ public extension Common {
 }
 
 //
+
 // MARK: - Test/Usage View
+
 //
 
 struct ChildView: View {
@@ -79,12 +83,14 @@ struct TotalWidthPreferenceKeyTestView: View {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
 
-#Preview {
-    TotalWidthPreferenceKeyTestView()
-}
+    #Preview {
+        TotalWidthPreferenceKeyTestView()
+    }
 #endif

@@ -233,7 +233,10 @@ extension CacheManagerForCodableNSCacheRepository {
             let folderURLs = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)
             let fileURL = folderURLs[0].appendingPathComponent("myCache.cache")
             let data = try Data(contentsOf: fileURL)
-            let decodedCache = try JSONDecoder().decodeFriendly(CacheManagerForCodableNSCacheRepository<String, Int>.self, from: data)
+            let decodedCache = try JSONDecoder().decodeFriendly(
+                CacheManagerForCodableNSCacheRepository<String, Int>.self,
+                from: data
+            )
             Common_Logs.debug("Loaded cache from disk: \(decodedCache)", "\(Self.self)")
         } catch {
             Common_Logs.debug("Error loading cache from disk: \(error)", "\(Self.self)")

@@ -23,7 +23,7 @@ public extension CommonNetworking {
 
         public static func reset() {
             _imagesCache.removeAllObjects()
-            Common.FileManager.Images.deleteAll(namePart: Self.cachedImagesPrefix)
+            Common.FileManager.Images.deleteAll(namePart: cachedImagesPrefix)
         }
 
         public static func imageFrom(
@@ -78,7 +78,7 @@ public extension CommonNetworking {
             timeout: Double = 30,
             completion: @escaping ((UIImage?, String) -> Void)
         ) -> URLSessionDataTask? {
-            guard let url = url else {
+            guard let url else {
                 DispatchQueue.executeInMainTread { completion(nil, url?.absoluteString ?? "") }
                 return nil
             }
@@ -99,7 +99,11 @@ public extension CommonNetworking {
                     if let downsample,
                        downsample != .zero,
                        let image,
-                       let imageDownSample = image.resizeToFitMaxSize(maxWidth: downsample.width, maxHeight: downsample.height) {
+                       let imageDownSample = image.resizeToFitMaxSize(
+                           maxWidth: downsample.width,
+                           maxHeight: downsample.height
+                       )
+                    {
                         DispatchQueue.executeInMainTread { completion(imageDownSample, url.absoluteString) }
                     } else {
                         DispatchQueue.executeInMainTread { completion(image, url.absoluteString) }
@@ -137,14 +141,23 @@ public extension CommonNetworking {
                 let image = imageFromData(data: data)
                 if let error = error as NSError? {
                     if error.domain == NSURLErrorDomain, error.code == NSURLErrorCannotFindHost {
-                        Common_Logs.error("Fail do download image. Cannot find host. URL may be invalid: \(url)", "\(Self.self)")
+                        Common_Logs.error(
+                            "Fail do download image. Cannot find host. URL may be invalid: \(url)",
+                            "\(Self.self)"
+                        )
                     } else if error.localizedDescription != "cancelled" {
                         // Task canceled. Don't print error
-                        Common_Logs.error("Fail do download image. Error: \(error.localizedDescription))", "\(Self.self)")
+                        Common_Logs.error(
+                            "Fail do download image. Error: \(error.localizedDescription))",
+                            "\(Self.self)"
+                        )
                     }
                     returnImage(nil)
                 } else if image == nil {
-                    Common_Logs.error("Fail do download image. Image is nil: \(String(describing: url))", "\(Self.self)")
+                    Common_Logs.error(
+                        "Fail do download image. Image is nil: \(String(describing: url))",
+                        "\(Self.self)"
+                    )
                     returnImage(nil)
                 } else {
                     returnImage(image)
@@ -155,14 +168,15 @@ public extension CommonNetworking {
         }
 
         private static func imageFromData(data: Data?) -> UIImage? {
-            guard let data = data else { return nil }
+            guard let data else { return nil }
             var image = UIImage(data: data)
             if image == nil {
                 // Failed? Maybe there is some encoding at start...
                 if let dataAsText = String(data: data, encoding: .utf8)?
                     .dropFirstIf("data:image/webp;base64,")
                     .dropFirstIf("data:image/jpg;base64,"),
-                    let newData = Data(base64Encoded: dataAsText), let newImage = UIImage(data: newData) {
+                    let newData = Data(base64Encoded: dataAsText), let newImage = UIImage(data: newData)
+                {
                     // Recovered!
                     image = newImage
                 }

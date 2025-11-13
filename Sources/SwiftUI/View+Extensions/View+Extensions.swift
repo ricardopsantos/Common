@@ -7,7 +7,9 @@ import Foundation
 import SwiftUI
 
 //
+
 // MARK: - View (Padding)
+
 //
 
 public extension View {
@@ -29,7 +31,9 @@ public extension View {
 }
 
 //
+
 // MARK: - View (Frame)
+
 //
 public extension View {
     @ViewBuilder
@@ -39,7 +43,9 @@ public extension View {
 }
 
 //
+
 // MARK: - View (Corner utils)
+
 //
 
 public extension View {
@@ -138,7 +144,8 @@ public extension View {
 }
 
 public extension View {
-    /// Usage `Circle().maskContent(using: AngularGradient(gradient: colors, center: .center, startAngle: .degrees(0), endAngle: .degrees(360)))`
+    /// Usage `Circle().maskContent(using: AngularGradient(gradient: colors, center: .center, startAngle: .degrees(0),
+    /// endAngle: .degrees(360)))`
     func maskContent(using: some View) -> some View {
         /** In SwiftUI, a view mask is a way to specify which parts of a view should be visible and which should be hidden.
           View masks are created using the mask(_:) modifier, which takes a View as its parameter. The mask view defines
@@ -153,21 +160,23 @@ public extension View {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-fileprivate extension Common_Preview {
-    struct SampleViewsExtensions: View {
-        public init() {}
-        public var body: some View {
-            EmptyView()
+    fileprivate extension Common_Preview {
+        struct SampleViewsExtensions: View {
+            public init() {}
+            public var body: some View {
+                EmptyView()
+            }
         }
     }
-}
 
-#Preview {
-    Common_Preview.SampleViewsExtensions()
-}
+    #Preview {
+        Common_Preview.SampleViewsExtensions()
+    }
 
 #endif

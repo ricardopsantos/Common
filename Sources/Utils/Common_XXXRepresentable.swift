@@ -20,13 +20,13 @@ public extension Common {
             self.viewControllerBuilder = viewControllerBuilder
         }
 
-        public func makeUIViewController(context: Context) -> some UIViewController {
+        public func makeUIViewController(context _: Context) -> some UIViewController {
             let vc = viewControllerBuilder()
             // vc.modalPresentationStyle = .overCurrentContext
             return vc
         }
 
-        public func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+        public func updateUIViewController(_: UIViewControllerType, context _: Context) {
             // Not needed
         }
     }
@@ -38,14 +38,14 @@ public extension Common {
         }
 
         public init(closure: () -> (UIView)) {
-            self.view = closure()
+            view = closure()
         }
 
-        public func makeUIView(context: Context) -> UIView {
+        public func makeUIView(context _: Context) -> UIView {
             view
         }
 
-        public func updateUIView(_ uiView: UIView, context: Context) {}
+        public func updateUIView(_: UIView, context _: Context) {}
     }
 
     struct ViewRepresentable2: UIViewRepresentable {
@@ -54,18 +54,20 @@ public extension Common {
             self.viewBuilder = viewBuilder
         }
 
-        public func makeUIView(context: Context) -> some UIView {
+        public func makeUIView(context _: Context) -> some UIView {
             viewBuilder()
         }
 
-        public func updateUIView(_ uiView: UIViewType, context: Context) {
+        public func updateUIView(_: UIViewType, context _: Context) {
             // Not needed
         }
     }
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 enum Commom_Previews_ViewControllerRepresentable {
@@ -79,19 +81,19 @@ enum Commom_Previews_ViewControllerRepresentable {
                 imageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
                 imageView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
                 imageView.widthAnchor.constraint(equalTo: view.widthAnchor),
-                imageView.heightAnchor.constraint(equalTo: view.widthAnchor)
+                imageView.heightAnchor.constraint(equalTo: view.widthAnchor),
             ])
         }
     }
 
     #if canImport(SwiftUI) && DEBUG
-    // ViewController Preview
-    #Preview("Common_ViewControllerRepresentable") {
-        Common_ViewControllerRepresentable { SampleVC() }
-    }
+        // ViewController Preview
+        #Preview("Common_ViewControllerRepresentable") {
+            Common_ViewControllerRepresentable { SampleVC() }
+        }
 
-    #Preview("Common_ViewRepresentable") {
-        Common_ViewRepresentable { SampleVC().view }
-    }
+        #Preview("Common_ViewRepresentable") {
+            Common_ViewRepresentable { SampleVC().view }
+        }
     #endif
 }

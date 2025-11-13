@@ -3,9 +3,9 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import SwiftUI
 import Combine
 import Foundation
+import SwiftUI
 
 public extension Subscribers.Completion {
     var error: Failure? {

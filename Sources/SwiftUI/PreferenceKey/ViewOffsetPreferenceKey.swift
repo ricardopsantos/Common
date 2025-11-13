@@ -3,9 +3,9 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
+import Combine
 import Foundation
 import SwiftUI
-import Combine
 
 public extension Common {
     struct ViewOffsetPreferenceKey: PreferenceKey {
@@ -18,7 +18,9 @@ public extension Common {
 }
 
 //
+
 // MARK: - Test/Usage View
+
 //
 
 struct ViewOffsetPreferenceKeyTestView: View {
@@ -30,11 +32,11 @@ struct ViewOffsetPreferenceKeyTestView: View {
 
     init() {
         let detector = CurrentValueSubject<CGFloat, Never>(0)
-        self.preferenceChangePublisher = detector
+        preferenceChangePublisher = detector
             .debounce(for: .seconds(0.2), scheduler: DispatchQueue.main)
             .dropFirst()
             .eraseToAnyPublisher()
-        self.preferenceChangeDetector = detector
+        preferenceChangeDetector = detector
     }
 
     public var body: some View {
@@ -43,7 +45,7 @@ struct ViewOffsetPreferenceKeyTestView: View {
                 ScrollViewReader { scrollView in
                     VStack {
                         Button("Scroll to id_50") { withAnimation { scrollView.scrollTo("id_50", anchor: .center) } }
-                        ForEach(0...100, id: \.self) { i in
+                        ForEach(0 ... 100, id: \.self) { i in
                             TextField("\(i)", text: $text)
                                 .background(Color.clear.id("id_\(i)"))
                         }
@@ -77,12 +79,14 @@ struct ViewOffsetPreferenceKeyTestView: View {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
 
-#Preview {
-    ViewOffsetPreferenceKeyTestView()
-}
+    #Preview {
+        ViewOffsetPreferenceKeyTestView()
+    }
 #endif

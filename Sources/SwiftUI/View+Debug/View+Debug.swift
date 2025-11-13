@@ -11,29 +11,31 @@ import SwiftUI
 public extension View {
     func debug() -> some View {
         #if DEBUG
-        debugBordersDefault()
-            .renderTimeTracker()
-            .displaySize()
+            debugBordersDefault()
+                .renderTimeTracker()
+                .displaySize()
         #else
-        self
+            self
         #endif
     }
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
 
-#Preview {
-    VStack {
-        Circle()
-            .foregroundColor(.red)
-            .padding(20)
-            .frame(screenWidth * 0.5)
-            .debug()
-    }.padding()
-}
+    #Preview {
+        VStack {
+            Circle()
+                .foregroundColor(.red)
+                .padding(20)
+                .frame(screenWidth * 0.5)
+                .debug()
+        }.padding()
+    }
 
 #endif

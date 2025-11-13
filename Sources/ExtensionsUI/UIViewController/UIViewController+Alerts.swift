@@ -4,8 +4,8 @@
 //
 
 import Foundation
-import UIKit
 import SwiftUI
+import UIKit
 
 public struct AlertAction {
     public let title: String
@@ -24,7 +24,7 @@ public extension UIViewController {
         actions: [AlertAction]
     ) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: preferredStyle)
-        actions.forEach { item in
+        for item in actions {
             let action = UIAlertAction(title: item.title, style: item.style) { _ in
                 if let doAction = item.action {
                     doAction()
@@ -70,7 +70,11 @@ public extension UIViewController {
         onAction1: @escaping () -> Void,
         onAction2: @escaping () -> Void = {}
     ) -> UIAlertController {
-        let alert = UIAlertController(title: title.isEmpty ? "Alert" : title, message: description, preferredStyle: .alert)
+        let alert = UIAlertController(
+            title: title.isEmpty ? "Alert" : title,
+            message: description,
+            preferredStyle: .alert
+        )
         alert.addAction(UIAlertAction(title: action1Text, style: action1ButtonStyle, handler: { _ in onAction1() }))
         alert.addAction(UIAlertAction(title: action2Text, style: action2ButtonStyle, handler: { _ in onAction2() }))
         return alert

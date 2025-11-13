@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 import UIKit
 
 public extension CombineCompatible {
@@ -27,16 +27,18 @@ public extension CombineCompatible {
 
 public extension CombineCompatibleProtocol where Self: UISwitch {
     var onChangedPublisher: AnyPublisher<Bool, Never> {
-        Common.UIControlPublisher(control: self, events: [.allEditingEvents, .valueChanged]).map(\.isOn).eraseToAnyPublisher()
+        Common.UIControlPublisher(control: self, events: [.allEditingEvents, .valueChanged]).map(\.isOn)
+            .eraseToAnyPublisher()
     }
 
     var onTurnedOnPublisher: AnyPublisher<Bool, Never> {
-        Common.UIControlPublisher(control: self, events: [.allEditingEvents, .valueChanged]).map(\.isOn).eraseToAnyPublisher()
+        Common.UIControlPublisher(control: self, events: [.allEditingEvents, .valueChanged]).map(\.isOn)
+            .eraseToAnyPublisher()
     }
 }
 
 // swiftlint:disable no_UIKitAdhocConstruction
-fileprivate extension Common {
+private extension Common {
     func sample() {
         let switcher = UISwitch()
         switcher.isOn = false

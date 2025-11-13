@@ -7,7 +7,9 @@ import Foundation
 import UIKit
 
 //
+
 // MARK: - Vars
+
 //
 
 public extension UIColor {
@@ -87,7 +89,9 @@ public extension UIColor {
     }
 
     // https://stackoverflow.com/questions/27342715/blend-uicolors-in-swift
-    static func blend(color1: UIColor, intensity1: CGFloat = 0.5, color2: UIColor, intensity2: CGFloat = 0.5) -> UIColor {
+    static func blend(color1: UIColor, intensity1: CGFloat = 0.5, color2: UIColor,
+                      intensity2: CGFloat = 0.5) -> UIColor
+    {
         let total = intensity1 + intensity2
         let l1 = intensity1 / total
         let l2 = intensity2 / total
@@ -103,7 +107,12 @@ public extension UIColor {
         color1.getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
         color2.getRed(&r2, green: &g2, blue: &b2, alpha: &a2)
 
-        return UIColor(red: l1 * r1 + l2 * r2, green: l1 * g1 + l2 * g2, blue: l1 * b1 + l2 * b2, alpha: l1 * a1 + l2 * a2)
+        return UIColor(
+            red: l1 * r1 + l2 * r2,
+            green: l1 * g1 + l2 * g2,
+            blue: l1 * b1 + l2 * b2,
+            alpha: l1 * a1 + l2 * a2
+        )
     }
 
     // https://stackoverflow.com/questions/746899/how-to-calculate-an-rgb-colour-by-specifying-an-alpha-blending-amount
@@ -151,7 +160,7 @@ public extension UIColor {
     }
 
     static var random: UIColor {
-        func random() -> CGFloat { CGFloat.random(in: 0...1) }
+        func random() -> CGFloat { CGFloat.random(in: 0 ... 1) }
         return UIColor(red: random(), green: random(), blue: random(), alpha: 1.0)
     }
 
@@ -231,11 +240,11 @@ public extension UIColor {
         let scanner = Scanner(string: hexColor)
         var hexNumber: UInt64 = 0
         if scanner.scanHexInt64(&hexNumber) {
-            r = CGFloat((hexNumber & 0xff000000) >> 24) / 255
-            g = CGFloat((hexNumber & 0x00ff0000) >> 16) / 255
-            b = CGFloat((hexNumber & 0x0000ff00) >> 8) / 255
+            r = CGFloat((hexNumber & 0xFF00_0000) >> 24) / 255
+            g = CGFloat((hexNumber & 0x00FF_0000) >> 16) / 255
+            b = CGFloat((hexNumber & 0x0000_FF00) >> 8) / 255
             if hexColor.count == 8 {
-                a = CGFloat(hexNumber & 0x000000ff) / 255
+                a = CGFloat(hexNumber & 0x0000_00FF) / 255
                 self.init(red: r, green: g, blue: b, alpha: a)
             } else {
                 self.init(red: r, green: g, blue: b, alpha: 1)

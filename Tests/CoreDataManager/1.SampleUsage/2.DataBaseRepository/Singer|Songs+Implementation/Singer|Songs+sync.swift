@@ -50,17 +50,19 @@ extension DatabaseRepository {
     func deleteSinger(singer: CDataSinger) {
         let context = viewContext
         context.delete(singer)
-        CommonCoreData.Utils.save(viewContext: context)
+        CommonCoreData.Utils.syncSave(viewContext: context)
     }
 
     func deleteAllSingers() {
-        allSingers().forEach { singer in
-            deleteSinger(singer: singer)
-        }
+        let context = viewContext
+        let request: NSFetchRequest<NSFetchRequestResult> =
+            CDataSinger.fetchRequest() as! NSFetchRequest<NSFetchRequestResult>
+        CommonCoreData.Utils.batchDelete(context: context, request: request)
     }
 
+
     //
-    // MARK: - Song
+    // MARK: - Songs
     //
 
     func newSongInstance(title: String, releaseDate: Date) -> CDataSong {
@@ -108,6 +110,6 @@ extension DatabaseRepository {
     func deleteSong(song: CDataSong) {
         let context = viewContext
         context.delete(song)
-        CommonCoreData.Utils.save(viewContext: context)
+        CommonCoreData.Utils.syncSave(viewContext: context)
     }
 }

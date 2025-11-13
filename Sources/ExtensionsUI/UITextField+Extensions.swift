@@ -22,7 +22,7 @@ public extension UITextField {
         let placeholderText = placeholder ?? ""
         let attributes: [NSAttributedString.Key: Any] = [
             .font: font,
-            .foregroundColor: color ?? UIColor.secondaryLabel
+            .foregroundColor: color ?? UIColor.secondaryLabel,
         ]
         attributedPlaceholder = NSAttributedString(string: placeholderText, attributes: attributes)
     }

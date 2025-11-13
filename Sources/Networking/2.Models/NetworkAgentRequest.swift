@@ -30,25 +30,27 @@ public extension CommonNetworking {
             self.headerValues = headerValues
             self.queryItems = queryItems
             self.serverURL = serverURL
-            self.responseFormat = responseType
+            responseFormat = responseType
         }
 
         public var urlRequest: URLRequest? {
             let serverURLEscaped = serverURL.dropLastIf("/")
             var pathEscaped = path.dropFirstIf("/")
             if let escaped = pathEscaped.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-               pathEscaped != escaped {
+               pathEscaped != escaped
+            {
                 pathEscaped = escaped
             }
 
-            var query: String = ""
+            var query = ""
             if let queryItems {
                 var components = URLComponents()
                 components.queryItems = queryItems
                 query = components.url?.absoluteString ?? ""
             }
 
-            let urlString: String = pathEscaped.isEmpty ? serverURLEscaped : serverURLEscaped + "/" + pathEscaped + query
+            let urlString: String = pathEscaped
+                .isEmpty ? serverURLEscaped : serverURLEscaped + "/" + pathEscaped + query
 
             let urlRequest = URLRequest.with(
                 urlString: urlString.trim,

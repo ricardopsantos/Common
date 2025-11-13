@@ -25,7 +25,9 @@ public extension DateFormatter {
 
     enum MainFormats: String {
         case iso8601 = "yyyy-MM-dd'T'HH:mm:ssXXX" /// XXX: Time zone offset in the format ±HH:mm (e.g., +05:00)
-        case iso8601UTC = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'" /// SSSSSS: Fractional seconds (microseconds, e.g., 123456),  'Z' indicating UTC time
+        case iso8601UTC =
+            "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'" /// SSSSSS: Fractional seconds (microseconds, e.g., 123456),  'Z'
+        /// indicating UTC time
         case iso8601Almost = "yyyy-MM-dd HH:mm:ss"
         case monthAndYear = "MMMM yyyy"
         public var value: String {
@@ -80,7 +82,7 @@ public extension Date {
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
         dateFormatter.dateFormat = dateFormat // http://userguide.icu-project.org/formatparse/datetime
-        if let timeZoneIdentifier = timeZoneIdentifier {
+        if let timeZoneIdentifier {
             dateFormatter.timeZone = TimeZone(identifier: timeZoneIdentifier)
         }
         if let date = dateFormatter.date(from: dateToParse) {
@@ -233,7 +235,7 @@ public extension Date {
         var components = DateComponents()
         components.day = 1
         components.second = -1
-        if let beginningOfDay = beginningOfDay {
+        if let beginningOfDay {
             return calendar.date(byAdding: components, to: beginningOfDay)
         } else {
             return nil
@@ -261,7 +263,7 @@ public extension Date {
         compare(dateToCompare) == ComparisonResult.orderedDescending
     }
 
-    func wasLessThan(secondsAgo: Int, refDate: Date) -> Bool {
+    func wasLessThan(secondsAgo _: Int, refDate: Date) -> Bool {
         !isBiggerThan(refDate.add(seconds: seconds))
     }
 
@@ -277,7 +279,7 @@ public extension Date {
         "day(s) ago",
         "week(s) ago",
         "month(s) ago",
-        "year(s) ago"
+        "year(s) ago",
     ]) -> String {
         let currentDate = Date()
         let timeInterval = currentDate.timeIntervalSince(self)

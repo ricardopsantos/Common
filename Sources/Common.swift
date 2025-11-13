@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 import UIKit
 import WebKit
 
@@ -35,14 +35,18 @@ public struct Common {
 }
 
 //
+
 // MARK: - Namespaces
+
 //
 
-internal class CommonBundleFinder {}
+class CommonBundleFinder {}
 public struct Common_Preview {}
 
 //
+
 // MARK: - Alias: Main
+
 //
 
 public typealias Common_Utils = Common.Utils
@@ -54,5 +58,6 @@ public typealias Common_ViewControllerRepresentable = Common.ViewControllerRepre
 public typealias Common_ViewRepresentable = Common.ViewRepresentable2
 
 // MARK: - Others
+
 public typealias Common_CronometerManager = Common.CronometerManager
 public typealias Common_PropertyWrappers = Common.PropertyWrappers

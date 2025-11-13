@@ -6,7 +6,9 @@
 import Foundation
 
 //
+
 // MARK: - Collection
+
 //
 
 public extension Collection {
@@ -19,7 +21,9 @@ public extension Collection {
 }
 
 //
+
 // MARK: - Array
+
 //
 
 public extension Array {
@@ -45,7 +49,7 @@ public extension Array {
 
     func take(_ k: Int) -> Array {
         let min = Swift.min(k, count)
-        return Array(self[0..<min])
+        return Array(self[0 ..< min])
     }
 
     func skip(_ k: Int) -> Array {
@@ -54,7 +58,7 @@ public extension Array {
 
     func chunked(into size: Int) -> [[Element]] {
         stride(from: 0, to: count, by: size).map {
-            Array(self[$0..<Swift.min($0 + size, count)])
+            Array(self[$0 ..< Swift.min($0 + size, count)])
         }
     }
 
@@ -62,7 +66,7 @@ public extension Array {
         if isEmpty {
             return nil
         }
-        let index = Int.random(in: 0...count - 1)
+        let index = Int.random(in: 0 ... count - 1)
         return self[index]
     }
 }

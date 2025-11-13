@@ -28,7 +28,7 @@ public extension UILabel {
     }
 }
 
-fileprivate extension UILabel {
+private extension UILabel {
     func fadeTransition(_ duration: CFTimeInterval = 0.5) {
         let animation = CATransition()
         animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)

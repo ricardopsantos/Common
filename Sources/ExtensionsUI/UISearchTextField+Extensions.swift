@@ -1,5 +1,5 @@
 //
-//  UISearchTextField.swift
+//  UISearchTextField+Extensions.swift
 //  MinimalApp
 //
 //  Created by Ricardo Santos on 04/09/2024.

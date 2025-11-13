@@ -69,25 +69,25 @@ public extension CLLocationCoordinate2D {
             .sofia,
             .moscow,
             .kyiv,
-            .zurich
+            .zurich,
         ]
     }
 
     static var random: Self {
-        random(in: 50_000, around: .lisbon) // 50km
+        random(in: 50000, around: .lisbon) // 50km
     }
 
     static func random(
-        in radius: Double = 50_000, // 50km
+        in radius: Double = 50000, // 50km
         around center: CLLocationCoordinate2D = .lisbon
     ) -> CLLocationCoordinate2D {
         let earthRadius = 6_371_000.0 // Earth radius in meters
 
         // Random angle in radians
-        let angle = Double.random(in: 0..<2 * .pi)
+        let angle = Double.random(in: 0 ..< 2 * .pi)
 
         // Random distance in meters
-        let distance = Double.random(in: 0..<radius)
+        let distance = Double.random(in: 0 ..< radius)
 
         // Offsets in latitude and longitude
         let deltaLatitude = (distance / earthRadius) * (180 / .pi)
@@ -100,12 +100,14 @@ public extension CLLocationCoordinate2D {
         return CLLocationCoordinate2D(latitude: newLatitude, longitude: newLongitude)
     }
 
-    static func regionToFitCoordinates(coordinates: [CLLocationCoordinate2D], extraDelta: Double = 0.3) -> MKCoordinateRegion {
+    static func regionToFitCoordinates(coordinates: [CLLocationCoordinate2D],
+                                       extraDelta: Double = 0.3) -> MKCoordinateRegion
+    {
         coordinates.regionToFitCoordinates(extraDelta: extraDelta)
     }
 }
 
-public extension Array where Element == CLLocationCoordinate2D {
+public extension [CLLocationCoordinate2D] {
     func regionToFitCoordinates(extraDelta: Double = 0.1) -> MKCoordinateRegion {
         guard !isEmpty else {
             return MKCoordinateRegion()

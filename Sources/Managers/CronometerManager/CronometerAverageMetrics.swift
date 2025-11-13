@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 // The CronometerAverageMetrics class tracks and calculates average metrics for different keys (or identifiers).
 // It manages the start and end of timing operations, updates the metrics, and provides reports.
@@ -23,9 +23,10 @@ public class CronometerAverageMetrics: NSObject {
     public required init?(coder: NSCoder) {
         // Decode the dictionaries from the coder.
         if let countDictionary = coder.decodeObject(forKey: "measuresCount") as? [String: Double],
-           let timeDictionary = coder.decodeObject(forKey: "measuresTime") as? [String: Double] {
-            self.measuresCount = countDictionary
-            self.measuresTime = timeDictionary
+           let timeDictionary = coder.decodeObject(forKey: "measuresTime") as? [String: Double]
+        {
+            measuresCount = countDictionary
+            measuresTime = timeDictionary
         }
     }
 
@@ -37,13 +38,16 @@ public class CronometerAverageMetrics: NSObject {
 }
 
 //
+
 // MARK: - Public
+
 //
 
 public extension CronometerAverageMetrics {
     // Static variable to store the key for UserDefaults, combining the app version and the class name.
     private static var defaultsKey: String {
-        "\(Common.UserDefaultsManager.Keys.averageMetrics.defaultsKey).V\(Common.AppInfo.version).".replace(" ", with: "")
+        "\(Common.UserDefaultsManager.Keys.averageMetrics.defaultsKey).V\(Common.AppInfo.version)."
+            .replace(" ", with: "")
     }
 
     func reset() {
@@ -96,10 +100,11 @@ public extension CronometerAverageMetrics {
 
     // Generates a report (version 2) as a formatted string, containing total and average time for each key.
     var reportV2: String {
-        var result: String = ""
+        var result = ""
         // Sorts the keys alphabetically in descending order before generating the report.
         for (key, count) in measuresCount
-            .sorted(by: { $0.key > $1.key }) {
+            .sorted(by: { $0.key > $1.key })
+        {
             let displayKey = key
             let totalTime = measuresTime[key] ?? 0.0
             let averageTime = count > 0 ? totalTime / count : 0.0
@@ -111,7 +116,9 @@ public extension CronometerAverageMetrics {
 }
 
 //
+
 // MARK: - Private
+
 //
 
 private extension CronometerAverageMetrics {
@@ -163,7 +170,10 @@ private extension CronometerAverageMetrics {
         guard let encodedData = Common.UserDefaultsManager.defaults?.data(forKey: defaultsKey) else {
             return CronometerAverageMetrics()
         }
-        guard let instance = try? NSKeyedUnarchiver.unarchivedObject(ofClass: CronometerAverageMetrics.self, from: encodedData) else {
+        guard let instance = try? NSKeyedUnarchiver.unarchivedObject(
+            ofClass: CronometerAverageMetrics.self,
+            from: encodedData
+        ) else {
             return CronometerAverageMetrics()
         }
         return instance
@@ -171,7 +181,9 @@ private extension CronometerAverageMetrics {
 }
 
 //
+
 // MARK: - NSCoding
+
 //
 
 // Implements the NSCoding protocol to encode the instance into NSCoder for persistence.

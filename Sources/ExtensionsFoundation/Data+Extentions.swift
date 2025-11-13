@@ -15,7 +15,8 @@ public extension Data {
             return nil
         }
         if let jsonData = try? JSONSerialization.data(withJSONObject: json as Any, options: .prettyPrinted),
-           let jsonString = String(data: jsonData, encoding: .utf8) {
+           let jsonString = String(data: jsonData, encoding: .utf8)
+        {
             return jsonString
         }
         return nil

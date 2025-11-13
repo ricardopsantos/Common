@@ -25,25 +25,27 @@ func makeTextViews(texts: [String]) -> some View {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-fileprivate extension Common_Preview {
-    struct SampleViewsBuilders: View {
-        public init() {}
-        @State var viewFrame: (CGRect, CGRect) = (.zero, .zero)
-        public var body: some View {
-            VStack {
-                makeTextViews()
-                Divider()
-                makeTextViews(texts: ["Hello", "World"])
+    fileprivate extension Common_Preview {
+        struct SampleViewsBuilders: View {
+            public init() {}
+            @State var viewFrame: (CGRect, CGRect) = (.zero, .zero)
+            public var body: some View {
+                VStack {
+                    makeTextViews()
+                    Divider()
+                    makeTextViews(texts: ["Hello", "World"])
+                }
             }
         }
     }
-}
 
-#Preview {
-    Common_Preview.SampleViewsBuilders()
-}
+    #Preview {
+        Common_Preview.SampleViewsBuilders()
+    }
 #endif

@@ -183,8 +183,9 @@ class CodableCacheManagerBaseTests: XCTestCase {
         syncClearAll()
         syncStore(count: 10_000)
 
+        // Time: ~0.004s
         measure {
-            syncFetchFirst() // Should take around ~0.004s depending on env
+            syncFetchFirst()
         }
     }
 }

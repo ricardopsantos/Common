@@ -5,7 +5,8 @@
 
 import Foundation
 
-/// Synchronizes access to a critical section of code using either Objective-C synchronization or a Swift-native NSLock, depending on the type of lock provided.
+/// Synchronizes access to a critical section of code using either Objective-C synchronization or a Swift-native NSLock,
+/// depending on the type of lock provided.
 ///
 /// - Parameters:
 ///   - lock: The lock object to synchronize on.
@@ -36,7 +37,8 @@ public class Weak<T: AnyObject> {
 /// - It requires passing a lock object of type Any, which can be any object that can serve as a synchronization point.
 /// - The closure containing the synchronized code is passed as an argument.
 /// - It's less type-safe because it can accept any object as the lock.
-/// - It's slightly less efficient than Swift-native synchronization due to the overhead of Objective-C runtime functions.
+/// - It's slightly less efficient than Swift-native synchronization due to the overhead of Objective-C runtime
+/// functions.
 public func syncedV1<T>(_ lock: Any, closure: () -> T) -> T {
     /** Usage:
      ```
@@ -70,7 +72,8 @@ public func syncedV1<T>(_ lock: Any, closure: () -> T) -> T {
 /// - The closure containing the synchronized code is passed as an argument.
 /// - It's more type-safe because it explicitly requires an NSLock instance.
 /// - It's slightly more efficient than Objective-C synchronization because it directly calls Swift methods.
-/// - defer { lock.unlock() } ensures that the lock is always released, even if an error occurs or an early return is encountered.
+/// - defer { lock.unlock() } ensures that the lock is always released, even if an error occurs or an early return is
+/// encountered.
 public func syncedV2<T>(_ lock: NSLock, closure: () -> T) -> T {
     /** Usage:
      ```

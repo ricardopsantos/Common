@@ -3,10 +3,10 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
-import Security
 import CommonCrypto
+import Foundation
+import Security
 
 public extension CommonNetworking {
     class NetworkAgentClient: NSObject, URLSessionDelegate {
@@ -15,43 +15,50 @@ public extension CommonNetworking {
 
         /// No authentication at all
         public init(session: URLSession) {
-            self.urlSession = URLSession(
+            urlSession = URLSession(
                 configuration: session.configuration,
                 delegate: nil,
-                delegateQueue: nil)
+                delegateQueue: nil
+            )
         }
 
         /// Basic authentication with user and password,
         public init(
             session: URLSession,
-            credential: URLCredential) {
-            self.authenticationHandler = .init(credential: credential)
-            self.urlSession = URLSession(
+            credential: URLCredential
+        ) {
+            authenticationHandler = .init(credential: credential)
+            urlSession = URLSession(
                 configuration: session.configuration,
                 delegate: authenticationHandler,
-                delegateQueue: nil)
+                delegateQueue: nil
+            )
         }
 
         /// SSL Pinning - Using local Public Keys
         public init(
             session: URLSession,
-            serverPublicHashKeys: [String]) {
-            self.authenticationHandler = .init(serverPublicHashKeys: serverPublicHashKeys)
-            self.urlSession = URLSession(
+            serverPublicHashKeys: [String]
+        ) {
+            authenticationHandler = .init(serverPublicHashKeys: serverPublicHashKeys)
+            urlSession = URLSession(
                 configuration: session.configuration,
                 delegate: authenticationHandler,
-                delegateQueue: nil)
+                delegateQueue: nil
+            )
         }
 
         /// SSL Pinning - Using local stored Certificates
         public init(
             session: URLSession,
-            pathToCertificates: [String]) {
-            self.authenticationHandler = .init(pathToCertificates: pathToCertificates)
-            self.urlSession = URLSession(
+            pathToCertificates: [String]
+        ) {
+            authenticationHandler = .init(pathToCertificates: pathToCertificates)
+            urlSession = URLSession(
                 configuration: session.configuration,
                 delegate: authenticationHandler,
-                delegateQueue: nil)
+                delegateQueue: nil
+            )
         }
     }
 }

@@ -3,13 +3,15 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
-import Security
 import CommonCrypto
+import Foundation
+import Security
 
 //
+
 // MARK: - Run
+
 //
 
 public extension CommonNetworking.NetworkAgentClient {
@@ -17,7 +19,8 @@ public extension CommonNetworking.NetworkAgentClient {
         request: URLRequest,
         decoder: JSONDecoder,
         logger: CommonNetworking.NetworkLogger,
-        responseFormat: CommonNetworking.ResponseFormat) -> AnyPublisher<
+        responseFormat: CommonNetworking.ResponseFormat
+    ) -> AnyPublisher<
         CommonNetworking.Response<T>,
         CommonNetworking.APIError
     > where T: Decodable {
@@ -55,7 +58,8 @@ public extension CommonNetworking.NetworkAgentClient {
                     let prefix = logger.prefix.isEmpty ? "" : "\(logger.prefix): "
                     let status = "Status: \(statusCode), \(httpStatusCode)"
                     let responseDebug = String(decoding: result.data, as: UTF8.self)
-                    let logMessage = "# ⤵️ Response\(number) ⤵️ \(status) | \(prefix) [\(requestDebug)]\n# \(responseDebug)"
+                    let logMessage =
+                        "# ⤵️ Response\(number) ⤵️ \(status) | \(prefix) [\(requestDebug)]\n# \(responseDebug)"
                     Common_Logs.debug(logMessage, "\(Self.self)")
                 }
 
@@ -67,19 +71,22 @@ public extension CommonNetworking.NetworkAgentClient {
                         code: statusCode,
                         description: "",
                         data: result.data,
-                        jsonString: result.data.jsonString)
+                        jsonString: result.data.jsonString
+                    )
                 }
 
                 //
                 // DELETE METHOD, with empty data on response
                 //
                 if result.data.isEmpty, let httpMethod = request.httpMethod,
-                   httpMethod.lowercased() == CommonNetworking.HttpMethod.delete.rawValue.lowercased() {
+                   httpMethod.lowercased() == CommonNetworking.HttpMethod.delete.rawValue.lowercased()
+                {
                     throw CommonNetworking.APIError.finishWithStatusCodeAndJSONData(
                         code: statusCode,
                         description: "",
                         data: result.data,
-                        jsonString: result.data.jsonString)
+                        jsonString: result.data.jsonString
+                    )
                 }
 
                 //
@@ -90,7 +97,8 @@ public extension CommonNetworking.NetworkAgentClient {
                         result.data,
                         decoder,
                         responseFormat,
-                        printError: true)
+                        printError: true
+                    )
                     return CommonNetworking.Response(modelDto: modelDto, response: result.response)
                 } catch {
                     // We can receive data/json that fails to map with T.
@@ -105,7 +113,8 @@ public extension CommonNetworking.NetworkAgentClient {
                         code: statusCode,
                         description: description,
                         data: result.data,
-                        jsonString: result.data.jsonString)
+                        jsonString: result.data.jsonString
+                    )
                 }
             }
             .mapError { error in
@@ -123,7 +132,8 @@ public extension CommonNetworking.NetworkAgentClient {
         decoder: JSONDecoder,
         logger: CommonNetworking.NetworkLogger,
         responseFormat: CommonNetworking.ResponseFormat,
-        onCompleted: @escaping () -> Void) async throws -> T {
+        onCompleted: @escaping () -> Void
+    ) async throws -> T {
         let apiCall: AnyPublisher<
             T,
             CommonNetworking.APIError
@@ -131,7 +141,8 @@ public extension CommonNetworking.NetworkAgentClient {
             request: request,
             decoder: decoder,
             logger: logger,
-            responseFormat: responseFormat).flatMap { response in
+            responseFormat: responseFormat
+        ).flatMap { response in
             Just(response.modelDto).setFailureType(to: CommonNetworking.APIError.self).eraseToAnyPublisher()
         }.runBlockAndContinue { _ in
             onCompleted() // Do something before returns
@@ -140,12 +151,13 @@ public extension CommonNetworking.NetworkAgentClient {
     }
 }
 
-fileprivate extension CommonNetworking.NetworkAgentClient {
+private extension CommonNetworking.NetworkAgentClient {
     static func decode<T: Decodable>(
         _ data: Data?,
         _ decoder: JSONDecoder,
         _ responseFormat: CommonNetworking.ResponseFormat,
-        printError: Bool) throws -> T {
+        printError: Bool
+    ) throws -> T {
         switch responseFormat {
         case .json:
             return try decoder.decodeFriendly(T.self, from: data ?? Data(), printError: printError)
@@ -158,7 +170,7 @@ fileprivate extension CommonNetworking.NetworkAgentClient {
 
 public extension URLRequest {
     var cronometerId: String {
-        var id: String = ""
+        var id = ""
         if let httpMethod {
             id += "\(httpMethod)".uppercased()
         }

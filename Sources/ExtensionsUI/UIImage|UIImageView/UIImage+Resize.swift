@@ -49,7 +49,8 @@ public extension UIImage {
     ) -> UIImage? {
         // Create an CGImageSource that represent an image
         guard let data = image.pngData(),
-              let imageSource = CGImageSourceCreateWithData(data as CFData, nil) else {
+              let imageSource = CGImageSourceCreateWithData(data as CFData, nil)
+        else {
             return nil
         }
 
@@ -61,7 +62,7 @@ public extension UIImage {
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceShouldCacheImmediately: true,
             kCGImageSourceCreateThumbnailWithTransform: true,
-            kCGImageSourceThumbnailMaxPixelSize: maxDimensionInPixels
+            kCGImageSourceThumbnailMaxPixelSize: maxDimensionInPixels,
         ] as [CFString: Any] as CFDictionary
         guard let downsampledImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, downsampleOptions) else {
             return nil
@@ -94,10 +95,12 @@ public extension UIImage {
             return resizeOperation(with: size) ?? self
         case .contentAspectFit:
             let aspectRatio = min(aspectWidth, aspectHeight)
-            return resizeOperation(with: CGSize(width: size.width * aspectRatio, height: size.height * aspectRatio)) ?? self
+            return resizeOperation(with: CGSize(width: size.width * aspectRatio, height: size.height * aspectRatio)) ??
+                self
         case .contentAspectFill:
             let aspectRatio = max(aspectWidth, aspectHeight)
-            return resizeOperation(with: CGSize(width: size.width * aspectRatio, height: size.height * aspectRatio)) ?? self
+            return resizeOperation(with: CGSize(width: size.width * aspectRatio, height: size.height * aspectRatio)) ??
+                self
         }
     }
 
@@ -163,7 +166,7 @@ public extension UIImage {
         }
 
         var result: UIImage = self
-        var ready: Bool = false
+        var ready = false
         let decreaseK: CGFloat = 0.95
         while !ready {
             if ready {
@@ -194,7 +197,12 @@ public extension UIImage {
         func printReport(image: UIImage?, name: String) {
             guard let image else { return }
             // swiftlint:disable logs_rule_1
-            print("# ", name + ",", "dim: \(Int(image.size.width))x\(Int(image.size.height)),", "size: \(image.pngData()!.count)")
+            print(
+                "# ",
+                name + ",",
+                "dim: \(Int(image.size.width))x\(Int(image.size.height)),",
+                "size: \(image.pngData()!.count)"
+            )
             // swiftlint:enable logs_rule_1
         }
         let originalImageHalfSize: CGSize = .init(width: original.size.width / 2, height: original.size.height / 2)

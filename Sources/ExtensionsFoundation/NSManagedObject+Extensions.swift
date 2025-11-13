@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import CoreData
+import Foundation
 
 public extension NSManagedObject {
     class var entityName: String {
@@ -25,7 +25,7 @@ public extension NSManagedObject {
             "entityId",
             "entity_id",
             "primaryId",
-            "primary_id"
+            "primary_id",
         ]
         if let extra, !extra.isEmpty {
             possibleKeys.insert(extra, at: 0)

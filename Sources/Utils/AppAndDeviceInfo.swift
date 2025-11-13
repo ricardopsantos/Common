@@ -4,8 +4,8 @@
 //
 
 import Foundation
-import UIKit
 import SwiftUI
+import UIKit
 
 // MARK: - iOS/MacOs
 
@@ -17,7 +17,8 @@ public extension Common {
         public static var supportsShakeToEdit: Bool { UIApplication.shared.applicationSupportsShakeToEdit }
         public static var version: String {
             if let bundleVersion = Bundle.bundleVersion,
-               let bundleShortVersion = Bundle.bundleShortVersion {
+               let bundleShortVersion = Bundle.bundleShortVersion
+            {
                 return "\(bundleShortVersion) (\(bundleVersion))"
             }
             return ""
@@ -52,7 +53,7 @@ public extension Common {
             }
         }
 
-        public static func setBatteryMonitoring(to value: Bool) -> Bool {
+        public static func setBatteryMonitoring(to _: Bool) -> Bool {
             UIDevice.current.isBatteryMonitoringEnabled = true
             return isBatteryMonitoringEnabled
         }
@@ -84,49 +85,53 @@ public extension Common {
         public static var uuid: String { UIDevice.current.identifierForVendor!.uuidString }
         public static var isSimulator: Bool {
             #if targetEnvironment(simulator)
-            return true
+                return true
             #else
-            return false
+                return false
             #endif
         }
     }
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-fileprivate extension Common_Preview {
-    struct AppInfo: View {
-        public init() {}
-        public var body: some View {
-            VStack {
-                Group {
-                    Text("App Supports Multiple Scene: \(Common.AppInfo.supportsMultipleScene.description)")
-                    Text("App Supports Alternate Icons: \(Common.AppInfo.supportsAlternateIcons.description)")
-                    Text("App Supports Shake To Edit: \(Common.AppInfo.supportsShakeToEdit.description)")
+    fileprivate extension Common_Preview {
+        struct AppInfo: View {
+            public init() {}
+            public var body: some View {
+                VStack {
+                    Group {
+                        Text("App Supports Multiple Scene: \(Common.AppInfo.supportsMultipleScene.description)")
+                        Text("App Supports Alternate Icons: \(Common.AppInfo.supportsAlternateIcons.description)")
+                        Text("App Supports Shake To Edit: \(Common.AppInfo.supportsShakeToEdit.description)")
+                    }
+                    Divider()
+                    Group {
+                        Text("Machine Info: \(Common.DeviceInfo.machineInfo)")
+                        Text("Device Name: \(Common.DeviceInfo.name)")
+                        Text("System Name: \(Common.DeviceInfo.systemName)")
+                        Text("Device Model: \(Common.DeviceInfo.model)")
+                        Text("System Version 1: \(Common.DeviceInfo.systemVersion)")
+                        Text("System Version 2: \(Common.DeviceInfo.operatingSystemVersionString)")
+                        Text("Battery Charging State: \(Common.DeviceInfo.batteryState)")
+                        Text("Battery Monitoring Enabled: \(Common.DeviceInfo.isBatteryMonitoringEnabled.description)")
+                        Text(
+                            "Battery Monitoring Enabled (After change)? \(Common.DeviceInfo.setBatteryMonitoring(to: true).description)"
+                        )
+                        Text("Battery Charge Level: \(Common.DeviceInfo.batteryLevel)")
+                    }
+                    Spacer()
                 }
-                Divider()
-                Group {
-                    Text("Machine Info: \(Common.DeviceInfo.machineInfo)")
-                    Text("Device Name: \(Common.DeviceInfo.name)")
-                    Text("System Name: \(Common.DeviceInfo.systemName)")
-                    Text("Device Model: \(Common.DeviceInfo.model)")
-                    Text("System Version 1: \(Common.DeviceInfo.systemVersion)")
-                    Text("System Version 2: \(Common.DeviceInfo.operatingSystemVersionString)")
-                    Text("Battery Charging State: \(Common.DeviceInfo.batteryState)")
-                    Text("Battery Monitoring Enabled: \(Common.DeviceInfo.isBatteryMonitoringEnabled.description)")
-                    Text("Battery Monitoring Enabled (After change)? \(Common.DeviceInfo.setBatteryMonitoring(to: true).description)")
-                    Text("Battery Charge Level: \(Common.DeviceInfo.batteryLevel)")
-                }
-                Spacer()
             }
         }
     }
-}
 
-#Preview {
-    Common_Preview.AppInfo()
-}
+    #Preview {
+        Common_Preview.AppInfo()
+    }
 #endif

@@ -3,11 +3,11 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
+import Combine
 import Foundation
 import Network
-import Combine
 #if !os(watchOS)
-import SystemConfiguration
+    import SystemConfiguration
 #endif
 
 // https://www.vadimbulavin.com/network-connectivity-on-ios-with-swift/
@@ -37,7 +37,8 @@ public extension CommonNetworking {
         @Published public private(set) var networkStatus: NetworkStatus = .unknown
 
         private init() {
-            self.networkStatus = Common_Utils.existsInternetConnection() ? .internetConnectionAvailable : .internetConnectionLost
+            networkStatus = Common_Utils
+                .existsInternetConnection() ? .internetConnectionAvailable : .internetConnectionLost
             Self.networkMonitor.start { [weak self] newStatus in
                 self?.networkStatus = newStatus
             }
@@ -53,29 +54,28 @@ public extension CommonNetworking {
         private var statusHistory = [Status]()
 
         private init() {
-            self.monitor = NWPathMonitor()
+            monitor = NWPathMonitor()
             monitor.start(queue: DispatchQueue(label: "\(Self.self).queue", qos: .userInitiated))
         }
 
         public func start(statusUpdate: @escaping (Status) -> Void) {
             monitor.pathUpdateHandler = { [weak self] path in
                 Common_Utils.executeInMainTread { [weak self] in
-                    guard let self = self else { return }
-                    let newStatus: Status
-                    if path.status == .satisfied {
-                        if self.isInternetConnectionAvailable == nil {
-                            newStatus = .internetConnectionAvailable
+                    guard let self else { return }
+                    let newStatus: Status = if path.status == .satisfied {
+                        if isInternetConnectionAvailable == nil {
+                            .internetConnectionAvailable
                         } else {
-                            newStatus = .internetConnectionRecovered
+                            .internetConnectionRecovered
                         }
                     } else {
-                        newStatus = .internetConnectionLost
+                        .internetConnectionLost
                     }
 
-                    if self.statusHistory.last != newStatus {
-                        self.statusHistory.append(newStatus)
+                    if statusHistory.last != newStatus {
+                        statusHistory.append(newStatus)
                         statusUpdate(newStatus)
-                        self.isInternetConnectionAvailable = newStatus.existsInternetConnection
+                        isInternetConnectionAvailable = newStatus.existsInternetConnection
                     }
                 }
             }

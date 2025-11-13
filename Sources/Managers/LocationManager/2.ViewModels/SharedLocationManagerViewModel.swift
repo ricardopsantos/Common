@@ -3,12 +3,14 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
-import CoreLocation
 import Combine
+import CoreLocation
+import Foundation
 
 //
+
 // MARK: - SharedLocationManagerViewModel
+
 //
 extension Common.SharedLocationManagerViewModel: Equatable {
     public static func == (
@@ -28,7 +30,9 @@ public extension Common {
         @Published public private(set) var locationIsAuthorized: Bool = true
 
         //
+
         // MARK: - LocationManagerViewModelProtocol
+
         //
         @Published public var coordinates: Common.LocationUtils.Coordinate?
         public static var lastKnowLocation: (coordinate: LocationUtils.Coordinate, date: Date)?

@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 public typealias CancelBag = AutoReleasedCancelBag
 
@@ -26,8 +26,8 @@ public final class AutoReleasedCancelBag {
     }
 
     public init() {
-        self.autoReleasedSubscriptions = []
-        self.nonAutoReleasedSubscriptions = Set<AnyCancellable>()
+        autoReleasedSubscriptions = []
+        nonAutoReleasedSubscriptions = Set<AnyCancellable>()
     }
 
     public func cancelFirst() {
@@ -85,8 +85,10 @@ public final class AutoReleasedCancelBag {
 public extension AnyCancellable {
     func store(
         in cancelBag: CancelBag,
-        autoRelease: Bool = true, /// Will cancel automatically a previous subscription if there's already a subscription with same id
-        subscriptionId: String = "", /// subscription Id. If empty, the file, function and line will be used to calculate the subscription id
+        autoRelease: Bool = true,
+        /// Will cancel automatically a previous subscription if there's already a subscription with same id
+        subscriptionId: String = "",
+        /// subscription Id. If empty, the file, function and line will be used to calculate the subscription id
         file: String = #file,
         function: String = #function,
         line: Int = #line
@@ -111,7 +113,7 @@ public final class DebounceCancelBag {
     }
 
     public init() {
-        self.subscriptions = []
+        subscriptions = []
     }
 
     public func cancel() {
@@ -126,7 +128,7 @@ public final class DebounceCancelBag {
 }
 
 public extension AnyCancellable {
-    func store(in cancelBag: DebounceCancelBag, id: String = "") {
+    func store(in cancelBag: DebounceCancelBag, id _: String = "") {
         cancelBag.subscriptions.append(self)
         // Keep only 2 subcriptions:
         // 1 - One for the redraw button, 2 - and the debounce for the previous button (before redraw view)

@@ -13,7 +13,8 @@ public extension URL {
             .reduce(into: [String: [String]]()) { result, element in
                 guard !element.isEmpty,
                       let key = element[0].removingPercentEncoding,
-                      let value = element.count >= 2 ? element[1].removingPercentEncoding : "" else {
+                      let value = element.count >= 2 ? element[1].removingPercentEncoding : ""
+                else {
                     return
                 }
                 var values = result[key, default: [String]()]

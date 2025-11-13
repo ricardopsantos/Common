@@ -4,12 +4,12 @@
 //
 
 import Foundation
-import UIKit
 import SwiftUI
+import UIKit
 
 public extension UIView {
     func animateBorderWidth(toValue: CGFloat, duration: Double) {
-        let animation: CABasicAnimation = CABasicAnimation(keyPath: "borderWidth")
+        let animation = CABasicAnimation(keyPath: "borderWidth")
         animation.fromValue = layer.borderWidth
         animation.toValue = toValue
         animation.duration = duration
@@ -18,7 +18,7 @@ public extension UIView {
     }
 
     func animateBorderColor(toValue: UIColor, duration: Double) {
-        let animation: CABasicAnimation = CABasicAnimation(keyPath: "borderColor")
+        let animation = CABasicAnimation(keyPath: "borderColor")
         animation.fromValue = layer.borderColor
         animation.toValue = toValue.cgColor
         animation.duration = duration
@@ -61,7 +61,7 @@ public extension UIView {
 
     // this functions is duplicated
     func addBlur(style: UIBlurEffect.Style = .dark) -> UIVisualEffectView {
-        let blurEffectView: UIVisualEffectView = UIVisualEffectView(effect: UIBlurEffect(style: style))
+        let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: style))
         blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         blurEffectView.alpha = 0.5
         addSubview(blurEffectView)
@@ -76,8 +76,8 @@ public extension UIView {
     ) {
         if recursive {
             fadeTo(value, duration: duration, recursive: false, onCompletion: onCompletion)
-            allSubviewsRecursive().forEach {
-                $0.fadeTo(value, duration: duration, recursive: false, onCompletion: {})
+            for item in allSubviewsRecursive() {
+                item.fadeTo(value, duration: duration, recursive: false, onCompletion: {})
             }
         } else {
             guard alpha != value else {

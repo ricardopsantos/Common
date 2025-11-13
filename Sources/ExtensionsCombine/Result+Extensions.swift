@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 public extension Swift.Result {
     var isSuccess: Bool {
@@ -16,7 +16,7 @@ public extension Swift.Result {
 
     var successUnWrappedValue: Any? {
         switch self {
-        case .success(let unWrappedValue): return unWrappedValue
+        case let .success(unWrappedValue): return unWrappedValue
         case .failure: return nil
         }
     }
@@ -24,7 +24,7 @@ public extension Swift.Result {
     var failureUnWrappedValue: Error? {
         switch self {
         case .success: return nil
-        case .failure(let error): return error
+        case let .failure(error): return error
         }
     }
 

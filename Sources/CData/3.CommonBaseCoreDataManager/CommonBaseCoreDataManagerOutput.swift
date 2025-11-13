@@ -3,12 +3,14 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
-import CoreData
 import Combine
+import CoreData
+import Foundation
 
 //
+
 // MARK: - CommonBaseCoreDataManagerOutput
+
 //
 
 public enum CommonBaseCoreDataManagerOutput: Hashable {
@@ -25,7 +27,9 @@ public enum CommonBaseCoreDataManagerOutput: Hashable {
 }
 
 //
+
 // MARK: - Events emission sugar
+
 //
 
 public extension CommonBaseCoreDataManager {

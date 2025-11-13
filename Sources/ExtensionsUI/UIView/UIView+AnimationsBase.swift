@@ -43,7 +43,7 @@ public extension UIView {
     }
 }
 
-fileprivate extension UIView {
+private extension UIView {
     func fadeAndPerform(
         disableUserInteractionFor: Double = 1,
         block: @escaping () -> Void

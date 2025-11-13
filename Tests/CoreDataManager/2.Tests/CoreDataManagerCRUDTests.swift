@@ -65,58 +65,6 @@ struct CoreDataManagerCRUDTests {
     }
 
     @Test
-    func aSyncCRUD() async {
-        guard enabled() else { #expect(true); return }
-
-        // Records count
-        await bd.aSyncClearAll()
-        let count1 = await bd.aSyncRecordCount()
-        let count2 = await bd.aSyncAllIds().count
-        #expect(count1 == 0)
-        #expect(count1 == count2)
-
-        // Batch Insert
-        await bd.aSyncClearAll()
-        await bd.aSyncStoreBatch([.random, .random, .random])
-        let count3 = await bd.aSyncRecordCount()
-        #expect(count3 == 3)
-
-        // Insert
-        bd.syncClearAll()
-
-        var toStore: CoreDataSampleUsageNamespace.CRUDEntity = .random
-        await bd.aSyncStore(toStore)
-
-        // Records count
-        let count4 = await bd.aSyncRecordCount()
-        #expect(count4 == 1)
-
-        // Get
-        var stored = await bd.aSyncRetrieve(key: toStore.id)
-        #expect(stored == toStore)
-
-        // Update
-        toStore.name = "NewName"
-        await bd.aSyncUpdate(toStore)
-
-        stored = await bd.aSyncRetrieve(key: toStore.id)
-        #expect(stored?.name == "NewName")
-
-        // Delete
-        if let stored {
-            await bd.aSyncDelete(stored)
-            let some = await bd.aSyncRetrieve(key: toStore.id)
-            #expect(some == nil)
-            let c1 = await bd.aSyncRecordCount()
-            let c2 = await bd.aSyncAllIds().count
-            #expect(c1 == 0)
-            #expect(c1 == c2)
-        } else {
-            #expect(Bool(false))
-        }
-    }
-
-    @Test
     func syncDelete() {
         guard enabled() else { #expect(true); return }
 
@@ -128,27 +76,17 @@ struct CoreDataManagerCRUDTests {
 
     // MARK: - Others
 
-    @Test
-    func mergeContext1() async {
-        guard enabled() else { #expect(true); return }
 
-        await bd.aSyncClearAll()
-        // save async
-        await bd.aSyncStore(.random)
-        // get async
-        let stored = await bd.aSyncRecordCount()
-        #expect(stored == 1)
-    }
 
     @Test
-    func mergeContext2() async {
+    func syncRecordCount() async {
         guard enabled() else { #expect(true); return }
 
         bd.syncClearAll()
         // save sync
         bd.syncStore(.random)
         // get async
-        let stored = await bd.aSyncRecordCount()
+        let stored = bd.syncRecordCount()
         #expect(stored == 1)
     }
 
@@ -234,6 +172,72 @@ struct CoreDataManagerCRUDTests {
         #expect(okInserted, "Expected \(numberOfInserts) insert events")
         #expect(okChanged, "Expected \(numberOfInserts) change-item events")
         #expect(okFinished, "Expected \(numberOfInserts) finish-change events")
+    }
+    
+    // MARK: - Async
+    
+    @Test
+    func aSyncCRUD() async {
+        guard enabled() else { #expect(true); return }
+
+        // Records count
+        await bd.aSyncClearAll()
+        let count1 = await bd.aSyncRecordCount()
+        let count2 = await bd.aSyncAllIds().count
+        #expect(count1 == 0)
+        #expect(count1 == count2)
+
+        // Batch Insert
+        await bd.aSyncClearAll()
+        await bd.aSyncStoreBatch([.random, .random, .random])
+        let count3 = await bd.aSyncRecordCount()
+        #expect(count3 == 3)
+
+        // Insert
+        bd.syncClearAll()
+
+        var toStore: CoreDataSampleUsageNamespace.CRUDEntity = .random
+        await bd.aSyncStore(toStore)
+
+        // Records count
+        let count4 = await bd.aSyncRecordCount()
+        #expect(count4 == 1)
+
+        // Get
+        var stored = await bd.aSyncRetrieve(key: toStore.id)
+        #expect(stored == toStore)
+
+        // Update
+        toStore.name = "NewName"
+        await bd.aSyncUpdate(toStore)
+
+        stored = await bd.aSyncRetrieve(key: toStore.id)
+        #expect(stored?.name == "NewName")
+
+        // Delete
+        if let stored {
+            await bd.aSyncDelete(stored)
+            let some = await bd.aSyncRetrieve(key: toStore.id)
+            #expect(some == nil)
+            let c1 = await bd.aSyncRecordCount()
+            let c2 = await bd.aSyncAllIds().count
+            #expect(c1 == 0)
+            #expect(c1 == c2)
+        } else {
+            #expect(Bool(false))
+        }
+    }
+
+    @Test
+    func aSyncRecordCount() async {
+        guard enabled() else { #expect(true); return }
+
+        await bd.aSyncClearAll()
+        // save async
+        await bd.aSyncStore(.random)
+        // get async
+        let stored = await bd.aSyncRecordCount()
+        #expect(stored == 1)
     }
 }
 

@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import CoreData
+import Foundation
 
 public extension NSPredicate {
     static var exists: NSPredicate {
@@ -18,14 +18,20 @@ public extension NSPredicate {
     static func allFields(_ fields: [String], with value: String, caseSensitive: Bool = false) -> NSPredicate {
         guard !value.isEmpty else { return NSPredicate(value: false) }
         if caseSensitive {
-            let predicatesCaseSensitive: [NSPredicate] = fields.filter { !$0.isEmpty }.map { NSPredicate(format: "\($0) == %@", value) }
+            let predicatesCaseSensitive: [NSPredicate] = fields.filter { !$0.isEmpty }.map { NSPredicate(
+                format: "\($0) == %@",
+                value
+            ) }
             if predicatesCaseSensitive.count >= 2 {
                 return NSCompoundPredicate(type: .and, subpredicates: predicatesCaseSensitive)
             } else {
                 return predicatesCaseSensitive.first ?? NSPredicate(value: false)
             }
         } else {
-            let predicatesNotCaseSensitive: [NSPredicate] = fields.filter { !$0.isEmpty }.map { NSPredicate(format: "\($0) ==[c] %@", value) }
+            let predicatesNotCaseSensitive: [NSPredicate] = fields.filter { !$0.isEmpty }.map { NSPredicate(
+                format: "\($0) ==[c] %@",
+                value
+            ) }
             if predicatesNotCaseSensitive.count >= 2 {
                 return NSCompoundPredicate(type: .and, subpredicates: predicatesNotCaseSensitive)
             } else {
@@ -37,14 +43,20 @@ public extension NSPredicate {
     static func anyField(_ fields: [String], with value: String, caseSensitive: Bool = false) -> NSPredicate {
         guard !value.isEmpty else { return NSPredicate(value: false) }
         if caseSensitive {
-            let predicatesCaseSensitive: [NSPredicate] = fields.filter { !$0.isEmpty }.map { NSPredicate(format: "\($0) == %@", value) }
+            let predicatesCaseSensitive: [NSPredicate] = fields.filter { !$0.isEmpty }.map { NSPredicate(
+                format: "\($0) == %@",
+                value
+            ) }
             if predicatesCaseSensitive.count >= 2 {
                 return NSCompoundPredicate(type: .or, subpredicates: predicatesCaseSensitive)
             } else {
                 return predicatesCaseSensitive.first ?? NSPredicate(value: false)
             }
         } else {
-            let predicatesNotCaseSensitive: [NSPredicate] = fields.filter { !$0.isEmpty }.map { NSPredicate(format: "\($0) ==[c] %@", value) }
+            let predicatesNotCaseSensitive: [NSPredicate] = fields.filter { !$0.isEmpty }.map { NSPredicate(
+                format: "\($0) ==[c] %@",
+                value
+            ) }
             if predicatesNotCaseSensitive.count >= 2 {
                 return NSCompoundPredicate(type: .or, subpredicates: predicatesNotCaseSensitive)
             } else {
@@ -62,8 +74,8 @@ public extension NSPredicate {
         var predicatesList = [NSPredicate]()
         let words = value.split(by: " ")
         func predicateFor(word: String) -> NSPredicate {
-            var format: String = ""
-            fields.forEach { field in
+            var format = ""
+            for field in fields {
                 format = "\(format) \(field) contains[cd] %@ OR"
             }
             format = format.dropLastIf(" OR")
@@ -72,7 +84,7 @@ public extension NSPredicate {
             }
             return NSPredicate(format: format, word, word, word, word, word, word, word, word, word, word)
         }
-        words.forEach { word in
+        for word in words {
             // Search several words
             if !word.trim.isEmpty {
                 predicatesList.append(predicateFor(word: word.trim))

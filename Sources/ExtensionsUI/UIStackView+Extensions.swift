@@ -4,8 +4,8 @@
 //
 
 import Foundation
-import UIKit
 import SwiftUI
+import UIKit
 
 public extension UIStackView {
     var view: UIView { self as UIView }
@@ -76,7 +76,9 @@ public extension UIStackView {
         guard let superview else {
             return
         }
-        layouts.edgesToSuperview(insets: insets) // Don't use RJPSLayouts. It will fail if scroll view is inside of stack view with lots of elements
+        layouts
+            .edgesToSuperview(insets: insets) // Don't use RJPSLayouts. It will fail if scroll view is inside of stack
+        // view with lots of elements
         layouts.width(to: superview) // NEEDS THIS!
     }
 
@@ -141,10 +143,10 @@ public extension UIStackView {
                 uiview.layoutIfNeeded()
             } else {
                 if let old = arrangedSubviews.filter({ $0.accessibilityIdentifier == id }).first {
-                    arrangedSubviews.enumerated().forEach {
-                        if $0.1 == uiview {
+                    for arrangedSubview in arrangedSubviews.enumerated() {
+                        if arrangedSubview.1 == uiview {
                             removeArrangedSubview(old)
-                            insertArrangedSubview(uiview, at: $0.0)
+                            insertArrangedSubview(uiview, at: arrangedSubview.0)
                         }
                     }
                 }
@@ -183,9 +185,9 @@ public extension UIStackView {
     }
 
     func insertArrangedSubview(_ uiview: UIView, belowArrangedSubview subview: UIView) {
-        arrangedSubviews.enumerated().forEach {
-            if $0.1 == subview {
-                insertArrangedSubview(uiview, at: $0.0 + 1)
+        for arrangedSubview in arrangedSubviews.enumerated() {
+            if arrangedSubview.1 == subview {
+                insertArrangedSubview(uiview, at: arrangedSubview.0 + 1)
                 setNeedsLayout()
                 layoutIfNeeded()
             }
@@ -193,9 +195,9 @@ public extension UIStackView {
     }
 
     func insertArrangedSubview(_ view: UIView, aboveArrangedSubview subview: UIView) {
-        arrangedSubviews.enumerated().forEach {
-            if $0.1 == subview {
-                insertArrangedSubview(view, at: $0.0)
+        for arrangedSubview in arrangedSubviews.enumerated() {
+            if arrangedSubview.1 == subview {
+                insertArrangedSubview(view, at: arrangedSubview.0)
                 setNeedsLayout()
                 layoutIfNeeded()
             }
@@ -237,8 +239,8 @@ public extension UIStackView {
         // Deactivate all constraints
         NSLayoutConstraint.deactivate(removedSubviews.flatMap(\.constraints))
         // Remove the views from self
-        removedSubviews.forEach {
-            $0.removeFromSuperview()
+        for removedSubview in removedSubviews {
+            removedSubview.removeFromSuperview()
         }
     }
 }

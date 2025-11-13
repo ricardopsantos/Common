@@ -5,8 +5,8 @@
 
 // https://jllnmercier.medium.com/combine-handling-uikits-gestures-with-a-publisher-c9374de5a478
 
-import Foundation
 import Combine
+import Foundation
 import UIKit
 
 open class GestureSubscription<S: Subscriber>: Subscription where S.Input == GestureType, S.Failure == Never {
@@ -27,7 +27,7 @@ open class GestureSubscription<S: Subscriber>: Subscription where S.Input == Ges
         view.addGestureRecognizer(gesture)
     }
 
-    public func request(_ demand: Subscribers.Demand) {}
+    public func request(_: Subscribers.Demand) {}
 
     public func cancel() {
         subscriber = nil
@@ -51,7 +51,9 @@ public struct GesturePublisher: Publisher {
         self.gestureType = gestureType
     }
 
-    public func receive<S>(subscriber: S) where S: Subscriber, GesturePublisher.Failure == S.Failure, GesturePublisher.Output == S.Input {
+    public func receive<S>(subscriber: S) where S: Subscriber, GesturePublisher.Failure == S.Failure,
+        GesturePublisher.Output == S.Input
+    {
         let subscription = GestureSubscription(
             subscriber: subscriber,
             view: view,

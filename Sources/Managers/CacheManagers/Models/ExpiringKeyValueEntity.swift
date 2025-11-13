@@ -3,11 +3,13 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 //
+
 // MARK: - ExpiringCodableObjectWithKey
+
 //
 
 public extension Common {
@@ -28,7 +30,7 @@ public extension Common {
         ) {
             self.init()
             self.key = key
-            self.recordDate = Self.referenceDate
+            recordDate = Self.referenceDate
             self.expireDate = expireDate
             self.encoding = encoding.rawValue
             self.objectType = objectType
@@ -76,7 +78,9 @@ public extension Common {
 }
 
 //
+
 // MARK: - Public
+
 //
 
 public extension Common.ExpiringKeyValueEntity {
@@ -87,12 +91,13 @@ public extension Common.ExpiringKeyValueEntity {
 
     static func composedKey(_ key: String, _ keyParams: [any Hashable]) -> String {
         let keyParams2 = keyParams.map { "\($0)".sha1 }
-        return "\(Common.UserDefaultsManager.Keys.expiringKeyValueEntity.defaultsKey)_\(key)_[" + keyParams2.joined(separator: ",") + "]"
+        return "\(Common.UserDefaultsManager.Keys.expiringKeyValueEntity.defaultsKey)_\(key)_[" + keyParams2
+            .joined(separator: ",") + "]"
     }
 
     var isExpired: Bool { valueData == nil }
 
-    func extract<T: Codable>(_ some: T.Type) -> T? {
+    func extract<T: Codable>(_: T.Type) -> T? {
         guard let data = valueData else {
             return nil
         }
@@ -111,10 +116,12 @@ public extension Common.ExpiringKeyValueEntity {
 }
 
 //
+
 // MARK: - fileprivate
+
 //
 
-fileprivate extension Common.ExpiringKeyValueEntity {
+private extension Common.ExpiringKeyValueEntity {
     var toData: Data? { try? JSONEncoder().encode(self) }
     static var referenceDate: Date { Date.utcNow }
     static var defaultMinutesTTL: Int { 60 * 24 }

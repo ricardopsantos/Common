@@ -3,11 +3,11 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
+import Combine
 import Foundation
 import Network
-import Combine
 #if !os(watchOS)
-import SystemConfiguration
+    import SystemConfiguration
 #endif
 
 // https://www.vadimbulavin.com/network-connectivity-on-ios-with-swift/
@@ -49,7 +49,8 @@ public extension CommonNetworking {
         }
 
         /// Basic Synchronous Reachability Check
-        /// is better if you need more control over network reachability checks, such as if you need to work with specific network configurations or addresses.
+        /// is better if you need more control over network reachability checks, such as if you need to work with
+        /// specific network configurations or addresses.
         private static var isConnectedToNetworkV1: Bool {
             // Initialize a sockaddr_in structure to represent a zeroed-out address.
             var zeroAddress = sockaddr_in()
@@ -106,7 +107,8 @@ public extension CommonNetworking {
         @PWThreadSafe private static var lastRequestTime: Date?
         /// Asynchronous Network Request with Caching
         /// offers more accurate detection of actual internet connectivity but at the cost of increased complexity
-        /// and potential latency. It’s better suited for scenarios where knowing if the internet is genuinely accessible is critical
+        /// and potential latency. It’s better suited for scenarios where knowing if the internet is genuinely
+        /// accessible is critical
         private static var isConnectedToNetworkV3: Bool {
             // Acquire the semaphore to ensure thread-safe access to the network status check
             semaphore.wait()
@@ -135,7 +137,9 @@ public extension CommonNetworking {
                             isFetching = false
                         }
                         // Check if the request was successful and the response is within the 200-299 range
-                        if error == nil, let httpResponse = response as? HTTPURLResponse, 200...299 ~= httpResponse.statusCode {
+                        if error == nil, let httpResponse = response as? HTTPURLResponse,
+                           200 ... 299 ~= httpResponse.statusCode
+                        {
                             isConnected = true
                         } else {
                             isConnected = false

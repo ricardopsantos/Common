@@ -3,13 +3,15 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
+import Combine
 import Foundation
 import LocalAuthentication
 import SwiftUI
-import Combine
 
 //
+
 // MARK: - AuthManagerViewModel
+
 //
 
 public extension Common {
@@ -29,7 +31,7 @@ public extension Common {
         fileprivate var context: LAContext?
         fileprivate var error: UserFriendlyError = .none
         private init() {
-            self.context = LAContext()
+            context = LAContext()
         }
 
         public static var shared = BiometricAuthManagerViewModel()
@@ -50,10 +52,12 @@ public extension Common {
 }
 
 //
+
 // MARK: - Private
+
 //
 
-fileprivate extension Common.BiometricAuthManagerViewModel {
+private extension Common.BiometricAuthManagerViewModel {
     func handle(userFriendlyError: UserFriendlyError?) {
         guard let userFriendlyError else {
             error = .none
@@ -97,7 +101,10 @@ fileprivate extension Common.BiometricAuthManagerViewModel {
         guard let context else {
             return
         }
-        context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { [weak self] success, nsError in
+        context
+            .evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
+                            localizedReason: reason)
+        { [weak self] success, nsError in
             Common_Utils.executeInMainTread {
                 if let nsError {
                     self?.handle(userFriendlyError: Self.userFriendlyErrorWith(error: nsError as NSError))

@@ -3,7 +3,6 @@ import UIKit
 
 public extension Common {
     enum ExecutionControlManager {
-
         // MARK: - Types
 
         public enum ThrottlePolicy {
@@ -216,6 +215,7 @@ public extension Common {
 }
 
 // MARK: - Sample usage
+
 extension Common.ExecutionControlManager {
     static func sampleUsage() {
         Common.ExecutionControlManager.throttle(1, operationId: "myClosure") {

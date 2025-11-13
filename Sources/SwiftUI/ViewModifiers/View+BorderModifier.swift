@@ -7,7 +7,9 @@ import Foundation
 import SwiftUI
 
 //
+
 // MARK: - BorderModifier
+
 //
 public struct BorderModifier: ViewModifier {
     private let width: CGFloat
@@ -30,7 +32,7 @@ public extension View {
 
 #if canImport(SwiftUI) && DEBUG
 
-#Preview {
-    Common_Preview.ViewsModifiersTestView()
-}
+    #Preview {
+        Common_Preview.ViewsModifiersTestView()
+    }
 #endif

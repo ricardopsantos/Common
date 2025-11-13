@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 import UIKit
 
 public extension CombineCompatible {
@@ -75,13 +75,13 @@ public extension CombineCompatibleProtocol where Self: UISearchTextField {
     }
 }
 
-fileprivate extension UISearchTextField {
+private extension UISearchTextField {
     static var smallDebounce = 250
     static var regularDebounce = smallDebounce * 2
     static var bigDebounce = smallDebounce * 2
 }
 
-fileprivate extension Common {
+private extension Common {
     func sample() {
         let search = UISearchTextField()
 

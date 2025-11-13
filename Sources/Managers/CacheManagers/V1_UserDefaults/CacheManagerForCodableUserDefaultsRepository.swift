@@ -3,11 +3,13 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 //
+
 // MARK: - CacheManagerForCodableUserDefaultsRepository
+
 //
 
 public extension Common {
@@ -16,6 +18,7 @@ public extension Common {
         public static let shared = CacheManagerForCodableUserDefaultsRepository()
 
         // MARK: - Private helpers
+
         @inline(__always)
         private func defaults() -> UserDefaults? { Common.UserDefaultsManager.defaults }
 
@@ -42,6 +45,7 @@ public extension Common {
         }
 
         // MARK: - Sync
+
         public func syncStore(
             _ codable: some Codable,
             key: String,
@@ -63,7 +67,9 @@ public extension Common {
             // Avoids deprecated/ineffective synchronize(); the system flushes at appropriate times.
         }
 
-        public func syncRetrieve<T: Codable>(_ type: T.Type, key: String, params: [any Hashable]) -> (model: T, recordDate: Date)? {
+        public func syncRetrieve<T: Codable>(_: T.Type, key: String,
+                                             params: [any Hashable]) -> (model: T, recordDate: Date)?
+        {
             let cKey = composedKey(key, params)
             guard let data = defaults()?.data(forKey: cKey),
                   let entity = decodeEntity(from: data) else { return nil }
@@ -98,14 +104,22 @@ public extension Common {
         }
 
         // MARK: - Async (lightweight wrappers over sync)
-        public func aSyncStore<T: Codable>(_ codable: T, key: String, params: [any Hashable], timeToLiveMinutes: Int?) async {
+
+        public func aSyncStore(
+            _ codable: some Codable,
+            key: String,
+            params: [any Hashable],
+            timeToLiveMinutes: Int?
+        ) async {
             await withCheckedContinuation { continuation in
                 syncStore(codable, key: key, params: params, timeToLiveMinutes: timeToLiveMinutes)
                 continuation.resume()
             }
         }
 
-        public func aSyncRetrieve<T: Codable>(_ type: T.Type, key: String, params: [any Hashable]) async -> (model: T, recordDate: Date)? {
+        public func aSyncRetrieve<T: Codable>(_ type: T.Type, key: String,
+                                              params: [any Hashable]) async -> (model: T, recordDate: Date)?
+        {
             await withCheckedContinuation { continuation in
                 let result = syncRetrieve(type, key: key, params: params)
                 continuation.resume(returning: result)

@@ -14,7 +14,12 @@ public extension UIView {
         if Common.InterfaceStyle.current == .light {
             return UIColor(red: CGFloat(r / 255.0), green: CGFloat(g / 255.0), blue: CGFloat(b / 255.0), alpha: 1)
         } else {
-            return UIColor(red: CGFloat((255 - r) / 255.0), green: CGFloat((255 - g) / 255.0), blue: CGFloat((255 - b) / 255.0), alpha: 1)
+            return UIColor(
+                red: CGFloat((255 - r) / 255.0),
+                green: CGFloat((255 - g) / 255.0),
+                blue: CGFloat((255 - b) / 255.0),
+                alpha: 1
+            )
         }
     }
 
@@ -31,7 +36,7 @@ public extension UIView {
         strength: CGFloat? = 0.95 // [0: 1] - The bigger, the lighter
     ) {
         layer.shadowColor = color.cgColor
-        if let strength = strength {
+        if let strength {
             layer.shadowOpacity = Float(1 - strength)
         }
         layer.shadowOffset = offset
@@ -55,7 +60,8 @@ public extension CALayer {
         shouldRasterize = true
         rasterizationScale = UIScreen.main.scale
 
-        // Optimize 2: set the shadowPath property to a specific value so that iOS doesn't need to calculate transparency dynamically.
+        // Optimize 2: set the shadowPath property to a specific value so that iOS doesn't need to calculate
+        // transparency dynamically.
         // For example, this creates a shadow path equivalent to the frame of the view:
         shadowPath = UIBezierPath(rect: bounds).cgPath
 

@@ -8,10 +8,10 @@ import os
 
 /**
  Mastering thread safety in Swift using os_unfair_lock.
- 
+
  On Apple platforms, `os_unfair_lock` is the most performance-efficient lock available.
  It provides low-latency mutual exclusion, ideal for high-contention code paths.
- 
+
  Reference:
  https://betterprogramming.pub/mastering-thread-safety-in-swift-with-one-runtime-trick-260c358a7515
  */
@@ -20,18 +20,19 @@ public typealias ThreadingManager = Common.UnfairLockThreadingManager
 public typealias ThreadingManagerWithKey = Common.UnfairLockThreadingManagerWithKey
 
 public extension Common {
-
     // MARK: - Single Lock Manager
 
     /// A class that provides thread synchronization using `os_unfair_lock`.
     final class UnfairLockThreadingManager {
         // MARK: Private storage
+
         private let pointer: os_unfair_lock_t
 
         // MARK: Init / Deinit
+
         public init() {
-            self.pointer = .allocate(capacity: 1)
-            self.pointer.initialize(to: os_unfair_lock())
+            pointer = .allocate(capacity: 1)
+            pointer.initialize(to: os_unfair_lock())
         }
 
         deinit {
@@ -80,12 +81,10 @@ public extension Common {
             defer { unlock() }
             return try action()
         }
-
     }
 }
 
 public extension Common {
-
     // MARK: - Multi-key Lock Manager
 
     /// A wrapper for managing multiple unfair locks identified by string keys.

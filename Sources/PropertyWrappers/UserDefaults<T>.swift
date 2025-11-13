@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 import SwiftUI
 
 public protocol AnyOptional {
@@ -34,23 +34,26 @@ public extension Common_PropertyWrappers {
         public let publisher = PassthroughSubject<T, Never>()
         public init(value: T, key: String, onChange: @escaping () -> Void = {}) {
             self.key = key
-            self.defaultValue = value
-            self.container = .standard
+            defaultValue = value
+            container = .standard
             self.onChange = onChange
         }
 
-        private let synchronizedQueue = DispatchQueue.synchronizedQueue(label: "\(Common.self)_\(T.self)_\(UUID().uuidString)")
+        private let synchronizedQueue = DispatchQueue
+            .synchronizedQueue(label: "\(Common.self)_\(T.self)_\(UUID().uuidString)")
 
         private var container: Foundation.UserDefaults
 
         /// The underlying value wrapped by the bindable state.
-        /// The property that stores the wrapped value of the property. It is the value that is accessed when the property is read or written.
+        /// The property that stores the wrapped value of the property. It is the value that is accessed when the
+        /// property is read or written.
         public var wrappedValue: T {
             get { getWrappedValue() }
             set { setWrappedValue(newValue) }
         }
 
-        /// The projectedValue is an optional property that provides access to the wrapper's "projection" of the wrapped value.
+        /// The projectedValue is an optional property that provides access to the wrapper's "projection" of the wrapped
+        /// value.
         /// The projection is a separate value that can be used to perform additional operations on the wrapped value.
         /// It is accessed by appending a dollar sign ($) to the property name.
         public var projectedValue: Binding<T> {
@@ -101,33 +104,35 @@ public extension Common_PropertyWrappers {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-fileprivate extension Common_Preview {
-    struct UserDefaultsTestViewView: View {
-        @AppStorage("myKey1")
-        public var text1: String = "default value"
+    fileprivate extension Common_Preview {
+        struct UserDefaultsTestViewView: View {
+            @AppStorage("myKey1")
+            public var text1: String = "default value"
 
-        @Common_PropertyWrappers.UserDefaults(value: "default value", key: "myKey2")
-        var text2: String
+            @Common_PropertyWrappers.UserDefaults(value: "default value", key: "myKey2")
+            var text2: String
 
-        var body: some View {
-            VStack {
-                TextField("Enter text", text: $text1)
-                Text(text1)
-                Text($text1.wrappedValue)
-                Divider()
-                TextField("Enter text", text: $text2)
-                Text(text2)
-                Text($text2.wrappedValue)
+            var body: some View {
+                VStack {
+                    TextField("Enter text", text: $text1)
+                    Text(text1)
+                    Text($text1.wrappedValue)
+                    Divider()
+                    TextField("Enter text", text: $text2)
+                    Text(text2)
+                    Text($text2.wrappedValue)
+                }
             }
         }
     }
-}
 
-#Preview {
-    Common_Preview.UserDefaultsTestViewView()
-}
+    #Preview {
+        Common_Preview.UserDefaultsTestViewView()
+    }
 #endif

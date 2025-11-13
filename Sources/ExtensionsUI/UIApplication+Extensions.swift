@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
 import SwiftUI
+import UIKit
 
 public extension UIApplication {
     func dismissKeyboard() {
@@ -35,7 +35,9 @@ public extension UIApplication {
         UIApplication.topViewController()
     }
 
-    class func topViewController(base: UIViewController? = UIApplication.keyWindow?.rootViewController) -> UIViewController? {
+    class func topViewController(base: UIViewController? = UIApplication.keyWindow?
+        .rootViewController) -> UIViewController?
+    {
         if let nav = base as? UINavigationController {
             return topViewController(base: nav.visibleViewController)
         } else if let tab = base as? UITabBarController, let selected = tab.selectedViewController {

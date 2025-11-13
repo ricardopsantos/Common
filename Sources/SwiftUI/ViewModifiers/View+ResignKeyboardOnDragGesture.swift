@@ -7,7 +7,9 @@ import Foundation
 import SwiftUI
 
 //
+
 // MARK: - ResignKeyboardOnDragGesture
+
 //
 
 public struct ResignKeyboardOnDragGesture: ViewModifier {
@@ -29,7 +31,7 @@ public extension View {
 
 #if canImport(SwiftUI) && DEBUG
 
-#Preview {
-    Common_Preview.ViewsModifiersTestView()
-}
+    #Preview {
+        Common_Preview.ViewsModifiersTestView()
+    }
 #endif

@@ -38,4 +38,4 @@ public extension UIScrollView {
     }
 }
 
-fileprivate extension UIScrollView {}
+private extension UIScrollView {}

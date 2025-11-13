@@ -4,8 +4,8 @@
 //
 
 import Foundation
-import UIKit
 import SwiftUI
+import UIKit
 
 public extension UIView {
     func bringToFront() { superview?.bringSubviewToFront(self) }

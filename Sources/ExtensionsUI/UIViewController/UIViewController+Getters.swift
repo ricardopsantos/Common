@@ -63,7 +63,7 @@ public extension UIViewController {
             }
             addViewControllers(from: rootViewController, level: 0)
         }
-        allViewControllersAndLevels.forEach { viewControllerAndLevel in
+        for viewControllerAndLevel in allViewControllersAndLevels {
             if let tabBarController = viewControllerAndLevel.viewController as? UITabBarController {
                 tabBarControllersAndLevels.append((tabBarController, viewControllerAndLevel.level))
             } else if let navigationController = viewControllerAndLevel.viewController as? UINavigationController {

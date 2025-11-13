@@ -18,7 +18,7 @@ public protocol ModelDtoProtocol: Codable, Equatable, Hashable, Sendable, Custom
 
 extension String: ModelDtoProtocol {}
 
-extension Array<String>: ModelDtoProtocol {
+extension [String]: ModelDtoProtocol {
     public var description: String {
         // Customize the description of your array here
         "[" + joined(separator: ", ") + "]"
@@ -47,7 +47,7 @@ extension Array<String>: ModelDtoProtocol {
     // Implement Equatable
 
     // swiftlint:disable syntactic_sugar
-    public static func == (lhs: Array<Element>, rhs: Array<Element>) -> Bool {
+    public static func == (lhs: [Element], rhs: [Element]) -> Bool {
         lhs.elementsEqual(rhs)
     }
 

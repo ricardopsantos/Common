@@ -39,29 +39,65 @@ extension UIView {
         var constraints: [NSLayoutConstraint] = []
 
         if !excludedEdge.contains(.top) {
-            constraints.append(topToSuperview(offset: insets.top, relation: relation, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea))
+            constraints.append(topToSuperview(
+                offset: insets.top,
+                relation: relation,
+                priority: priority,
+                isActive: isActive,
+                usingSafeArea: usingSafeArea
+            ))
         }
 
         if effectiveUserInterfaceLayoutDirection == .leftToRight {
             if !(excludedEdge.contains(.leading) || excludedEdge.contains(.left)) {
-                constraints.append(leftToSuperview(offset: insets.left, relation: relation, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea))
+                constraints.append(leftToSuperview(
+                    offset: insets.left,
+                    relation: relation,
+                    priority: priority,
+                    isActive: isActive,
+                    usingSafeArea: usingSafeArea
+                ))
             }
 
             if !(excludedEdge.contains(.trailing) || excludedEdge.contains(.right)) {
-                constraints.append(rightToSuperview(offset: -insets.right, relation: relation, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea))
+                constraints.append(rightToSuperview(
+                    offset: -insets.right,
+                    relation: relation,
+                    priority: priority,
+                    isActive: isActive,
+                    usingSafeArea: usingSafeArea
+                ))
             }
         } else {
             if !(excludedEdge.contains(.leading) || excludedEdge.contains(.right)) {
-                constraints.append(rightToSuperview(offset: -insets.right, relation: relation, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea))
+                constraints.append(rightToSuperview(
+                    offset: -insets.right,
+                    relation: relation,
+                    priority: priority,
+                    isActive: isActive,
+                    usingSafeArea: usingSafeArea
+                ))
             }
 
             if !(excludedEdge.contains(.trailing) || excludedEdge.contains(.left)) {
-                constraints.append(leftToSuperview(offset: insets.left, relation: relation, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea))
+                constraints.append(leftToSuperview(
+                    offset: insets.left,
+                    relation: relation,
+                    priority: priority,
+                    isActive: isActive,
+                    usingSafeArea: usingSafeArea
+                ))
             }
         }
 
         if !excludedEdge.contains(.bottom) {
-            constraints.append(bottomToSuperview(offset: -insets.bottom, relation: relation, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea))
+            constraints.append(bottomToSuperview(
+                offset: -insets.bottom,
+                relation: relation,
+                priority: priority,
+                isActive: isActive,
+                usingSafeArea: usingSafeArea
+            ))
         }
 
         return constraints
@@ -78,9 +114,23 @@ extension UIView {
     ) -> NSLayoutConstraint {
         let constrainable = safeConstrainable(for: superview, usingSafeArea: usingSafeArea)
         if effectiveUserInterfaceLayoutDirection == .rightToLeft {
-            return leading(to: constrainable, anchor, offset: -offset, relation: relation, priority: priority, isActive: isActive)
+            return leading(
+                to: constrainable,
+                anchor,
+                offset: -offset,
+                relation: relation,
+                priority: priority,
+                isActive: isActive
+            )
         } else {
-            return leading(to: constrainable, anchor, offset: offset, relation: relation, priority: priority, isActive: isActive)
+            return leading(
+                to: constrainable,
+                anchor,
+                offset: offset,
+                relation: relation,
+                priority: priority,
+                isActive: isActive
+            )
         }
     }
 
@@ -95,9 +145,23 @@ extension UIView {
     ) -> NSLayoutConstraint {
         let constrainable = safeConstrainable(for: superview, usingSafeArea: usingSafeArea)
         if effectiveUserInterfaceLayoutDirection == .rightToLeft {
-            return trailing(to: constrainable, anchor, offset: offset, relation: relation, priority: priority, isActive: isActive)
+            return trailing(
+                to: constrainable,
+                anchor,
+                offset: offset,
+                relation: relation,
+                priority: priority,
+                isActive: isActive
+            )
         } else {
-            return trailing(to: constrainable, anchor, offset: -offset, relation: relation, priority: priority, isActive: isActive)
+            return trailing(
+                to: constrainable,
+                anchor,
+                offset: -offset,
+                relation: relation,
+                priority: priority,
+                isActive: isActive
+            )
         }
     }
 
@@ -111,11 +175,35 @@ extension UIView {
     ) -> [NSLayoutConstraint] {
         var constraints: [NSLayoutConstraint] = []
         if effectiveUserInterfaceLayoutDirection == .leftToRight {
-            constraints.append(leftToSuperview(offset: insets.left, relation: relation, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea))
-            constraints.append(rightToSuperview(offset: -insets.right, relation: relation, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea))
+            constraints.append(leftToSuperview(
+                offset: insets.left,
+                relation: relation,
+                priority: priority,
+                isActive: isActive,
+                usingSafeArea: usingSafeArea
+            ))
+            constraints.append(rightToSuperview(
+                offset: -insets.right,
+                relation: relation,
+                priority: priority,
+                isActive: isActive,
+                usingSafeArea: usingSafeArea
+            ))
         } else {
-            constraints.append(rightToSuperview(offset: -insets.right, relation: relation, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea))
-            constraints.append(leftToSuperview(offset: insets.left, relation: relation, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea))
+            constraints.append(rightToSuperview(
+                offset: -insets.right,
+                relation: relation,
+                priority: priority,
+                isActive: isActive,
+                usingSafeArea: usingSafeArea
+            ))
+            constraints.append(leftToSuperview(
+                offset: insets.left,
+                relation: relation,
+                priority: priority,
+                isActive: isActive,
+                usingSafeArea: usingSafeArea
+            ))
         }
         return constraints
     }
@@ -129,8 +217,20 @@ extension UIView {
         usingSafeArea: Bool = false
     ) -> [NSLayoutConstraint] {
         var constraints: [NSLayoutConstraint] = []
-        constraints.append(topToSuperview(offset: insets.top, relation: relation, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea))
-        constraints.append(bottomToSuperview(offset: -insets.bottom, relation: relation, priority: priority, isActive: isActive, usingSafeArea: usingSafeArea))
+        constraints.append(topToSuperview(
+            offset: insets.top,
+            relation: relation,
+            priority: priority,
+            isActive: isActive,
+            usingSafeArea: usingSafeArea
+        ))
+        constraints.append(bottomToSuperview(
+            offset: -insets.bottom,
+            relation: relation,
+            priority: priority,
+            isActive: isActive,
+            usingSafeArea: usingSafeArea
+        ))
         return constraints
     }
 }
@@ -159,18 +259,23 @@ extension UIView {
         prepareForLayout()
 
         #if os(iOS) || os(tvOS)
-        if #available(iOS 11, tvOS 11, *) {
-            if usingSafeArea {
-                return superview.safeAreaLayoutGuide
+            if #available(iOS 11, tvOS 11, *) {
+                if usingSafeArea {
+                    return superview.safeAreaLayoutGuide
+                }
             }
-        }
         #endif
 
         return superview
     }
 
     @discardableResult
-    func centerInSuperview(offset: CGPoint = .zero, priority: UILayoutPriority = .defaultForTinyConstraints, isActive: Bool = true, usingSafeArea: Bool = false) -> [NSLayoutConstraint] {
+    func centerInSuperview(
+        offset: CGPoint = .zero,
+        priority: UILayoutPriority = .defaultForTinyConstraints,
+        isActive: Bool = true,
+        usingSafeArea: Bool = false
+    ) -> [NSLayoutConstraint] {
         let constrainable = safeConstrainable(for: superview, usingSafeArea: usingSafeArea)
         return center(in: constrainable, offset: offset, priority: priority, isActive: isActive)
     }
@@ -198,7 +303,15 @@ extension UIView {
         usingSafeArea: Bool = false
     ) -> NSLayoutConstraint {
         let constrainable = safeConstrainable(for: superview, usingSafeArea: usingSafeArea)
-        return width(to: constrainable, dimension, multiplier: multiplier, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        return width(
+            to: constrainable,
+            dimension,
+            multiplier: multiplier,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -212,7 +325,15 @@ extension UIView {
         usingSafeArea: Bool = false
     ) -> NSLayoutConstraint {
         let constrainable = safeConstrainable(for: superview, usingSafeArea: usingSafeArea)
-        return height(to: constrainable, dimension, multiplier: multiplier, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        return height(
+            to: constrainable,
+            dimension,
+            multiplier: multiplier,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -225,7 +346,14 @@ extension UIView {
         usingSafeArea: Bool = false
     ) -> NSLayoutConstraint {
         let constrainable = safeConstrainable(for: superview, usingSafeArea: usingSafeArea)
-        return left(to: constrainable, anchor, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        return left(
+            to: constrainable,
+            anchor,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -238,7 +366,14 @@ extension UIView {
         usingSafeArea: Bool = false
     ) -> NSLayoutConstraint {
         let constrainable = safeConstrainable(for: superview, usingSafeArea: usingSafeArea)
-        return right(to: constrainable, anchor, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        return right(
+            to: constrainable,
+            anchor,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -251,7 +386,14 @@ extension UIView {
         usingSafeArea: Bool = false
     ) -> NSLayoutConstraint {
         let constrainable = safeConstrainable(for: superview, usingSafeArea: usingSafeArea)
-        return top(to: constrainable, anchor, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        return top(
+            to: constrainable,
+            anchor,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -264,7 +406,14 @@ extension UIView {
         usingSafeArea: Bool = false
     ) -> NSLayoutConstraint {
         let constrainable = safeConstrainable(for: superview, usingSafeArea: usingSafeArea)
-        return bottom(to: constrainable, anchor, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        return bottom(
+            to: constrainable,
+            anchor,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -277,7 +426,14 @@ extension UIView {
         usingSafeArea: Bool = false
     ) -> NSLayoutConstraint {
         let constrainable = safeConstrainable(for: superview, usingSafeArea: usingSafeArea)
-        return centerX(to: constrainable, anchor, multiplier: multiplier, offset: offset, priority: priority, isActive: isActive)
+        return centerX(
+            to: constrainable,
+            anchor,
+            multiplier: multiplier,
+            offset: offset,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -290,7 +446,14 @@ extension UIView {
         usingSafeArea: Bool = false
     ) -> NSLayoutConstraint {
         let constrainable = safeConstrainable(for: superview, usingSafeArea: usingSafeArea)
-        return centerY(to: constrainable, anchor, multiplier: multiplier, offset: offset, priority: priority, isActive: isActive)
+        return centerY(
+            to: constrainable,
+            anchor,
+            multiplier: multiplier,
+            offset: offset,
+            priority: priority,
+            isActive: isActive
+        )
     }
 }
 

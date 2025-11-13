@@ -5,7 +5,6 @@
 //  Created by Ricardo Santos on 22/02/2025.
 //
 
-
 import LocalAuthentication
 
 public extension Common {
@@ -50,5 +49,4 @@ public extension Common {
             }
         }
     }
-
 }

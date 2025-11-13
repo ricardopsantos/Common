@@ -57,7 +57,12 @@ public extension UIEdgeInsets {
 }
 
 func + (lhs: UIEdgeInsets, rhs: UIEdgeInsets) -> UIEdgeInsets {
-    .init(top: lhs.top + rhs.top, left: lhs.left + rhs.left, bottom: lhs.bottom + rhs.bottom, right: lhs.right + rhs.right)
+    .init(
+        top: lhs.top + rhs.top,
+        left: lhs.left + rhs.left,
+        bottom: lhs.bottom + rhs.bottom,
+        right: lhs.right + rhs.right
+    )
 }
 
 // swiftlint:enable all

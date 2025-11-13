@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  FileManager.swift
 //  Common
 //
 //  Created by Ricardo Santos on 20/09/2024.

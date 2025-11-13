@@ -3,9 +3,9 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
+import CommonCrypto
 import Foundation
 import Security
-import CommonCrypto
 
 //
 // https://medium.com/@anuj.rai2489/ssl-pinning-254fa8ca2109
@@ -84,17 +84,17 @@ public extension CommonNetworking.AuthenticationHandler.Server {
     static var googleUkWithCertPath: Self {
         var pathToCertificates: [String]?
         #if IN_PACKAGE_CODE
-        if let cert = Bundle.module.path(forResource: "google.co.uk", ofType: "cer") {
-            pathToCertificates = [cert]
-        } else {
-            fatalError("Not found")
-        }
+            if let cert = Bundle.module.path(forResource: "google.co.uk", ofType: "cer") {
+                pathToCertificates = [cert]
+            } else {
+                fatalError("Not found")
+            }
         #else
-        if let cert = Bundle.main.path(forResource: "google.co.uk", ofType: "cer") {
-            pathToCertificates = [cert]
-        } else {
-            fatalError("Not found")
-        }
+            if let cert = Bundle.main.path(forResource: "google.co.uk", ofType: "cer") {
+                pathToCertificates = [cert]
+            } else {
+                fatalError("Not found")
+            }
         #endif
         return Self(
             url: "https://www.google.co.uk/",
@@ -115,32 +115,32 @@ public extension CommonNetworking {
 
         public init(server: Server) {
             if let credentials = server.credentials {
-                self.credential = .init(user: credentials.user, password: credentials.password, persistence: .forSession)
+                credential = .init(user: credentials.user, password: credentials.password, persistence: .forSession)
             } else {
-                self.credential = nil
+                credential = nil
             }
-            self.serverPublicHashKeys = server.publicHashKeys
-            self.pathToCertificates = server.pathToCertificates
+            serverPublicHashKeys = server.publicHashKeys
+            pathToCertificates = server.pathToCertificates
             super.init()
         }
 
         public init(credential: URLCredential) {
             self.credential = credential
-            self.serverPublicHashKeys = nil
-            self.pathToCertificates = nil
+            serverPublicHashKeys = nil
+            pathToCertificates = nil
             super.init()
         }
 
         public init(serverPublicHashKeys: [String]) {
-            self.credential = nil
+            credential = nil
             self.serverPublicHashKeys = serverPublicHashKeys
-            self.pathToCertificates = nil
+            pathToCertificates = nil
             super.init()
         }
 
         public init(pathToCertificates: [String]) {
-            self.credential = nil
-            self.serverPublicHashKeys = nil
+            credential = nil
+            serverPublicHashKeys = nil
             self.pathToCertificates = pathToCertificates
             super.init()
         }
@@ -151,15 +151,24 @@ public extension CommonNetworking {
             didReceive challenge: URLAuthenticationChallenge,
             completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
         ) {
-            Common_Logs.debug("\(CommonNetworking.NetworkAgentClient.self): Received URLAuthenticationChallenge for \(session)", "\(Self.self)")
+            Common_Logs.debug(
+                "\(CommonNetworking.NetworkAgentClient.self): Received URLAuthenticationChallenge for \(session)",
+                "\(Self.self)"
+            )
             // Handle HTTP Basic Authentication challenges.
             if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodHTTPBasic {
-                guard let credential = credential else {
-                    Common_Logs.error("\(CommonNetworking.NetworkAgentClient.self): No credentials provided for challenge \(challenge)", "\(Self.self)")
+                guard let credential else {
+                    Common_Logs.error(
+                        "\(CommonNetworking.NetworkAgentClient.self): No credentials provided for challenge \(challenge)",
+                        "\(Self.self)"
+                    )
                     completionHandler(.cancelAuthenticationChallenge, nil)
                     return
                 }
-                Common_Logs.debug("\(CommonNetworking.NetworkAgentClient.self): Authenticated with Credentials", "\(Self.self)")
+                Common_Logs.debug(
+                    "\(CommonNetworking.NetworkAgentClient.self): Authenticated with Credentials",
+                    "\(Self.self)"
+                )
                 completionHandler(.useCredential, credential)
                 return
             }
@@ -173,26 +182,36 @@ public extension CommonNetworking {
             // Extract the server's certificate from the server trust.
             guard let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0),
                   let serverPublicKey = SecCertificateCopyKey(serverCertificate),
-                  let serverPublicKeyData = SecKeyCopyExternalRepresentation(serverPublicKey, nil) else {
-                Common_Logs.error("\(CommonNetworking.NetworkAgentClient.self): Invalid serverCertificate", "\(Self.self)")
+                  let serverPublicKeyData = SecKeyCopyExternalRepresentation(serverPublicKey, nil)
+            else {
+                Common_Logs.error(
+                    "\(CommonNetworking.NetworkAgentClient.self): Invalid serverCertificate",
+                    "\(Self.self)"
+                )
                 completionHandler(.cancelAuthenticationChallenge, nil)
                 return
             }
 
             // Helper function to log and cancel the authentication challenge.
             func cancelAuthenticationChallengeWithLog(key: String, value: String) {
-                Common_Logs.debug("\(CommonNetworking.NetworkAgentClient.self): ServerPublicKey: \(serverPublicKey)\nServerPublicKeyData: \(serverPublicKeyData)", "\(Self.self)")
-                Common_Logs.error("\(CommonNetworking.NetworkAgentClient.self): Unexpected \(key): [\(value)]", "\(Self.self)")
+                Common_Logs.debug(
+                    "\(CommonNetworking.NetworkAgentClient.self): ServerPublicKey: \(serverPublicKey)\nServerPublicKeyData: \(serverPublicKeyData)",
+                    "\(Self.self)"
+                )
+                Common_Logs.error(
+                    "\(CommonNetworking.NetworkAgentClient.self): Unexpected \(key): [\(value)]",
+                    "\(Self.self)"
+                )
                 completionHandler(.cancelAuthenticationChallenge, nil)
             }
 
             // Handle SSL Pinning with public key hashes.
-            if let serverPublicHashKeys = serverPublicHashKeys, !serverPublicHashKeys.isEmpty {
+            if let serverPublicHashKeys, !serverPublicHashKeys.isEmpty {
                 func sha256(data: Data) -> String {
                     // Add ASN.1 header for RSA 2048 public key.
                     let rsa2048Asn1Header: [UInt8] = [
-                        0x30, 0x82, 0x01, 0x22, 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
-                        0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00, 0x03, 0x82, 0x01, 0x0f, 0x00
+                        0x30, 0x82, 0x01, 0x22, 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86,
+                        0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00, 0x03, 0x82, 0x01, 0x0F, 0x00,
                     ]
                     var keyWithHeader = Data(rsa2048Asn1Header)
                     keyWithHeader.append(data)
@@ -208,7 +227,10 @@ public extension CommonNetworking {
                 if serverPublicHashKeys.contains(serverPublicKeyDataHash) {
                     // Public key hash matches, authentication successful.
                     completionHandler(.useCredential, URLCredential(trust: serverTrust))
-                    Common_Logs.debug("\(CommonNetworking.NetworkAgentClient.self): Authenticated with Server Public Key", "\(Self.self)")
+                    Common_Logs.debug(
+                        "\(CommonNetworking.NetworkAgentClient.self): Authenticated with Server Public Key",
+                        "\(Self.self)"
+                    )
                     return
                 } else {
                     cancelAuthenticationChallengeWithLog(
@@ -220,9 +242,10 @@ public extension CommonNetworking {
             }
 
             // Handle SSL Pinning with local certificates.
-            if let pathToCertificates = pathToCertificates, !pathToCertificates.isEmpty {
+            if let pathToCertificates, !pathToCertificates.isEmpty {
                 // Load local certificates from file paths.
-                let localCertificatesData: [Data] = pathToCertificates.compactMap { NSData(contentsOfFile: $0) } as [Data]
+                let localCertificatesData: [Data] = pathToCertificates
+                    .compactMap { NSData(contentsOfFile: $0) } as [Data]
 
                 // Create SSL policy for the remote server.
                 let policy = NSMutableArray()
@@ -239,12 +262,18 @@ public extension CommonNetworking {
 
                 if isServerTrusted, existsMatchingLocalCer {
                     // Certificate matches, authentication successful.
-                    let credential: URLCredential = URLCredential(trust: serverTrust)
-                    Common_Logs.debug("\(CommonNetworking.NetworkAgentClient.self): Authenticated with Local Certificate", "\(Self.self)")
+                    let credential = URLCredential(trust: serverTrust)
+                    Common_Logs.debug(
+                        "\(CommonNetworking.NetworkAgentClient.self): Authenticated with Local Certificate",
+                        "\(Self.self)"
+                    )
                     completionHandler(.useCredential, credential)
                     return
                 } else {
-                    cancelAuthenticationChallengeWithLog(key: "remoteCertificateData", value: "\(Data(remoteCertificateData).base64EncodedString())")
+                    cancelAuthenticationChallengeWithLog(
+                        key: "remoteCertificateData",
+                        value: "\(Data(remoteCertificateData).base64EncodedString())"
+                    )
                 }
             }
 

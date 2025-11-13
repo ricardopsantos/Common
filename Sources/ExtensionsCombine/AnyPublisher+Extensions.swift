@@ -3,12 +3,14 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import SwiftUI
 import Combine
 import Foundation
+import SwiftUI
 
 //
+
 // MARK: - Utils
+
 //
 
 // swiftlint:disable logs_rule_1
@@ -54,13 +56,16 @@ public extension AnyPublisher {
 }
 
 //
+
 // MARK: - Retry
+
 //
 
 public extension AnyPublisher {
     typealias RetryPublisherType = Driver<Bool>
     func retry(
-        withPublisher: @autoclosure @escaping () -> RetryPublisherType, // Publisher to run before retry. Ends with .asBoolDriver()
+        withPublisher: @autoclosure @escaping () -> RetryPublisherType,
+        // Publisher to run before retry. Ends with .asBoolDriver()
         if condition: @escaping (Failure) -> Bool,
         delay: TimeInterval = 1,
         times: Int = 1
@@ -202,40 +207,63 @@ public extension AnyPublisher {
 }
 
 //
+
 // MARK: - SubscribeStrategie
+
 //
 
 public extension Publisher {
-    /// This method subscribes to the publisher on the main dispatch queue and receives events on the main dispatch queue.
-    /// It ensures that both the subscription and the event processing happen on the main thread, which is useful for updating UI elements since
+    /// This method subscribes to the publisher on the main dispatch queue and receives events on the main dispatch
+    /// queue.
+    /// It ensures that both the subscription and the event processing happen on the main thread, which is useful for
+    /// updating UI elements since
     /// UI updates should always occur on the main thread.
-    func subscribeStrategieMainToMain() -> Publishers.ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue> {
+    func subscribeStrategieMainToMain() -> Publishers
+        .ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue>
+    {
         subscribe(on: DispatchQueue.main).receive(on: DispatchQueue.main)
     }
 
-    /// This method subscribes to the publisher on a global (background) dispatch queue and receives events on the same global queue.
-    /// It's useful for offloading heavy or time-consuming tasks from the main thread to a background queue for processing.
-    func subscribeStrategieGlobalToGlobal() -> Publishers.ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue> {
+    /// This method subscribes to the publisher on a global (background) dispatch queue and receives events on the same
+    /// global queue.
+    /// It's useful for offloading heavy or time-consuming tasks from the main thread to a background queue for
+    /// processing.
+    func subscribeStrategieGlobalToGlobal() -> Publishers
+        .ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue>
+    {
         subscribe(on: DispatchQueue.global()).receive(on: DispatchQueue.global())
     }
 
-    /// This method subscribes to the publisher on a global (background) dispatch queue and receives events on the main dispatch queue.
-    /// This strategy is useful when you want to perform a task in the background but update the UI with the results on the main thread.
-    func subscribeStrategieGlobalToMain() -> Publishers.ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue> {
+    /// This method subscribes to the publisher on a global (background) dispatch queue and receives events on the main
+    /// dispatch queue.
+    /// This strategy is useful when you want to perform a task in the background but update the UI with the results on
+    /// the main thread.
+    func subscribeStrategieGlobalToMain() -> Publishers
+        .ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue>
+    {
         subscribe(on: DispatchQueue.global()).receive(on: DispatchQueue.main)
     }
 
-    /// This method subscribes to the publisher on a global (background) dispatch queue with a specified quality of service (QoS) of .background.
+    /// This method subscribes to the publisher on a global (background) dispatch queue with a specified quality of
+    /// service (QoS) of .background.
     /// It then receives events on the main dispatch queue.
-    /// It's similar to the previous strategy, but it explicitly specifies a lower QoS for the background queue, indicating that it's
+    /// It's similar to the previous strategy, but it explicitly specifies a lower QoS for the background queue,
+    /// indicating that it's
     /// suitable for less critical or less time-sensitive background tasks.
-    func subscribeStrategieGlobalBackgroundToMain() -> Publishers.ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue> {
+    func subscribeStrategieGlobalBackgroundToMain() -> Publishers
+        .ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue>
+    {
         subscribe(on: DispatchQueue.global(), options: .init(qos: .background)).receive(on: DispatchQueue.main)
     }
 
-    /// This method subscribes to the publisher on a global (background) dispatch queue with .background QoS and receives events on the same global queue.
-    /// This strategy is suitable for performing background tasks without the need to switch to the main thread afterward.
-    func subscribeStrategieGlobalBackgroundToGlobal() -> Publishers.ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue> {
+    /// This method subscribes to the publisher on a global (background) dispatch queue with .background QoS and
+    /// receives events on the same global queue.
+    /// This strategy is suitable for performing background tasks without the need to switch to the main thread
+    /// afterward.
+    func subscribeStrategieGlobalBackgroundToGlobal() -> Publishers.ReceiveOn<Publishers.SubscribeOn<
+        Self,
+        DispatchQueue
+    >, DispatchQueue> {
         subscribe(on: DispatchQueue.global(), options: .init(qos: .background)).receive(on: DispatchQueue.global())
     }
 
@@ -274,11 +302,16 @@ public extension Publisher {
 }
 
 //
+
 // MARK: - Debug
+
 //
 
 public extension Publisher {
-    func sampleOperator<T>(source: T) -> AnyPublisher<Self.Output, Self.Failure> where T: Publisher, T.Output: Equatable, T.Failure == Self.Failure {
+    func sampleOperator<T>(source: T) -> AnyPublisher<Self.Output, Self.Failure> where T: Publisher,
+        T.Output: Equatable,
+        T.Failure == Self.Failure
+    {
         combineLatest(source)
             .removeDuplicates(by: { first, second -> Bool in first.1 == second.1 })
             .map { first in first.0 }
@@ -298,7 +331,9 @@ public extension Publisher {
 }
 
 //
+
 // MARK: - Driver
+
 //
 
 public typealias Driver<T> = AnyPublisher<T, Never>
@@ -306,7 +341,8 @@ public typealias BoolDriver = Driver<Bool>
 
 public extension Publishers {
     static func ZipMany<T, Output, Failure>(_ publishers: [T]) -> AnyPublisher<[Output], Failure>
-        where T: Publisher, T.Output == Output, T.Failure == Failure {
+        where T: Publisher, T.Output == Output, T.Failure == Failure
+    {
         if publishers.isEmpty {
             return Just([]).setFailureType(to: Failure.self).eraseToAnyPublisher()
         }
@@ -343,7 +379,9 @@ public extension Publisher {
 }
 
 //
+
 // MARK: - ErrorTracker
+
 //
 
 public typealias ErrorTracker = PassthroughSubject<Error, Never>
@@ -360,7 +398,9 @@ public extension Publisher /* where Failure: Error */ {
 }
 
 //
+
 // MARK: - AnyPublisherSampleUsage
+
 //
 
 public enum AnyPublisherSampleUsageAux {
@@ -409,9 +449,8 @@ public enum AnyPublisherSampleUsage {
             AnyPublisherSampleUsageAux.sayHelloIfAuthenticated()
         }.eraseToAnyPublisher()
             .retry(
-                withPublisher: {
-                    AnyPublisherSampleUsageAux.authenticateUserV2().asBoolDriver()
-                }(), if: { $0 == .userIsNotAuthenticated },
+                withPublisher: AnyPublisherSampleUsageAux.authenticateUserV2().asBoolDriver(),
+                if: { $0 == .userIsNotAuthenticated },
                 delay: delay,
                 times: 5
             )

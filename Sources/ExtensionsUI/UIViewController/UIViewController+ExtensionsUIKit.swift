@@ -24,7 +24,10 @@ public extension UIViewController {
     }
 
     func embeddedInNavigationController() -> UINavigationController {
-        assert(parent == nil, "Cannot embebed in a Navigation Controller. \(String(describing: self)) already has a parent controller.")
+        assert(
+            parent == nil,
+            "Cannot embebed in a Navigation Controller. \(String(describing: self)) already has a parent controller."
+        )
         let navController = UINavigationController(rootViewController: self)
         return navController
     }
@@ -33,7 +36,7 @@ public extension UIViewController {
     func dismissAll() { dismiss(options: 1) }
 
     func destroy() {
-        children.forEach { some in
+        for some in children {
             some.destroy()
         }
         willMove(toParent: nil)

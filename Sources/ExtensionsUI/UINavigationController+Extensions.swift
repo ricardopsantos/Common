@@ -9,7 +9,7 @@ public extension UINavigationController {
     func setNavigationBarTitleAttributes(font: UIFont, color: UIColor) {
         let attributes: [NSAttributedString.Key: Any] = [
             .font: font,
-            .foregroundColor: color
+            .foregroundColor: color,
         ]
         navigationBar.titleTextAttributes = attributes
     }
@@ -63,7 +63,11 @@ public extension UINavigationController {
         return nil
     }
 
-    func pushViewController(_ viewController: UIViewController, animated: Bool = true, completion: @escaping () -> Void) {
+    func pushViewController(
+        _ viewController: UIViewController,
+        animated: Bool = true,
+        completion: @escaping () -> Void
+    ) {
         CATransaction.begin()
         CATransaction.setCompletionBlock(completion)
         pushViewController(viewController, animated: animated)

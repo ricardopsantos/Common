@@ -6,7 +6,9 @@
 import Foundation
 
 //
+
 // MARK: - Safe decoder
+
 //
 
 public extension JSONDecoder {
@@ -30,14 +32,14 @@ public extension JSONDecoder {
             var debugMessage = "# Fail decoding data into [\(type)]"
             if let decodingError = error as? DecodingError {
                 switch decodingError {
-                case DecodingError.dataCorrupted(let context):
+                case let DecodingError.dataCorrupted(context):
                     debugMessage = """
                     \(debugMessage)
                     # error = DecodingError.dataCorrupted
                     # context = \(context.debugDescription)
                     # context.codingPath = \(context.codingPath.debugDescription)
                     """
-                case DecodingError.keyNotFound(let codingKey, let context):
+                case let DecodingError.keyNotFound(codingKey, context):
                     debugMessage = """
                     \(debugMessage)
                     # DecodingError = .keyNotFound
@@ -45,7 +47,7 @@ public extension JSONDecoder {
                     # context = \(context.debugDescription)
                     # context.codingPath = \(context.codingPath.debugDescription)
                     """
-                case DecodingError.typeMismatch(let propertyType, let context):
+                case let DecodingError.typeMismatch(propertyType, context):
                     debugMessage = """
                     \(debugMessage)
                     # DecodingError = .typeMismatch
@@ -53,7 +55,7 @@ public extension JSONDecoder {
                     # context = \(context.debugDescription)
                     # context.codingPath = \(context.codingPath)
                     """
-                case DecodingError.valueNotFound(let propertyType, let context):
+                case let DecodingError.valueNotFound(propertyType, context):
                     debugMessage = """
                     \(debugMessage)
                     # DecodingError = .valueNotFound
@@ -93,7 +95,8 @@ public extension JSONDecoder {
     // swiftlint:enable function_body_length
 
     private func decodeSafe<T>(_ type: T.Type, from data: Data) throws -> T where T: Decodable {
-        // https://bugs.swift.org/browse/SR-6163 - Encode/Decode not possible < iOS 13 for top-level fragments (enum, int, string, etc.).
+        // https://bugs.swift.org/browse/SR-6163 - Encode/Decode not possible < iOS 13 for top-level fragments (enum,
+        // int, string, etc.).
         if #available(iOS 13.0, *) {
             return try JSONDecoder().decodeFriendly(type, from: data)
         } else {}

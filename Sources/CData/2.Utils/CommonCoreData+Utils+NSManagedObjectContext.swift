@@ -3,16 +3,20 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import CoreData
+import Foundation
 
 //
+
 // MARK: - NSManagedObjectContext
+
 //
 
 public extension CommonCoreData.Utils {
-    /// mainQueue: __This property returns an instance of NSManagedObjectContext that is configured to operate on the main queue.__
-    /// It means any operations performed using this context will be executed on the main thread. The main queue context is used for user interface
+    /// mainQueue: __This property returns an instance of NSManagedObjectContext that is configured to operate on the
+    /// main queue.__
+    /// It means any operations performed using this context will be executed on the main thread. The main queue context
+    /// is used for user interface
     /// interactions since UIKit and other UI frameworks require UI updates to be done on the main thread.
     static func mainViewContext(
         storeContainer: NSPersistentContainer,
@@ -37,9 +41,12 @@ public extension CommonCoreData.Utils {
         return context
     }
 
-    /// privateQueue: __This property returns an instance of NSManagedObjectContext that is configured to operate on a private background queue.__
-    /// It means any operations performed using this context will be executed on a background queue (not the main queue). This is typically used for performing
-    /// data processing tasks or background updates without blocking the main thread. It is important to use private queue contexts for heavy or time-consuming
+    /// privateQueue: __This property returns an instance of NSManagedObjectContext that is configured to operate on a
+    /// private background queue.__
+    /// It means any operations performed using this context will be executed on a background queue (not the main
+    /// queue). This is typically used for performing
+    /// data processing tasks or background updates without blocking the main thread. It is important to use private
+    /// queue contexts for heavy or time-consuming
     /// operations to keep the main user interface responsive.
     static func privateViewContext(
         parentContext: NSManagedObjectContext,

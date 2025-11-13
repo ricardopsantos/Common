@@ -23,10 +23,12 @@ public extension UIImage {
 
     /// Uses a combination of "CIColorControls" and "CIExposureAdjust" filters to adjust the brightness, contrast,
     ///  and exposure of the image to create a grayscale effect.
-    /// Provides more control over the final appearance of the grayscale image through adjustments to brightness, contrast, and exposure.
+    /// Provides more control over the final appearance of the grayscale image through adjustments to brightness,
+    /// contrast, and exposure.
     var grayScaleV1: UIImage? {
-        guard let ciImage: CIImage = CIImage(image: self),
-              let colorFilter: CIFilter = CIFilter(name: "CIColorControls") else {
+        guard let ciImage = CIImage(image: self),
+              let colorFilter = CIFilter(name: "CIColorControls")
+        else {
             return nil
         }
         colorFilter.setValue(ciImage, forKey: kCIInputImageKey)
@@ -34,7 +36,8 @@ public extension UIImage {
         colorFilter.setValue(0.0, forKey: kCIInputSaturationKey)
         colorFilter.setValue(1.1, forKey: kCIInputContrastKey)
         guard let intermediateImage: CIImage = colorFilter.outputImage,
-              let exposureFilter: CIFilter = CIFilter(name: "CIExposureAdjust") else {
+              let exposureFilter = CIFilter(name: "CIExposureAdjust")
+        else {
             return nil
         }
         exposureFilter.setValue(intermediateImage, forKey: kCIInputImageKey)
@@ -42,7 +45,7 @@ public extension UIImage {
         guard let output = exposureFilter.outputImage else {
             return nil
         }
-        let context: CIContext = CIContext(options: nil)
+        let context = CIContext(options: nil)
         guard let cgImage: CGImage = context.createCGImage(output, from: output.extent) else {
             return nil
         }
@@ -109,7 +112,8 @@ public extension UIImage {
             height: bottomRow - topRow
         )
         if let cgImage,
-           let croppedCGImage = cgImage.cropping(to: cropRect) {
+           let croppedCGImage = cgImage.cropping(to: cropRect)
+        {
             return UIImage(cgImage: croppedCGImage, scale: scale, orientation: imageOrientation)
         }
         return nil
@@ -156,7 +160,7 @@ public extension UIImage {
             )
             let captionAttributes: [NSAttributedString.Key: Any] = [
                 .font: UIFont.boldSystemFont(ofSize: captionFontSize),
-                .foregroundColor: color
+                .foregroundColor: color,
             ]
             let caption = NSAttributedString(string: caption, attributes: captionAttributes)
             caption.draw(in: captionRect)

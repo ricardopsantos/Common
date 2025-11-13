@@ -3,12 +3,14 @@
 //  Copyright © 2023 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
-import CoreData
 import Combine
+import CoreData
+import Foundation
 
 //
+
 // MARK: - NSFetchRequest Utils
+
 //
 
 public extension CDataExpiringKeyValueEntity {

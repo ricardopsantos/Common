@@ -3,17 +3,21 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
-import CoreData
 import Combine
+import CoreData
+import Foundation
 
 //
+
 // MARK: - CommonBaseCoreDataManager
+
 //
 
 open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol {
     //
+
     // MARK: - Usage Propertyes
+
     //
     fileprivate let dbName: String
     fileprivate let managedObjectModelURL: URL?
@@ -24,11 +28,14 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
 
     public var databaseURL: URL {
         let storeDescription = persistentContainer.persistentStoreDescriptions.first
-        return storeDescription?.url ?? NSPersistentContainer.defaultDirectoryURL().appendingPathComponent("\(dbName).sqlite")
+        return storeDescription?.url ?? NSPersistentContainer.defaultDirectoryURL()
+            .appendingPathComponent("\(dbName).sqlite")
     }
 
     //
+
     // MARK: - Config
+
     //
     open func viewContextIsShared() -> Bool {
         false // Can be overridden
@@ -38,10 +45,14 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
         // Should be overridden to start "listening" db changes
     }
 
-    public init(dbName: String, managedObjectModel: NSManagedObjectModel, persistence: CommonCoreData.Utils.Persistence) {
+    public init(
+        dbName: String,
+        managedObjectModel: NSManagedObjectModel,
+        persistence: CommonCoreData.Utils.Persistence
+    ) {
         self.dbName = dbName
         self.managedObjectModel = managedObjectModel
-        self.managedObjectModelURL = nil
+        managedObjectModelURL = nil
         if let persistentContainer = CommonCoreData.Utils.buildPersistentContainer(
             dbName: dbName,
             managedObjectModel: managedObjectModel,
@@ -58,11 +69,11 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
     public init(dbName: String, dbBundle: String, persistence: CommonCoreData.Utils.Persistence) {
         self.dbName = dbName
         if let nsManagedObjectModel = CommonCoreData.Utils.managedObjectModel(dbName: dbName, dbBundle: dbBundle) {
-            self.managedObjectModel = nsManagedObjectModel.managedObjectModel
-            self.managedObjectModelURL = nsManagedObjectModel.url
+            managedObjectModel = nsManagedObjectModel.managedObjectModel
+            managedObjectModelURL = nsManagedObjectModel.url
         } else if let nsManagedObjectModel = CommonCoreData.Utils.managedObjectModelForSPM(dbName: dbName) {
-            self.managedObjectModel = nsManagedObjectModel.managedObjectModel
-            self.managedObjectModelURL = nsManagedObjectModel.url
+            managedObjectModel = nsManagedObjectModel.managedObjectModel
+            managedObjectModelURL = nsManagedObjectModel.url
         } else {
             fatalError("fail to load managedObjectModel")
         }
@@ -79,7 +90,7 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
         startFetchedResultsController()
     }
 
-    public func save() {
+    public func syncSave() {
         saveContext()
     }
 
@@ -95,12 +106,17 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
     }
 
     //
+
     // MARK: - Private
+
     //
 
     private var newViewContextInstance: NSManagedObjectContext {
         if Common_Utils.false {
-            return CommonCoreData.Utils.mainViewContext(storeContainer: persistentContainer, automaticallyMergesChangesFromParent: true)
+            return CommonCoreData.Utils.mainViewContext(
+                storeContainer: persistentContainer,
+                automaticallyMergesChangesFromParent: true
+            )
         } else {
             let context = persistentContainer.viewContext
             context.automaticallyMergesChangesFromParent = true
@@ -110,7 +126,10 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
 
     private lazy var lazyViewContext: NSManagedObjectContext = {
         if Common_Utils.false {
-            return CommonCoreData.Utils.mainViewContext(storeContainer: persistentContainer, automaticallyMergesChangesFromParent: true)
+            return CommonCoreData.Utils.mainViewContext(
+                storeContainer: persistentContainer,
+                automaticallyMergesChangesFromParent: true
+            )
         } else {
             let context = persistentContainer.viewContext
             context.automaticallyMergesChangesFromParent = true
@@ -120,7 +139,9 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
 }
 
 //
+
 // MARK: - iCould utils - Load/Unload/Replace database
+
 //
 
 public extension CommonBaseCoreDataManager {

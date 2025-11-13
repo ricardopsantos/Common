@@ -3,14 +3,16 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
-import Security
 import CommonCrypto
+import Foundation
+import Security
 
 public extension CommonNetworking {
     //
+
     // MARK: - Response
+
     //
 
     struct Response<T: Decodable> {

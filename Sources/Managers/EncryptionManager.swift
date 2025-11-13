@@ -3,9 +3,9 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import CommonCrypto
 import CryptoKit
+import Foundation
 
 public extension StringProtocol {
     var data: Data { .init(utf8) }
@@ -33,7 +33,6 @@ public extension String {
 }
 
 public extension Common {
-
     enum EncryptionManager {
         public enum Method {
             case none
@@ -47,7 +46,9 @@ public extension Common {
             }
         }
 
-        public static func decrypt(string: String, method: EncryptionManager.Method, key: SymmetricKey? = nil) -> Data? {
+        public static func decrypt(string: String, method: EncryptionManager.Method,
+                                   key: SymmetricKey? = nil) -> Data?
+        {
             guard let data = string.data(using: .utf8) else {
                 return nil
             }
@@ -65,7 +66,9 @@ public extension Common {
             }
         }
 
-        public static func decrypt(base64String: String, method: EncryptionManager.Method, key: SymmetricKey? = nil) -> (Data, String)? {
+        public static func decrypt(base64String: String, method: EncryptionManager.Method,
+                                   key: SymmetricKey? = nil) -> (Data, String)?
+        {
             guard let data = Data(base64Encoded: base64String) else {
                 return nil
             }
@@ -77,7 +80,7 @@ public extension Common {
             }
             return (result, string)
         }
-        
+
         public static func encrypt(data: Data?, method: EncryptionManager.Method, key: SymmetricKey? = nil) -> Data? {
             guard let data else {
                 return nil
@@ -89,7 +92,9 @@ public extension Common {
             }
         }
 
-        public static func encrypt(string: String, method: EncryptionManager.Method, key: SymmetricKey? = nil) -> (Data, String)? {
+        public static func encrypt(string: String, method: EncryptionManager.Method,
+                                   key: SymmetricKey? = nil) -> (Data, String)?
+        {
             guard let data = string.data(using: .utf8) else {
                 return nil
             }
@@ -98,8 +103,10 @@ public extension Common {
             }
             return (result, result.base64EncodedString())
         }
-        
-        public static func encrypt(codable: Codable, method: EncryptionManager.Method, key: SymmetricKey? = nil) -> Data? {
+
+        public static func encrypt(codable: Codable, method: EncryptionManager.Method,
+                                   key: SymmetricKey? = nil) -> Data?
+        {
             let data = try? JSONEncoder().encode(codable)
             return encrypt(data: data, method: method, key: key)
         }
@@ -107,7 +114,9 @@ public extension Common {
 }
 
 //
+
 // MARK: - Implementation (AES-CBC)
+
 //
 
 extension Common.EncryptionManager {
@@ -124,17 +133,18 @@ extension Common.EncryptionManager {
     }
 }
 
-
 // MARK: - Small helper to encode unknown Codable cleanly
 
 private struct AnyEncodable: Encodable {
     private let _encode: (Encoder) throws -> Void
-    init(_ wrapped: Encodable) { self._encode = wrapped.encode }
+    init(_ wrapped: Encodable) { _encode = wrapped.encode }
     func encode(to encoder: Encoder) throws { try _encode(encoder) }
 }
 
 //
+
 // MARK: - EncryptionManagerWithFixKey
+
 //
 private enum EncryptionManagerWithFixKey {
     public enum Method {
@@ -181,7 +191,9 @@ private enum EncryptionManagerWithFixKey {
 }
 
 //
+
 // MARK: - Implementation (AES-CBC)
+
 //
 extension EncryptionManagerWithFixKey {
     static var symmetricKey: SymmetricKey {
@@ -210,7 +222,6 @@ extension EncryptionManagerWithFixKey {
     }
 }
 
-
 public enum SingleSymmetricKeyManager {}
 
 public extension SingleSymmetricKeyManager {
@@ -234,7 +245,7 @@ public extension SingleSymmetricKeyManager {
                 0x0C,
                 0x0D,
                 0x0E,
-                0x0F
+                0x0F,
             ])
             return SymmetricKey(data: hardcodedKeyData)
         }
@@ -254,8 +265,6 @@ public extension SingleSymmetricKeyManager {
         }
     }
 }
-
-
 
 private extension SingleSymmetricKeyManager {
     static let keychainKey = "\(Self.self).symmetricKey"
@@ -281,7 +290,7 @@ private extension SingleSymmetricKeyManager {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: keychainKey,
             kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked,
         ]
 
         // Delete any existing key before adding
@@ -298,7 +307,7 @@ private extension SingleSymmetricKeyManager {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: keychainKey,
             kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
+            kSecMatchLimit as String: kSecMatchLimitOne,
         ]
 
         var result: AnyObject?

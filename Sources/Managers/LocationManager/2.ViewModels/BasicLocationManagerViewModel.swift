@@ -5,11 +5,13 @@
 //  Created by Ricardo Santos on 28/08/2024.
 //
 
-import Foundation
 import CoreLocation
+import Foundation
 
 //
+
 // MARK: - BasicLocationManagerViewModel
+
 //
 
 public extension Common {
@@ -25,7 +27,9 @@ public extension Common {
         }
 
         //
+
         // MARK: - LocationManagerViewModelProtocol
+
         //
         @Published public var coordinates: LocationUtils.Coordinate?
         public static var lastKnowLocation: (
@@ -56,17 +60,19 @@ public extension Common {
 }
 
 //
+
 // MARK: - CLLocationManagerDelegate
+
 //
 
 extension Common.BasicLocationManagerViewModel: CLLocationManagerDelegate {
-    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    public func locationManager(_: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         coordinates = .init(
             latitude: location.coordinate.latitude,
             longitude: location.coordinate.longitude
         )
-        if let coordinates = coordinates {
+        if let coordinates {
             Common.BasicLocationManagerViewModel.lastKnowLocation = (coordinates, Date())
         }
     }

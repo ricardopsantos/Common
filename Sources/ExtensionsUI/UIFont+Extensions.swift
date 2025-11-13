@@ -4,14 +4,14 @@
 //
 
 import Foundation
-import UIKit
 import SwiftUI
+import UIKit
 
 public extension UIFont {
     static func registerFontWithFilenameString(_ filenameString: String, _ bundleIdentifier: String) {
         if let frameworkBundle = Bundle(identifier: bundleIdentifier) {
             guard let pathForResourceString = frameworkBundle.path(forResource: filenameString, ofType: nil) else {
-                assert(false, "Not found \(filenameString)")
+                assertionFailure("Not found \(filenameString)")
                 return
             }
             let fontData = NSData(contentsOfFile: pathForResourceString)
@@ -19,10 +19,12 @@ public extension UIFont {
             let fontRef = CGFont(dataProvider!)
             var errorRef: Unmanaged<CFError>?
             if !CTFontManagerRegisterGraphicsFont(fontRef!, &errorRef) {
-                assert(false, "Failed to register font - register graphics font failed - this font may have already been registered in the main bundle.")
+                assertionFailure(
+                    "Failed to register font - register graphics font failed - this font may have already been registered in the main bundle."
+                )
             }
         } else {
-            assert(false, "Failed to register font - bundle identifier invalid.")
+            assertionFailure("Failed to register font - bundle identifier invalid.")
         }
     }
 }

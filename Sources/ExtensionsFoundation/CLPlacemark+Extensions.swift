@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import CoreLocation
+import Foundation
 
 public extension CLPlacemark {
     struct CoreLocationManagerAddressResponse: ModelProtocol {
@@ -45,7 +45,7 @@ public extension CLPlacemark {
 
 public extension CLPlacemark {
     var asCoreLocationManagerAddressResponse: CoreLocationManagerAddressResponse {
-        guard let asCLPlacemarkJSONFormat = asCLPlacemarkJSONFormat else {
+        guard let asCLPlacemarkJSONFormat else {
             return .noData
         }
         return .init(
@@ -89,8 +89,8 @@ public extension CLPlacemark {
 
     /// Esslinger Str. 7 • 70771 Leinfelden-Echterdingen
     var parsedLocation: (addressMin: String, addressFull: String) {
-        var addressMin: String = ""
-        var addressFull: String = ""
+        var addressMin = ""
+        var addressFull = ""
         if let value = subLocality {
             addressFull += value + ", "
         }

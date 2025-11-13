@@ -5,7 +5,7 @@
 
 import Foundation
 #if !os(watchOS)
-import SystemConfiguration
+    import SystemConfiguration
 #endif
 import UIKit
 
@@ -52,11 +52,11 @@ public extension Common {
 
         public static var onDebug: Bool {
             #if DEBUG
-            // For Simulator, and apps created with Xcode
-            return true
+                // For Simulator, and apps created with Xcode
+                return true
             #else
-            // For AppStore and Archive
-            return false
+                // For AppStore and Archive
+                return false
             #endif
         }
 
@@ -66,9 +66,9 @@ public extension Common {
 
         public static var onSimulator: Bool {
             #if targetEnvironment(simulator)
-            return true
+                return true
             #else
-            return false
+                return false
             #endif
         }
 

@@ -4,8 +4,8 @@
 //  Created by Ricardo Santos on 23/09/2024.
 //
 
-import Foundation
 import CloudKit
+import Foundation
 
 /**
 
@@ -41,21 +41,23 @@ open class CloudKitManager {
     }
 
     public init(cloudKit: String) {
-        self.container = CKContainer(identifier: cloudKit)
-        self.publicCloudDatabase = container.publicCloudDatabase
-        self.privateCloudDatabase = container.privateCloudDatabase
+        container = CKContainer(identifier: cloudKit)
+        publicCloudDatabase = container.publicCloudDatabase
+        privateCloudDatabase = container.privateCloudDatabase
     }
 }
 
 //
+
 // MARK: - Utils
+
 //
 
 public extension CloudKitManager {
     /// Time: 0.003 s
     func iCloudIsAvailable(completion: @escaping (Bool) -> Void) {
         CKContainer.default().accountStatus { [weak self] accountStatus, error in
-            guard let self = self else { return }
+            guard let self else { return }
             switch accountStatus {
             case .available:
                 completion(true)
@@ -70,7 +72,7 @@ public extension CloudKitManager {
                 }
                 completion(false)
             case .couldNotDetermine:
-                if let error = error {
+                if let error {
                     Common_Logs.error("Error determining iCloud status: \(error.localizedDescription)", "\(Self.self)")
                 }
                 completion(false)
@@ -91,12 +93,12 @@ public extension CloudKitManager {
     func createZone(zoneID: CKRecordZone.ID?, completion: @escaping (Bool) -> Void) {
         iCloudIsAvailable { [weak self] available in
             guard available else { return }
-            guard let self = self else { return }
-            guard let zoneID = zoneID else { return }
+            guard let self else { return }
+            guard let zoneID else { return }
 
             // Check if the zone already exists
-            self.privateCloudDatabase.fetch(withRecordZoneID: zoneID) { [weak self] zone, error in
-                guard let self = self else { return }
+            privateCloudDatabase.fetch(withRecordZoneID: zoneID) { [weak self] zone, error in
+                guard let self else { return }
 
                 if zone != nil {
                     // Zone already exists
@@ -104,32 +106,43 @@ public extension CloudKitManager {
                 } else if let ckError = error as? CKError, ckError.code == .zoneNotFound {
                     // Zone doesn't exist, create it
                     let recordZone = CKRecordZone(zoneID: zoneID)
-                    let operation = CKModifyRecordZonesOperation(recordZonesToSave: [recordZone], recordZoneIDsToDelete: [])
+                    let operation = CKModifyRecordZonesOperation(
+                        recordZonesToSave: [recordZone],
+                        recordZoneIDsToDelete: []
+                    )
                     operation.modifyRecordZonesResultBlock = { [weak self] result in
-                        guard let self = self else { return }
+                        guard let self else { return }
                         switch result {
                         case .success:
                             if loggerEnabled() {
                                 Common_Logs.debug("Zone created: \(zoneID)", "\(Self.self)")
                             }
                             completion(true)
-                        case .failure(let error):
+                        case let .failure(error):
                             Common_Logs.error("Error creating zone: \(error)", "\(Self.self)")
                             completion(false)
                         }
                     }
                     operation.qualityOfService = .utility
-                    self.privateCloudDatabase.add(operation)
+                    privateCloudDatabase.add(operation)
                 } else {
                     // Handle other errors (e.g., network errors)
-                    Common_Logs.error("Error fetching zone: \(error?.localizedDescription ?? "Unknown error")", "\(Self.self)")
+                    Common_Logs.error(
+                        "Error fetching zone: \(error?.localizedDescription ?? "Unknown error")",
+                        "\(Self.self)"
+                    )
                     completion(false)
                 }
             }
         }
     }
 
-    func fetchAllRecords(recordType: String, resultsLimit: Int = 1, database: CKDatabase, completion: @escaping (CKRecord?) -> Void) {
+    func fetchAllRecords(
+        recordType: String,
+        resultsLimit: Int = 1,
+        database: CKDatabase,
+        completion: @escaping (CKRecord?) -> Void
+    ) {
         iCloudIsAvailable { available in
             guard available else {
                 completion(nil)
@@ -143,16 +156,16 @@ public extension CloudKitManager {
             Common_CronometerManager.startTimerWith(identifier: identifier)
             operation.recordMatchedBlock = { _, result in
                 switch result {
-                case .success(let record):
+                case let .success(record):
                     recordFound = true
                     completion(record)
-                case .failure(let error):
+                case let .failure(error):
                     Common_Logs.error(error, "\(Self.self)")
                     completion(nil)
                 }
             }
             operation.queryResultBlock = { [weak self] operationResult in
-                guard let self = self else { return }
+                guard let self else { return }
                 switch operationResult {
                 case .success:
                     Common_CronometerManager.timeElapsed(identifier, print: loggerEnabled())
@@ -160,7 +173,7 @@ public extension CloudKitManager {
                         // No record found!
                         completion(nil)
                     }
-                case .failure(let error):
+                case let .failure(error):
                     Common_Logs.error(error, "\(Self.self)")
                     completion(nil)
                 }
@@ -169,18 +182,24 @@ public extension CloudKitManager {
         }
     }
 
-    func updateRecord(record: CKRecord, details: [String: String] = [:], assets: [String: URL] = [:], database: CKDatabase, completion: @escaping (Bool) -> Void) {
+    func updateRecord(
+        record: CKRecord,
+        details: [String: String] = [:],
+        assets: [String: URL] = [:],
+        database: CKDatabase,
+        completion: @escaping (Bool) -> Void
+    ) {
         let identifier = "updateRecord" + "_" + record.recordType + "_" + UUID().uuidString
         Common_CronometerManager.startTimerWith(identifier: identifier)
         iCloudIsAvailable { [weak self] available in
-            guard let self = self else { completion(false); return }
+            guard let self else { completion(false); return }
             guard available else { completion(false); return }
             guard details.count + assets.count > 0 else { completion(false); return }
             record.bindWith(details: details, assets: assets)
             let operation = CKModifyRecordsOperation(recordsToSave: [record], recordIDsToDelete: nil)
             operation.qualityOfService = .background
             operation.modifyRecordsResultBlock = { [weak self] result in
-                guard let self = self else { return }
+                guard let self else { return }
                 Common_CronometerManager.timeElapsed(identifier, print: loggerEnabled())
                 switch result {
                 case .success:
@@ -188,7 +207,7 @@ public extension CloudKitManager {
                         Common_Logs.debug("Record updated: \(record.recordType)", "\(Self.self)")
                     }
                     completion(true)
-                case .failure(let error):
+                case let .failure(error):
                     Common_Logs.debug("Error updating: \(error)", "\(Self.self)")
                     completion(false)
                 }
@@ -208,14 +227,14 @@ public extension CloudKitManager {
         let identifier = "insertRecord" + "_" + recordType + "_" + UUID().uuidString
         iCloudIsAvailable { available in
             guard available else { completion(false); return }
-            guard let zoneID = zoneID else { completion(false); return }
+            guard let zoneID else { completion(false); return }
             guard details.count + assets.count > 0 else { completion(false); return }
             let record = CKRecord(recordType: recordType, zoneID: zoneID)
             record.bindWith(details: details, assets: assets)
             database.save(record) { [weak self] _, error in
-                guard let self = self else { return }
+                guard let self else { return }
                 Common_CronometerManager.timeElapsed(identifier, print: loggerEnabled())
-                if let error = error {
+                if let error {
                     Common_Logs.debug("Error adding: \(error)", "\(Self.self)")
                     completion(false)
                 } else {
@@ -231,10 +250,10 @@ public extension CloudKitManager {
 
 public extension CKRecord {
     func bindWith(details: [String: String] = [:], assets: [String: URL] = [:]) {
-        details.keys.forEach { key in
+        for key in details.keys {
             self[key] = details[key]
         }
-        assets.keys.forEach { key in
+        for key in assets.keys {
             if let fileURL = assets[key] {
                 self[key] = CKAsset(fileURL: fileURL)
             }

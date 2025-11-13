@@ -3,14 +3,18 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import CoreData
+import Foundation
 
 //
+
 // MARK: - Utils CRUD operations
+
 //
 
 public extension CommonCoreData.Utils {
+    // MARK: - Batch Delete
+
     @discardableResult
     static func batchDelete(
         context: NSManagedObjectContext,
@@ -19,32 +23,76 @@ public extension CommonCoreData.Utils {
         do {
             let deleteRequest = NSBatchDeleteRequest(fetchRequest: request)
             deleteRequest.resultType = .resultTypeCount
-            try context.execute(deleteRequest)
+
+            let result = try context.execute(deleteRequest) as? NSBatchDeleteResult
+
+            // Merge changes into context so it stays consistent
+            if let deletedIDs = result?.result as? [NSManagedObjectID] {
+                let changes = [NSDeletedObjectsKey: deletedIDs]
+                NSManagedObjectContext.mergeChanges(
+                    fromRemoteContextSave: changes,
+                    into: [context]
+                )
+            }
+
             try context.save()
             try context.parent?.save()
+
             return true
+
         } catch {
-            context.rollback()
-            Common.LogsManager.error("Couldn't delete the entities " + error.localizedDescription, "\(Self.self)")
+            // ❗Do NOT use rollback after batch delete
+            context.reset()
+
+            Common.LogsManager.error(
+                "Couldn't batch delete entities: \(error.localizedDescription)",
+                "\(Self.self)"
+            )
             return false
         }
     }
 
-    /// Saves the context, at the same time it prints debug messages
+    // MARK: - Synchronous Save Wrapper
+
+    // MARK: - Exclusive Save Lock
+
+    // private static let syncSaveLockQueue = DispatchQueue(
+    //    label: "CommonCoreData.Utils.syncSave.lock.queue",
+    //    qos: .userInitiated
+    // )
+
+    private static let syncSaveGroup = DispatchGroup()
+
+    // MARK: - Public Synchronous Save Wrapper (Safe)
+
     @discardableResult
-    static func save(viewContext: NSManagedObjectContext?, canEmitChanges: Bool = true) -> Bool {
+    static func syncSave(
+        viewContext: NSManagedObjectContext?,
+        canEmitChanges: Bool = true
+    ) -> Bool {
         guard let viewContext else { return false }
-        var result: Bool?
-        let semaphore = DispatchSemaphore(value: 0)
-        asyncSave(viewContext: viewContext, canEmitChanges: canEmitChanges) { recordsChanged in
-            result = recordsChanged > 0
-            semaphore.signal()
+
+        var finalResult = false
+
+        // Ensure only one save operation at a time
+        // syncSaveLockQueue.sync {
+        syncSaveGroup.enter()
+
+        aSyncSave(viewContext: viewContext, canEmitChanges: canEmitChanges) { changed in
+            finalResult = changed > 0
+            syncSaveGroup.leave()
         }
-        _ = semaphore.wait(timeout: .now() + 0.1)
-        return result ?? false
+
+        // Wait for aSyncSave to complete
+        syncSaveGroup.wait()
+        //  }
+
+        return finalResult
     }
 
-    static func asyncSave(
+    // MARK: - Asynchronous Save (CRASH-FREE)
+
+    static func aSyncSave(
         viewContext: NSManagedObjectContext?,
         canEmitChanges: Bool = true,
         completion: @escaping (Int) -> Void
@@ -53,95 +101,118 @@ public extension CommonCoreData.Utils {
             completion(0)
             return
         }
+
         enum DBOperation: String {
             case insert = "Inserted"
             case delete = "Deleted"
             case update = "Updated"
         }
-        var saveSuccess = false
-        let threadInfo: String = (Thread.isMain ? "Main" : "Background") + " Thread"
-        var changes: [(dbModelName: String, id: String?, operation: DBOperation)] = []
 
-        func buildInfo(managedObject: NSManagedObject) -> (dbModelName: String, id: String?) {
-            let dbModelName = managedObject.entity.name ?? ""
-            let id = managedObject.extractId()
-            return (dbModelName, id)
+        let threadInfo = Thread.isMainThread ? "Main Thread" : "Background Thread"
+
+        var saveSuccess = false
+        var changes: [(model: String, id: String?, op: DBOperation)] = []
+
+        // MARK: - Snapshot Core Data change sets (❗required to avoid crashes)
+
+        let insertedSnapshot = viewContext.insertedObjects
+        let deletedSnapshot = viewContext.deletedObjects
+        let updatedSnapshot = viewContext.updatedObjects
+
+        func buildInfo(_ obj: NSManagedObject) -> (String, String?) {
+            let name = obj.entity.name ?? ""
+            let id = obj.extractId()
+            return (name, id)
         }
-        viewContext.insertedObjects.forEach { managedObject in
-            let info = buildInfo(managedObject: managedObject)
-            changes.append((info.dbModelName, info.id, .insert))
+
+        // Capturing snapshots is safe
+        for obj in insertedSnapshot {
+            let info = buildInfo(obj)
+            changes.append((info.0, info.1, .insert))
         }
-        viewContext.deletedObjects.forEach { managedObject in
-            let info = buildInfo(managedObject: managedObject)
-            changes.append((info.dbModelName, info.id, .delete))
+        for obj in deletedSnapshot {
+            let info = buildInfo(obj)
+            changes.append((info.0, info.1, .delete))
         }
-        viewContext.updatedObjects.forEach { managedObject in
-            let info = buildInfo(managedObject: managedObject)
-            changes.append((info.dbModelName, info.id, .update))
+        for obj in updatedSnapshot {
+            let info = buildInfo(obj)
+            changes.append((info.0, info.1, .update))
         }
+
+        // MARK: - Emit change notifications
 
         func emitChanges() {
             guard canEmitChanges, saveSuccess else { return }
-            changes.forEach { (dbModelName: String, id: String?, operation: DBOperation) in
-                switch operation {
-                case .insert:
-                    output.send(.databaseDidInsertRecord(dbModelName, id: id))
-                case .delete:
-                    output.send(.databaseDidDeleteRecord(dbModelName, id: id))
-                case .update:
-                    output.send(.databaseDidUpdateRecord(dbModelName, id: id))
+
+            for (model, id, op) in changes {
+                switch op {
+                case .insert: output.send(.databaseDidInsertRecord(model, id: id))
+                case .delete: output.send(.databaseDidDeleteRecord(model, id: id))
+                case .update: output.send(.databaseDidUpdateRecord(model, id: id))
                 }
             }
-            #if DEBUG
-            // ✅ Only log when not running unit tests
-            guard !ProcessInfo.isRunningUnitTests else { return }
 
-            changes.forEach { (dbModelName: String, _, operation: DBOperation) in
-                Common.LogsManager.debug("💾 \(operation.rawValue) record @ [\(dbModelName)] on [\(threadInfo)]", "\(Self.self)")
-            }
+            #if DEBUG
+                guard !ProcessInfo.isRunningUnitTests else { return }
+                for (model, _, op) in changes {
+                    Common.LogsManager.debug("💾 \(op.rawValue) @ [\(model)] on [\(threadInfo)]", "\(Self.self)")
+                }
             #endif
         }
 
-        switch viewContext.concurrencyType {
-        case .privateQueueConcurrencyType, .confinementConcurrencyType:
-            let privateContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-            privateContext.parent = viewContext
-            privateContext.performAndWait { [weak viewContext, weak privateContext] in
+        // MARK: - Private Queue Context Save
+
+        if viewContext.concurrencyType == .privateQueueConcurrencyType ||
+            viewContext.concurrencyType == .confinementConcurrencyType
+        {
+            viewContext.perform {
                 do {
-                    try privateContext?.save()
-                    try viewContext?.save()
+                    try viewContext.save()
+
+                    if let parent = viewContext.parent, parent.hasChanges {
+                        try parent.save()
+                    }
+
                     saveSuccess = true
                     emitChanges()
+
                 } catch {
-                    viewContext?.rollback()
+                    viewContext.rollback()
                     let nserror = error as NSError
                     Common.LogsManager.error("Unresolved error \(nserror), \(nserror.userInfo)", "\(Self.self)")
                 }
+
                 completion(saveSuccess ? changes.count : 0)
             }
-        case .mainQueueConcurrencyType:
+        }
+
+        // MARK: - Main Queue Save
+
+        if viewContext.concurrencyType == .mainQueueConcurrencyType {
             do {
                 try viewContext.save()
+
                 if let parent = viewContext.parent, parent.hasChanges {
                     try parent.save()
                 }
+
                 saveSuccess = true
                 emitChanges()
+
             } catch {
                 viewContext.rollback()
                 let nserror = error as NSError
                 Common.LogsManager.error("Unresolved error \(nserror), \(nserror.userInfo)", "\(Self.self)")
             }
+
+            // Call completion safely
             if Thread.isMainThread {
                 completion(saveSuccess ? changes.count : 0)
             } else {
-                let mergeContextDelay: TimeInterval = 0.01
-                DispatchQueue.executeWithDelay(delay: mergeContextDelay) {
+                DispatchQueue.main.async {
                     completion(saveSuccess ? changes.count : 0)
                 }
             }
-        @unknown default:
-            ()
         }
     }
 }

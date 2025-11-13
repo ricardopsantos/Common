@@ -10,7 +10,8 @@ extension CommonNetworking {
         static func parseCSV(data: Data) throws -> Data {
             let dataString: String! = String(data: data, encoding: .utf8)
 
-            guard let jsonKeys: [String] = dataString.components(separatedBy: "\n").first?.components(separatedBy: ",") else {
+            guard let jsonKeys: [String] = dataString.components(separatedBy: "\n").first?.components(separatedBy: ",")
+            else {
                 throw APIError.parsing(description: "\(Self.self) CSV parsing fail", data: data)
             }
 

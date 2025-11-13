@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 import UIKit
 
 public extension CombineCompatible {
@@ -29,7 +29,7 @@ public extension CombineCompatibleProtocol where Self: UIControl {
 }
 
 // swiftlint:disable no_UIKitAdhocConstruction
-fileprivate extension Common {
+private extension Common {
     func sample() {
         let btn = UIButton()
         _ = btn.publisher(for: .touchUpInside).sinkToReceiveValue { _ in }

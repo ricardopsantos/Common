@@ -5,8 +5,8 @@
 //  Created by Ricardo Santos on 23/09/2024.
 //
 
-import Foundation
 import CloudKit
+import Foundation
 
 // https://www.toptal.com/ios/sync-data-across-devices-with-cloudkit
 

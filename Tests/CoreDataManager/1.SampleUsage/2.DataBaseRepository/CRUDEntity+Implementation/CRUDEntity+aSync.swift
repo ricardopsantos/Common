@@ -24,6 +24,7 @@ import CoreData
 // MARK: - CRUDEntityDBRepository / Async Methods
 //
 extension DatabaseRepository {
+ 
     func aSyncStore(_ model: CoreDataSampleUsageNamespace.CRUDEntity) async {
         typealias DBEntity = CDataCRUDEntity
         let context = backgroundContext // Use a background context to perform the operation asynchronously
@@ -36,14 +37,9 @@ extension DatabaseRepository {
                 newInstance.id = model.id
                 newInstance.name = model.name
                 newInstance.recordDate = model.recordDate
-                if Common_Utils.true {
-                    CommonCoreData.Utils.save(viewContext: context)
-                } else {
-                    if context.hasChanges {
-                        try? context.save()
-                    }
-                }
-                continuation.resume()
+                CommonCoreData.Utils.aSyncSave(viewContext: context, completion: { _ in
+                    continuation.resume()
+                })
             }
         }
     }
@@ -79,42 +75,35 @@ extension DatabaseRepository {
                 if let existingEntity = instances?.first {
                     existingEntity.name = model.name
                     existingEntity.recordDate = model.recordDate
-                    if Common_Utils.true {
-                        CommonCoreData.Utils.save(viewContext: context)
-                    } else {
-                        if context.hasChanges {
-                            try? context.save()
-                        }
-                    }
+                    CommonCoreData.Utils.aSyncSave(viewContext: context, completion: { _ in
+                        continuation.resume()
+                    })
                 }
-                continuation.resume()
             }
         }
     }
 
     func aSyncDelete(_ model: CoreDataSampleUsageNamespace.CRUDEntity) async {
-        typealias DBEntity = CDataCRUDEntity
-        let context = backgroundContext // Use a background context to perform the operation asynchronously
-        await withCheckedContinuation { [weak context] continuation in
-            context?.performAndWait { [weak context] in
-                guard let context = context else {
-                    return
-                }
-                let instances = try? context.fetch(DBEntity.fetchRequestWith(id: model.id))
-                if let existingEntity = instances?.first {
-                    context.delete(existingEntity)
-                    if Common_Utils.true {
-                        CommonCoreData.Utils.save(viewContext: context)
-                    } else {
-                        if context.hasChanges {
-                            try? context.save()
-                        }
+        typealias DB = CDataCRUDEntity
+        let context = backgroundContext
+
+        return await withCheckedContinuation { continuation in
+            context.perform {
+                let request = DB.fetchRequestWith(id: model.id)
+                if let existing = try? context.fetch(request).first {
+                    context.delete(existing)
+                    // Call async save, then resume
+                    CommonCoreData.Utils.aSyncSave(viewContext: context) { _ in
+                        continuation.resume()
                     }
+                } else {
+                    // Nothing to delete → resume immediately
+                    continuation.resume()
                 }
-                continuation.resume()
             }
         }
     }
+
 
     func aSyncRecordCount() async -> Int {
         typealias DBEntity = CDataCRUDEntity

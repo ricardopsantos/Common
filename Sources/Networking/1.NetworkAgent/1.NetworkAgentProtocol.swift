@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 public protocol NetworkAgentProtocol {
     var client: CommonNetworking.NetworkAgentClient { get }

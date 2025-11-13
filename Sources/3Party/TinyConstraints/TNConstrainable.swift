@@ -67,7 +67,8 @@ public extension TNConstrainable {
                 accessibilityId = ".[accessibility:\(accessibilityIdentifier)]"
             }
             let tag = view.tag > 0 ? ".[tag:\(view.tag)]" : ""
-            let mainId = "[\(NSStringFromClass(type(of: self) as! AnyClass))].[\(Unmanaged.passUnretained(view).toOpaque())]"
+            let mainId =
+                "[\(NSStringFromClass(type(of: self) as! AnyClass))].[\(Unmanaged.passUnretained(view).toOpaque())]"
             return "\(mainId)\(accessibilityId)\(tag)"
         } else {
             return "unknow_memory_address"

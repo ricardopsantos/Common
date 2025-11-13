@@ -76,7 +76,9 @@ public extension UIButton {
 }
 
 //
+
 // MARK: - Animations
+
 //
 
 public extension UIButton {

@@ -3,12 +3,14 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 public extension CommonNetworking {
     //
+
     // MARK: - NetworkLogger
+
     //
     struct NetworkLogger {
         public let dumpRequest: Bool
@@ -23,7 +25,8 @@ public extension CommonNetworking {
             dumpResponse: Bool,
             logError: Bool,
             logOperationTime: Bool,
-            number: Int) {
+            number: Int
+        ) {
             self.dumpRequest = dumpRequest
             self.dumpResponse = dumpResponse
             self.logError = logError

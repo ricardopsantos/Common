@@ -35,7 +35,7 @@ public struct CookieInfo: Sendable, Hashable {
             HTTPCookiePropertyKey.name.rawValue: name,
             HTTPCookiePropertyKey.value.rawValue: value,
             HTTPCookiePropertyKey.domain.rawValue: domain,
-            HTTPCookiePropertyKey.path.rawValue: path
+            HTTPCookiePropertyKey.path.rawValue: path,
         ]
 
         if let expiresDate {
@@ -56,11 +56,9 @@ public struct CookieInfo: Sendable, Hashable {
 
         return props
     }
-
 }
 
 public extension WKWebView {
-
     // MARK: - Get Cookies
 
     /// Async version that returns typed cookies. Pass `matchingDomain` to filter (substring match).
@@ -78,7 +76,8 @@ public extension WKWebView {
 
     /// Backward-compatible completion wrapper that mimics your original signature.
     static func getCookies(for domain: String? = nil,
-                           completion: @escaping ([String: Any]) -> Void) {
+                           completion: @escaping ([String: Any]) -> Void)
+    {
         Task {
             let cookies = await getCookies(matchingDomain: domain)
             // Preserve previous API shape: [cookieName: properties]
@@ -152,5 +151,4 @@ public extension WKWebView {
             print("All website data cleared.")
         }
     }
-
 }

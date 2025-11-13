@@ -9,7 +9,7 @@ import SwiftUI
 // https://izziswift.com/get-width-of-a-view-using-in-swiftui/
 struct ViewFrameGetter: ViewModifier {
     @Binding var rects: (CGRect, CGRect)
-    public func body(content: Content) -> some View {
+    public func body(content _: Content) -> some View {
         GeometryReader { g -> Color in // (g) -> Content in - is what it could be, but it doesn't work
             DispatchQueue.executeInMainTread { // to avoid warning
                 rects = (g.frame(in: .local), g.frame(in: .global))
@@ -33,7 +33,7 @@ struct ViewFrameGetter: ViewModifier {
 
 #if canImport(SwiftUI) && DEBUG
 
-#Preview {
-    Common_Preview.ViewsModifiersTestView()
-}
+    #Preview {
+        Common_Preview.ViewsModifiersTestView()
+    }
 #endif

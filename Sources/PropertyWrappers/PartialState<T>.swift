@@ -1,5 +1,5 @@
 //
-//  PartialState.swift
+//  PartialState<T>.swift
 //  Common
 //
 //  Created by Ricardo Santos on 18/09/2024.
@@ -42,7 +42,7 @@ public extension Common_PropertyWrappers {
         }
 
         public init(wrappedValue: Value) {
-            self._storage = ObservedObject(wrappedValue: Storage(value: wrappedValue))
+            _storage = ObservedObject(wrappedValue: Storage(value: wrappedValue))
         }
 
         // Key structure to help track the PartialState uniquely
@@ -54,54 +54,56 @@ public extension Common_PropertyWrappers {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-public extension Common_Preview {
-    struct ComplexState: Equatable {
-        var name: String
-        var age: Int
-    }
+    public extension Common_Preview {
+        struct ComplexState: Equatable {
+            var name: String
+            var age: Int
+        }
 
-    struct PartialStateTestViewView: View {
-        @PWPartialState var partialState: ComplexState = .init(name: "", age: 0)
-        @State var state: ComplexState = .init(name: "", age: 0)
-        public init() {}
-        public var body: some View {
-            VStack {
-                // swiftlint:disable line_length
-                Text(
-                    "When changing @State, even if the that property (name) is not used on the view, will trigger a view reload. When using @PartialState, when we change the property, and its not used on the view, no reload is trigger"
-                )
-                // swiftlint:enable line_length
-                Spacer()
-                Divider()
-                Text(state.age.description)
-                Text(partialState.age.description)
-                Button("Change State") {
-                    state.name = String.randomWithSpaces(10)
+        struct PartialStateTestViewView: View {
+            @PWPartialState var partialState: ComplexState = .init(name: "", age: 0)
+            @State var state: ComplexState = .init(name: "", age: 0)
+            public init() {}
+            public var body: some View {
+                VStack {
+                    // swiftlint:disable line_length
+                    Text(
+                        "When changing @State, even if the that property (name) is not used on the view, will trigger a view reload. When using @PartialState, when we change the property, and its not used on the view, no reload is trigger"
+                    )
+                    // swiftlint:enable line_length
+                    Spacer()
+                    Divider()
+                    Text(state.age.description)
+                    Text(partialState.age.description)
+                    Button("Change State") {
+                        state.name = String.randomWithSpaces(10)
+                    }
+                    Button("Change PartialState") {
+                        partialState.name = String.randomWithSpaces(10)
+                    }
+                    Spacer()
                 }
-                Button("Change PartialState") {
-                    partialState.name = String.randomWithSpaces(10)
+                .onChange(of: _partialState.projectedValue.wrappedValue.name, perform: { newValue in
+                    Common_Logs.debug("\(newValue)", "\(Self.self)")
+                })
+                // Track changes to partialState.name without triggering a view reload
+                .onPartialChange(of: _partialState, at: \.name) { newValue in
+                    Common_Logs.debug("\(newValue)", "\(Self.self)")
                 }
-                Spacer()
+                .debugBackground()
             }
-            .onChange(of: _partialState.projectedValue.wrappedValue.name, perform: { newValue in
-                Common_Logs.debug("\(newValue)", "\(Self.self)")
-            })
-            // Track changes to partialState.name without triggering a view reload
-            .onPartialChange(of: _partialState, at: \.name) { newValue in
-                Common_Logs.debug("\(newValue)", "\(Self.self)")
-            }
-            .debugBackground()
         }
     }
-}
 
-#Preview {
-    Common_Preview.PartialStateTestViewView()
-}
+    #Preview {
+        Common_Preview.PartialStateTestViewView()
+    }
 #endif
 
 public extension View {

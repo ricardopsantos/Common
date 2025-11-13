@@ -3,9 +3,9 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
+import Foundation
 import SwiftUI
 import UIKit
-import Foundation
 
 public extension Common {
     struct EqualWidthPreferenceKey: PreferenceKey {
@@ -55,11 +55,13 @@ public extension Common {
 }
 
 //
+
 // MARK: - Test/Usage View
+
 //
 
 private func randomString() -> String {
-    String.random(Int.random(in: 1...25))
+    String.random(Int.random(in: 1 ... 25))
 }
 
 struct TextBubble: View {
@@ -104,11 +106,13 @@ struct EqualWidthPreferenceKeyTestView: View {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-#Preview("EqualWidthPreferenceKeyTestView") {
-    EqualWidthPreferenceKeyTestView()
-}
+    #Preview("EqualWidthPreferenceKeyTestView") {
+        EqualWidthPreferenceKeyTestView()
+    }
 #endif

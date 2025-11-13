@@ -31,13 +31,15 @@ public extension AnyPublisher {
         //   If a non-detached task is created within another task, the parent task will wait for the
         //   child task to complete before continuing its execution.
         // - Concurrency: Non-detached tasks run concurrently within their parent task.
-        //   They allow you to break down your asynchronous code into smaller, manageable tasks without losing the sequential execution flow.
+        //   They allow you to break down your asynchronous code into smaller, manageable tasks without losing the
+        //   sequential execution flow.
         try await asyncJust(sender: sender, firstEmission: true)
     }
 
     @discardableResult
-    func asyncDetached(sender: String) async throws -> Output {
-        // - Parent-Child Relationship: Detached tasks do not establish a parent-child relationship with the code that spawns them.
+    func asyncDetached(sender _: String) async throws -> Output {
+        // - Parent-Child Relationship: Detached tasks do not establish a parent-child relationship with the code that
+        // spawns them.
         //   This means that a detached task can outlive its parent task or the scope it was created in.
         //   The parent task doesn't wait for the detached task to complete.
         // - Concurrency: Detached tasks can run concurrently, and the program flow does not wait for their completion.
@@ -73,7 +75,9 @@ public extension AnyPublisher {
 }
 
 //
+
 // MARK: - AsyncStream
+
 //
 
 /**
@@ -125,8 +129,10 @@ public extension AnyPublisher where Failure == Never {
                             continuation.yield(with: .failure(never))
                         } else {
                             continuation.finish() // Treat the error as completion
-                            // In this modified version of the stream extension, if the AnyPublisher has a failure event,
-                            // it will be treated as a completion event (i.e., the stream will finish) rather than yielding
+                            // In this modified version of the stream extension, if the AnyPublisher has a failure
+                            // event,
+                            // it will be treated as a completion event (i.e., the stream will finish) rather than
+                            // yielding
                             // the error. This effectively ignores the error and allows your code to continue executing.
                         }
                     }

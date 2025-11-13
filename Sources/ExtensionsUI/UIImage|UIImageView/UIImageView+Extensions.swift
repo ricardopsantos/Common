@@ -18,7 +18,8 @@ public extension UIImageView {
                        let downsampleImage = UIImage.downsample(
                            imageAt: url,
                            size: bounds.size
-                       ) {
+                       )
+                    {
                         self.image = downsampleImage
                     } else {
                         self.image = image

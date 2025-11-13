@@ -31,7 +31,7 @@ public extension Common {
             case tapped(_ origin: String, _ message: String)
             var log: String {
                 switch self {
-                case .retry(let message, i: let i, maxI: let maxI, error: let error):
+                case let .retry(message, i: i, maxI: maxI, error: error):
                     if i == 1, maxI == 1 {
                         return "⚠️ Will retry once [\(message)] ⚠️\n\(error)"
                     } else if i != maxI {
@@ -41,27 +41,27 @@ public extension Common {
                     } else {
                         return "⚠️ Will retry [\(message)] ⚠️\n\(error)"
                     }
-                case .warning(let message):
+                case let .warning(message):
                     return "⚠️ \(message) ⚠️\n"
-                case .log(let any):
+                case let .log(any):
                     return "\(any)"
-                case .viewInit(let origin, let function):
+                case let .viewInit(origin, function):
                     return "👶🏻 \(origin) 👶🏻 \(function)"
-                case .appLifeCycle(let message):
+                case let .appLifeCycle(message):
                     return "🔀 🔀 App Life Cycle 🔀 🔀: \(message)"
-                case .flow(let name, let message):
+                case let .flow(name, message):
                     return "🔑 Flow: \(name) 🔑 \(message)"
-                case .screenIn(let origin):
+                case let .screenIn(origin):
                     return "➡️ Screen In ➡️ \(origin)"
-                case .screenOut(let origin):
+                case let .screenOut(origin):
                     return "⬅️ Screen Out ⬅️ \(origin)"
-                case .onAppear(let origin):
+                case let .onAppear(origin):
                     return "➡️ onAppear ➡️ \(origin)"
-                case .onDisappear(let origin):
+                case let .onDisappear(origin):
                     return "⬅️ onDisappear ⬅️ \(origin)"
-                case .tapped(let origin, let message):
+                case let .tapped(origin, message):
                     return "👆 \(origin) 👆 Tapped [\(message)] 👆"
-                case .valueChanged(let origin, let key, let value):
+                case let .valueChanged(origin, key, value):
                     if value == nil {
                         return "💾 \(origin) 💾 Value of [\(key)] was deleted"
                     }
@@ -98,7 +98,14 @@ public extension Common {
             guard canLog(any, tag) else {
                 return
             }
-            log(prefix: "🟥", log: "\(any)".replace("\\", with: ""), tag: tag, function: function, file: file, line: line)
+            log(
+                prefix: "🟥",
+                log: "\(any)".replace("\\", with: ""),
+                tag: tag,
+                function: function,
+                file: file,
+                line: line
+            )
         }
 
         public static func debug(
@@ -108,7 +115,7 @@ public extension Common {
             file: String = #file,
             line: Int = #line
         ) {
-            Self.debug(.log(string), tag, function: function, file: file, line: line)
+            debug(.log(string), tag, function: function, file: file, line: line)
         }
 
         public static func debug(
@@ -124,8 +131,6 @@ public extension Common {
             log(prefix: "🟢", log: any.log, tag: tag, function: function, file: file, line: line)
         }
     }
-
-
 }
 
 private extension Common.LogsManager {
@@ -140,17 +145,18 @@ private extension Common.LogsManager {
     ) {
         counterTotal += 1
         let sender = Common.Utils.senderCodeId(function, file: file, line: line)
-        let log = "\n\n\(prefix) Log_\(counterTotal) \(Date.utcNow)) @ \(sender)|\(tag)\n\(log)".replace(" +0000", with: "").replace("Optional", with: "")
+        let log = "\n\n\(prefix) Log_\(counterTotal) \(Date.utcNow)) @ \(sender)|\(tag)\n\(log)"
+            .replace(" +0000", with: "").replace("Optional", with: "")
         // swiftlint:disable logs_rule_1
         print(log)
         Persistence.appendToFileEnd(log)
         // swiftlint:enable logs_rule_1
     }
 
-    static func canLog(_ any: Any?, _ tag: String) -> Bool {
-        //guard FeatureFlag.logsEnabled.isEnabled else {
+    static func canLog(_ any: Any?, _: String) -> Bool {
+        // guard FeatureFlag.logsEnabled.isEnabled else {
         //    return false
-        //}
+        // }
         guard any != nil else {
             return false
         }
@@ -196,7 +202,7 @@ public extension Common.LogsManager {
         }
 
         public static func reset() {
-            Self.dispatchQueue.async {
+            dispatchQueue.async {
                 guard let logsFolder else {
                     return
                 }
@@ -247,7 +253,7 @@ public extension Common.LogsManager {
         }
 
         public static func appendToFileStart(_ log: String) {
-            Self.dispatchQueue.async {
+            dispatchQueue.async {
                 guard let logFile else {
                     return
                 }
@@ -269,7 +275,7 @@ public extension Common.LogsManager {
         }
 
         public static func appendToFileEnd(_ log: String) {
-            Self.dispatchQueue.async {
+            dispatchQueue.async {
                 guard let logFile else {
                     return
                 }
