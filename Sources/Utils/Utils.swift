@@ -4,59 +4,49 @@
 //
 
 import Foundation
-#if !os(watchOS)
-    import SystemConfiguration
-#endif
 import UIKit
 
 public extension Common {
     struct Utils {
         private init() {}
 
+        // MARK: - Simple helpers
+
         public static var `true`: Bool { true }
         public static var `false`: Bool { false }
 
         public static func delay(_ delay: Double = 0.1, block: @escaping () -> Void) {
-            DispatchQueue.executeWithDelay(delay: delay) { block() }
+            DispatchQueue.executeWithDelay(delay: delay, block: block)
         }
+
+        // MARK: - Environment detection
 
         public static var onUnitTests: Bool {
             ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
         }
 
         public static var onUITests: Bool {
-            if ProcessInfo.processInfo.environment["UITestRunner"] == "1" {
-                return true
-            }
-            if ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
-                return true
-            }
+            let env = ProcessInfo.processInfo.environment
+            return env["UITestRunner"] == "1" || env["XCUI_TESTING"] == "1"
+        }
+
+        public static var onDebug: Bool {
+            #if DEBUG
+            return true
+            #else
             return false
-        }
-
-        public static func executeInMainTread(_ block: @escaping () -> Void) {
-            DispatchQueue.executeInMainTread { block() }
-        }
-
-        public static func executeInUserInteractiveTread(_ block: @escaping () -> Void) {
-            DispatchQueue.executeInUserInteractiveTread { block() }
-        }
-
-        public static func executeInBackgroundTread(_ block: @escaping () -> Void) {
-            DispatchQueue.executeInBackgroundTread { block() }
+            #endif
         }
 
         public static var onRelease: Bool {
             !onDebug
         }
 
-        public static var onDebug: Bool {
-            #if DEBUG
-                // For Simulator, and apps created with Xcode
-                return true
+        public static var onSimulator: Bool {
+            #if targetEnvironment(simulator)
+            return true
             #else
-                // For AppStore and Archive
-                return false
+            return false
             #endif
         }
 
@@ -64,17 +54,25 @@ public extension Common {
             !onSimulator
         }
 
-        public static var onSimulator: Bool {
-            #if targetEnvironment(simulator)
-                return true
-            #else
-                return false
-            #endif
+        // Compatibility alias
+        public static var isSimulator: Bool { onSimulator }
+        public static var isRealDevice: Bool { !onSimulator }
+
+        // MARK: - Thread helpers
+
+        public static func executeInMainTread(_ block: @escaping () -> Void) {
+            DispatchQueue.executeInMainTread(block)
         }
 
-        // Just for iPhone simulator
-        public static var isSimulator: Bool { Common.DeviceInfo.isSimulator }
-        public static var isRealDevice: Bool { !isSimulator }
+        public static func executeInUserInteractiveTread(_ block: @escaping () -> Void) {
+            DispatchQueue.executeInUserInteractiveTread(block)
+        }
+
+        public static func executeInBackgroundTread(_ block: @escaping () -> Void) {
+            DispatchQueue.executeInBackgroundTread(block)
+        }
+
+        // MARK: - Sender / Caller tracing
 
         public static func senderCodeId(
             _ function: String = #function,
@@ -82,20 +80,23 @@ public extension Common {
             line: Int = #line,
             showLine: Bool = isRealDevice
         ) -> String {
-            let fileName = file.split(by: "/").last!
+            let fileName = file.split(separator: "/").last.map(String.init) ?? "UnknownFile"
             var sender = "\(fileName), func/var \(function)"
             if showLine {
-                sender = "\(sender), line \(line)"
+                sender += ", line \(line)"
             }
             return sender
         }
+
+        // MARK: - Networking
 
         public static func existsInternetConnection(_ method: CommonNetworking.Reachability.Method = .default) -> Bool {
             CommonNetworking.Reachability.isConnectedToNetwork(method)
         }
 
-        // https://www.swiftbysundell.com/posts/under-the-hood-of-assertions-in-swift
-        // @autoclosure to avoid evaluating expressions in non-debug configurations
+        // MARK: - Assertions
+
+        /// Custom assert that logs instead of crashing in DEBUG mode.
         public static func assert(
             _ value: @autoclosure () -> Bool,
             message: @autoclosure () -> String = "",
@@ -103,12 +104,12 @@ public extension Common {
             file: StaticString = #file,
             line: Int = #line
         ) {
-            guard onDebug else {
-                return
-            }
+            guard onDebug else { return }
+
             if !value() {
                 LogsManager.error(
-                    "Assert condition not meeted! \(message())", "\(Self.self)",
+                    "Assert condition not met! \(message())",
+                    "\(Self.self)",
                     function: "\(function)",
                     file: "\(file)",
                     line: line

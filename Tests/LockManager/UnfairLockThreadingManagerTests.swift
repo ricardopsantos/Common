@@ -6,6 +6,12 @@ import Foundation
 import Testing
 @preconcurrency @testable import Common
 
+actor CounterBox {
+    private var value = 0
+    func increment() { value += 1 }
+    func get() -> Int { value }
+}
+
 @Suite(.serialized)
 struct UnfairLockThreadingManagerTests {
 
@@ -87,18 +93,23 @@ struct UnfairLockThreadingManagerTests {
 
     @Test
     func threadSafety() async {
+        /*
         let lockManager = makeLockManager()
-        var value = 0
+        let counter = CounterBox()   // ← replaces 'var value'
         let iterations = 1_000
 
         DispatchQueue.concurrentPerform(iterations: iterations) { _ in
             lockManager.execute {
-                value += 1
+                counter.increment()
             }
         }
 
-        let ok = await eventually { value == iterations }
-        #expect(ok, "Expected value \(value) == \(iterations)")
+        let ok = await eventually {
+            counter.get() == iterations
+        }
+        
+        #expect(ok, "Expected value \(counter.get()) == \(iterations)")*/
+        #expect(false)
     }
 
     @Test

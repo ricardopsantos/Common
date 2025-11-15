@@ -8,30 +8,40 @@ import UIKit
 
 public extension Common {
     enum InterfaceStyle: String, CaseIterable {
+        
+        case light
+        case dark
+        
+        // Case-insensitive initializer
         public init?(rawValue: String) {
-            if let some = Self.allCases.first(where: { $0.rawValue.lowercased() == rawValue.lowercased() }) {
-                self = some
+            if let match = Self.allCases.first(where: { $0.rawValue.lowercased() == rawValue.lowercased() }) {
+                self = match
             } else {
                 return nil
             }
         }
-
-        case light
-        case dark
-
+        
+        /// The interface style based on the system screen
         public static var current: InterfaceStyle {
-            UIView().traitCollection.userInterfaceStyle == .dark ? .dark : .light
+            UIScreen.main.traitCollection.userInterfaceStyle == .dark ? .dark : .light
         }
-
+        
+        /// Integer mapping (kept for compatibility)
         public var intValue: Int {
             switch self {
-            case .light: 1
-            case .dark: 2
+            case .light: return 1
+            case .dark: return 2
             }
         }
-
-        public static var alternative: InterfaceStyle {
-            current == .dark ? .light : .dark
+        
+        /// Toggle between light/dark
+        public var alternative: InterfaceStyle {
+            self == .dark ? .light : .dark
+        }
+        
+        /// Simple helper for testing
+        public static func from(_ style: UIUserInterfaceStyle) -> InterfaceStyle {
+            style == .dark ? .dark : .light
         }
     }
 }

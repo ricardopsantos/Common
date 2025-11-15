@@ -75,7 +75,7 @@ extension DatabaseRepository {
                 if let existingEntity = instances?.first {
                     existingEntity.name = model.name
                     existingEntity.recordDate = model.recordDate
-                    CommonCoreData.Utils.aSyncSave(viewContext: context, completion: { _ in
+                    CommonCoreData.Utils.aSyncSave(viewContext: context, completion: { _ in
                         continuation.resume()
                     })
                 }

@@ -9,9 +9,9 @@ import Foundation
 
 /**
 
- https://medium.com/@jakir/sync-swiftui-coredata-app-with-icloud-using-cloudkit-9162ae250a22
+https://medium.com/@jakir/sync-swiftui-coredata-app-with-icloud-using-cloudkit-9162ae250a22
 
-  https://medium.com/@islammoussa.eg/implementing-seamless-app-version-management-in-ios-with-cloudkit-bf5715b78283
+https://medium.com/@islammoussa.eg/implementing-seamless-app-version-management-in-ios-with-cloudkit-bf5715b78283
 
   In CloudKit, a __zone__ is a way to organize and manage your app's data within a database.
   CloudKit provides two types of databases: the public and private databases, and within these, you can create custom zones.

@@ -64,7 +64,6 @@ public extension Common {
                 return
             }
             defaults()?.set(_data, forKey: composedKey)
-            // Avoids deprecated/ineffective synchronize(); the system flushes at appropriate times.
         }
 
         public func syncRetrieve<T: Codable>(_: T.Type, key: String,

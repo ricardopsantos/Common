@@ -13,23 +13,9 @@ import Combine
 
 class CodableCacheManagerBaseTests: XCTestCase {
 
-    struct User: Codable, Equatable {
-        let name: String
-        let age: Int
-        let height: Double
-
-        static var random: Self {
-            let randomName = UUID().uuidString
-            let randomAge = Int.random(in: 18...40)
-            let randomHeight = Double.random(in: 150...200)
-            return .init(name: randomName, age: randomAge, height: randomHeight)
-        }
-    }
-
-    func enabled() -> Bool { false }
-
     func codableCacheManager() -> CodableCacheManagerProtocol {
-        fatalError("Override in subclass")
+        // Override in subclass
+        Common.CacheManagerForCodableUserDefaultsRepository.shared
     }
 
     private var sampleWebAPIUseCase: SampleWebAPIUseCase { SampleWebAPIUseCase() }
@@ -39,13 +25,22 @@ class CodableCacheManagerBaseTests: XCTestCase {
         continueAfterFailure = false
         TestsGlobal.loadedAny = nil
         TestsGlobal.cancelBag.cancel()
+        syncClearAll()
     }
 
     // MARK: - Async CRUD
 
-    func test1_aSyncCRUD() async {
-        guard enabled() else { return }
-
+    func test_keys() {
+        let key1 = #function
+        let params1 = [#function, #file]
+        let key2 = #function
+        let params2 = [#function, #file]
+        let composedKey1 = Commom_ExpiringKeyValueEntity.composedKey(key1, params1)
+        let composedKey2 = Commom_ExpiringKeyValueEntity.composedKey(key2, params2)
+        XCTAssertEqual(composedKey1, composedKey2)
+    }
+    
+    func test_aSyncStoreAndRetrieve() async {
         let model = User.random
         let key = String.random(10)
         let params = [model.age.description, model.name]
@@ -66,9 +61,8 @@ class CodableCacheManagerBaseTests: XCTestCase {
 
     // MARK: - Sync CRUD
 
-    func test2_syncCRUD() {
-        guard enabled() else { return }
-
+    func test_syncStoreAndRetrieve() {
+        
         let model = User.random
         let key = String.random(10)
         let params = [model.age.description, model.name]
@@ -89,10 +83,9 @@ class CodableCacheManagerBaseTests: XCTestCase {
 
     // MARK: - Cache Policy Tests
 
-    func test3_cachePolicy_ignoringCache() async {
-        guard enabled() else { return }
+    func test_webapi_cachePolicy_ignoringCache() async {
+
         var counter = 0
-        syncClearAll()
 
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .ignoringCache)
             .sinkToReceiveValue { some in
@@ -104,10 +97,9 @@ class CodableCacheManagerBaseTests: XCTestCase {
         XCTAssertTrue(ok, "Expected exactly one success emission")
     }
 
-    func test4_cacheElseLoad() async {
-        guard enabled() else { return }
+    func test_webapi_cachePolicy_cacheElseLoad() async {
+
         var counter = 0
-        syncClearAll()
 
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .cacheElseLoad)
             .sinkToReceiveValue { some in
@@ -119,10 +111,9 @@ class CodableCacheManagerBaseTests: XCTestCase {
         XCTAssertTrue(ok, "Expected exactly one success emission")
     }
 
-    func test5_cacheDontLoad() async {
-        guard enabled() else { return }
+    func test_webapi_cachePolicy_cacheDontLoad() async {
+
         var counter = 0
-        syncClearAll()
 
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .cacheDontLoad)
             .sinkToReceiveValue { some in
@@ -134,10 +125,9 @@ class CodableCacheManagerBaseTests: XCTestCase {
         XCTAssertTrue(ok, "Expected zero emissions when cacheDontLoad and no cache present")
     }
 
-    func test6_cacheAndLoadT1() async {
-        guard enabled() else { return }
+    func test_webapi_cachePolicy_cacheAndLoad_once() async {
+
         var counter = 0
-        syncClearAll()
 
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .cacheAndLoad)
             .sinkToReceiveValue { some in
@@ -149,10 +139,9 @@ class CodableCacheManagerBaseTests: XCTestCase {
         XCTAssertTrue(ok, "Expected one emission (cache or network)")
     }
 
-    func test7_cacheAndLoadT2() async {
-        guard enabled() else { return }
+    func test_webapi_cachePolicy_cacheAndLoad_twice() async {
+
         var counter = 0
-        syncClearAll()
 
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .ignoringCache)
             .sinkToReceiveValue { some in
@@ -162,7 +151,6 @@ class CodableCacheManagerBaseTests: XCTestCase {
                         .sinkToReceiveValue { result in
                             if case .success = result {
                                 counter += 1
-                                print("counter:", counter)
                             } else {
                                 XCTFail("Expected success")
                             }
@@ -178,8 +166,8 @@ class CodableCacheManagerBaseTests: XCTestCase {
         XCTAssertTrue(ok, "Expected two total emissions across both requests")
     }
 
-    func test8_fetchingRecordFrom_10000Records() {
-        guard enabled() else { return }
+    func test_fetchingFrom_10000Records() {
+
         syncClearAll()
         syncStore(count: 10_000)
 
@@ -195,6 +183,20 @@ class CodableCacheManagerBaseTests: XCTestCase {
 //
 
 private extension CodableCacheManagerBaseTests {
+    
+    struct User: Codable, Equatable {
+        let name: String
+        let age: Int
+        let height: Double
+
+        static var random: Self {
+            let randomName = UUID().uuidString
+            let randomAge = Int.random(in: 18...40)
+            let randomHeight = Double.random(in: 150...200)
+            return .init(name: randomName, age: randomAge, height: randomHeight)
+        }
+    }
+    
     func syncStore(count: Int) {
         for i in 0...count {
             codableCacheManager().syncStore(
@@ -221,16 +223,12 @@ private extension CodableCacheManagerBaseTests {
 //
 
 final class CodableCacheManagerUserDefaultsTests: CodableCacheManagerBaseTests {
-    override func enabled() -> Bool { true }
-
     override func codableCacheManager() -> CodableCacheManagerProtocol {
         Common.CacheManagerForCodableUserDefaultsRepository.shared
     }
 }
 
 final class CodableCacheManagerCoreDataTests: CodableCacheManagerBaseTests {
-    override func enabled() -> Bool { true }
-
     override func codableCacheManager() -> CodableCacheManagerProtocol {
         Common.CacheManagerForCodableCoreDataRepository.shared
     }

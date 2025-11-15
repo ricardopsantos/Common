@@ -55,7 +55,7 @@ public typealias Common_Logs = Common.LogsManager
 // MARK: - Alias: SwiftUI
 
 public typealias Common_ViewControllerRepresentable = Common.ViewControllerRepresentable
-public typealias Common_ViewRepresentable = Common.ViewRepresentable2
+public typealias Common_ViewRepresentable = Common.ViewRepresentable
 
 // MARK: - Others
 

@@ -7,17 +7,25 @@ import Combine
 import Foundation
 import UIKit
 
-public extension Future where Failure == Error {
-    /**
-     https://swiftbysundell.com/articles/creating-combine-compatible-versions-of-async-await-apis/
+/**
+ https://swiftbysundell.com/articles/creating-combine-compatible-versions-of-async-await-apis/
 
-     Usage:
-     ```
-     Future {
-        try await self.loadModel(from: url)
-     }
-     ```
-     */
+ Usage:
+ ```
+ Future {
+    try await self.loadModel(from: url)
+ }
+ ```
+ */
+
+public extension Future where Failure == Error {
+
+    /// Creates a Combine Future from an async throwing operation.
+    ///
+    /// The async operation is executed inside a separate `Task`.
+    /// Execution begins immediately when the Future is subscribed to.
+    ///
+    /// - Parameter operation: An async throwing function producing the output.
     convenience init(operation: @escaping () async throws -> Output) {
         self.init { promise in
             Task {

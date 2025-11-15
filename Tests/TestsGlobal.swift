@@ -18,6 +18,8 @@ public struct RequestDto {
     private init() {}
 }
 
+struct TestError: Error, Equatable {}
+
 public enum TestsGlobal {
     static let cancelBag = CancelBag()
     static var timeout: Int = 5
@@ -39,7 +41,6 @@ func eventually(
     let start = Date()
     let timeout = timeoutSeconds
     let pollNS = UInt64(pollIntervalSeconds * 1_000_000_000)
-
     while Date().timeIntervalSince(start) < timeout {
         if condition() { return true }
         try? await Task.sleep(nanoseconds: pollNS)

@@ -40,7 +40,7 @@ public class SampleWebAPIUseCase {
     func fetchEmployees(cachePolicy: Common.CachePolicy) -> EmployeesAvailabilityResponse {
         //
         let serviceKey = #function
-        let requestDto = RequestDto.Employee(id: UUID().uuidString)
+        let requestDto = RequestDto.Employee(id: "UUID().uuidString")
         let apiRequest: AnyPublisher<
             ResponseDto.EmployeeServiceAvailability,
             CommonNetworking.APIError

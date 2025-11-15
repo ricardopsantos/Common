@@ -5,30 +5,25 @@
 
 import Foundation
 
-// To encapsulate all Model's (used on views)
+/// Namespace for types used on Views
 public struct Model {
     private init() {}
 }
 
-public protocol ModelTwinProtocol {
-    var twinClassName: String { get } // The name of the twin class
-}
-
+/// Base protocol for models used inside the app.
+/// All models must be:
+/// - Codable: persistable
+/// - Hashable & Equatable: for collections and SwiftUI diffing
+/// - CustomStringConvertible: convertible to String
 public protocol ModelProtocol: Codable, Hashable, CustomStringConvertible {}
 
-public protocol ModelForViewProtocol: ModelProtocol, Equatable, Identifiable {}
+/// Models used on the UI layer
+/// - Identifiable: needed by SwiftUI lists
+public protocol ModelForViewProtocol: ModelProtocol, Identifiable {}
 
-// By inheriting the CustomStringConvertible protocol, we need to provide a value to the description property.
-// Every time, we want to use the object as a String, the program will refer to the description property.
-// Now we can manage our message in one place :)
-
-/**
-  __Fast compliance__
- ```
- init?(rawValue: String?) { fatalError() }
- public init(from decoder: Decoder) throws { fatalError() }
- public func encode(to encoder: Encoder) throws { fatalError() }
- static public func ==(lhs: AccountTiles, rhs: AccountTiles) -> Bool { fatalError() }
- public func hash(into hasher: inout Hasher) { fatalError() }
- ```
- */
+/// Provide a safe default `description` for all Models
+public extension ModelProtocol {
+    var description: String {
+        String(describing: Self.self)
+    }
+}

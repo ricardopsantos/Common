@@ -60,13 +60,16 @@ public extension UIStackView {
 }
 
 public extension UIStackView {
-    func addSeparator(color: UIColor = UIColor.darkGray, size: CGFloat = 3) {
+    func addSeparator(color: UIColor = UIColor.darkGray,
+                      size: CGFloat = 3,
+                      stackViewInvisibleSeparatorLineTag: Int = 5000,
+                    stackViewVisibleSeparatorLineTag: Int = 5001) {
         let separator = UIView()
         separator.backgroundColor = color
         if color == .clear {
-            separator.tag = Common.AppTags.stackViewInvisibleSeparatorLine.tag
+            separator.tag = stackViewInvisibleSeparatorLineTag
         } else {
-            separator.tag = Common.AppTags.stackViewVisibleSeparatorLine.tag
+            separator.tag = stackViewVisibleSeparatorLineTag
         }
         addArrangedSubview(separator)
         separator.heightAnchor.constraint(equalToConstant: size).isActive = true

@@ -56,161 +56,186 @@ public extension AnyPublisher {
 }
 
 //
-
 // MARK: - Retry
-
 //
 
 public extension AnyPublisher {
+
+    // MARK: - Public retry APIs
+
     typealias RetryPublisherType = Driver<Bool>
+
     func retry(
         withPublisher: @autoclosure @escaping () -> RetryPublisherType,
-        // Publisher to run before retry. Ends with .asBoolDriver()
         if condition: @escaping (Failure) -> Bool,
         delay: TimeInterval = 1,
         times: Int = 1
-    ) -> AnyPublisher.RetryWithPublisherIf<Self> {
-        AnyPublisher.RetryWithPublisherIf(
-            publisher: self,
+    ) -> AnyPublisher<Output, Failure> {
+        RetryWithPublisherIf(
+            upstream: self,
             condition: condition,
             withPublisher: withPublisher,
             times: times,
             delay: delay
         )
+        .eraseToAnyPublisher()
     }
 
     func retry(
-        withClosure: @escaping () -> Void, // Closure to run before retry.
+        withClosure: @escaping () -> Void,
         if condition: @escaping (Failure) -> Bool,
         delay: TimeInterval = 1,
         times: Int = 1
-    ) -> AnyPublisher.RetryWithClosureIf<Self> {
-        AnyPublisher.RetryWithClosureIf(
-            publisher: self,
+    ) -> AnyPublisher<Output, Failure> {
+        RetryWithClosureIf(
+            upstream: self,
             condition: condition,
             withClosure: withClosure,
             delay: delay,
             times: times
         )
+        .eraseToAnyPublisher()
     }
 
     func retry(
         times: Int = 1,
         if condition: @escaping (Failure) -> Bool,
         delay: TimeInterval = 1
-    ) -> AnyPublisher.RetryIf<Self> {
-        AnyPublisher.RetryIf(
-            publisher: self,
+    ) -> AnyPublisher<Output, Failure> {
+        RetryIf(
+            upstream: self,
             times: times,
             condition: condition,
             delay: delay
         )
+        .eraseToAnyPublisher()
     }
 
+    // MARK: - Internal Utility
+
+    private static func makeDelay(_ seconds: TimeInterval)
+        -> Publishers.Delay<Just<Void>, RunLoop>
+    {
+        Just(())
+            .delay(
+                for: .milliseconds(Int(seconds * 1000)),
+                scheduler: RunLoop.main
+            )
+    }
+
+
+    // MARK: - RetryWithPublisherIf
+
     struct RetryWithPublisherIf<P: Publisher>: Publisher {
+
         public typealias Output = P.Output
         public typealias Failure = P.Failure
-        let publisher: P
-        let condition: (P.Failure) -> Bool
+
+        let upstream: P
+        let condition: (Failure) -> Bool
         let withPublisher: () -> RetryPublisherType
         let times: Int
         let delay: TimeInterval
-        public func receive<S>(subscriber: S) where S: Subscriber, Failure == S.Failure, Output == S.Input {
-            guard times > 0 else {
-                return publisher.receive(subscriber: subscriber)
-            }
-            publisher.catch { (error: P.Failure) -> AnyPublisher<Output, Failure> in
-                let result = RetryWithPublisherIf(
-                    publisher: publisher,
-                    condition: condition,
-                    withPublisher: withPublisher,
-                    times: times - 1,
-                    delay: 0
-                ).eraseToAnyPublisher()
-                if condition(error) {
-                    return Just<Void>(())
-                        .delay(for: .seconds(Int(delay)), scheduler: RunLoop.main)
-                        .setFailureType(to: Failure.self)
-                        .eraseToAnyPublisher().flatMap {
-                            withPublisher().eraseToAnyPublisher().flatMap { _ in
-                                result
-                            }.eraseToAnyPublisher()
-                        }.eraseToAnyPublisher()
+
+        public func receive<S>(subscriber: S)
+        where S: Subscriber, Failure == S.Failure, Output == S.Input {
+            attempt(times: times)
+                .receive(subscriber: subscriber)
+        }
+
+        private func attempt(times: Int) -> AnyPublisher<Output, Failure> {
+            upstream.catch { error -> AnyPublisher<Output, Failure> in
+
+                // No more retries → fail properly
+                guard times > 0, condition(error) else {
+                    return Fail(error: error).eraseToAnyPublisher()
                 }
-                return result
-            }.receive(subscriber: subscriber)
+
+                // Retry after delay + side publisher
+                return AnyPublisher.makeDelay(delay)
+                    .setFailureType(to: Failure.self)
+                    .flatMap { withPublisher() }
+                    .flatMap { _ in
+                        attempt(times: times - 1)
+                    }
+                    .eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
         }
     }
 
+    // MARK: - RetryWithClosureIf
+
     struct RetryWithClosureIf<P: Publisher>: Publisher {
+
         public typealias Output = P.Output
         public typealias Failure = P.Failure
-        let publisher: P
-        let condition: (P.Failure) -> Bool
+
+        let upstream: P
+        let condition: (Failure) -> Bool
         let withClosure: () -> Void
         let delay: TimeInterval
         let times: Int
-        public func receive<S>(subscriber: S) where S: Subscriber, Failure == S.Failure, Output == S.Input {
-            guard times > 0 else {
-                return publisher.receive(subscriber: subscriber)
-            }
-            publisher.catch { (error: P.Failure) -> AnyPublisher<Output, Failure> in
-                if condition(error) {
-                    withClosure()
+
+        public func receive<S>(subscriber: S)
+        where S: Subscriber, Failure == S.Failure, Output == S.Input {
+            attempt(times: times)
+                .receive(subscriber: subscriber)
+        }
+
+        private func attempt(times: Int) -> AnyPublisher<Output, Failure> {
+            upstream.catch { error -> AnyPublisher<Output, Failure> in
+
+                guard times > 0, condition(error) else {
+                    return Fail(error: error).eraseToAnyPublisher()
                 }
-                return Just(1).eraseToAnyPublisher()
-                    .delay(seconds: delay)
-                    .eraseToAnyPublisher().flatMap { _ in
-                        RetryWithClosureIf(
-                            publisher: publisher,
-                            condition: condition,
-                            withClosure: withClosure,
-                            delay: delay,
-                            times: times - 1
-                        ).eraseToAnyPublisher()
-                    }.eraseToAnyPublisher()
+
+                // run the closure before retry
+                withClosure()
+
+                return AnyPublisher.makeDelay(delay)
+                    .setFailureType(to: Failure.self)
+                    .flatMap { attempt(times: times - 1) }
+                    .eraseToAnyPublisher()
             }
-            .receive(subscriber: subscriber)
+            .eraseToAnyPublisher()
         }
     }
 
+    // MARK: - RetryIf
+
     struct RetryIf<P: Publisher>: Publisher {
+
         public typealias Output = P.Output
         public typealias Failure = P.Failure
 
-        let publisher: P
+        let upstream: P
         let times: Int
-        let condition: (P.Failure) -> Bool
+        let condition: (Failure) -> Bool
         let delay: TimeInterval
-        public func receive<S>(subscriber: S) where S: Subscriber, Failure == S.Failure, Output == S.Input {
-            guard times > 0 else {
-                return publisher.receive(subscriber: subscriber)
-            }
-            publisher.catch { (error: P.Failure) -> AnyPublisher<Output, Failure> in
-                if condition(error) {
-                    return Just(1).eraseToAnyPublisher()
-                        .delay(seconds: delay)
-                        .eraseToAnyPublisher().flatMap { _ in
-                            RetryIf(
-                                publisher: publisher,
-                                times: times - 1,
-                                condition: condition,
-                                delay: delay
-                            ).eraseToAnyPublisher()
-                        }.eraseToAnyPublisher()
-                } else {
+
+        public func receive<S>(subscriber: S)
+        where S: Subscriber, Failure == S.Failure, Output == S.Input {
+            attempt(times: times)
+                .receive(subscriber: subscriber)
+        }
+
+        private func attempt(times: Int) -> AnyPublisher<Output, Failure> {
+            upstream.catch { error -> AnyPublisher<Output, Failure> in
+
+                guard times > 0, condition(error) else {
                     return Fail(error: error).eraseToAnyPublisher()
                 }
-            }.receive(subscriber: subscriber)
+
+                return AnyPublisher.makeDelay(delay)
+                    .setFailureType(to: Failure.self)
+                    .flatMap { attempt(times: times - 1) }
+                    .eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
         }
     }
 }
-
-//
-
-// MARK: - SubscribeStrategie
-
-//
 
 public extension Publisher {
     /// This method subscribes to the publisher on the main dispatch queue and receives events on the main dispatch
@@ -357,18 +382,6 @@ public extension Publishers {
 }
 
 public extension Publisher {
-    func asBoolDriver() -> BoolDriver {
-        asDriver().eraseToAnyPublisher().flatMap { _ in
-            Just(true).eraseToAnyPublisher()
-        }.eraseToAnyPublisher()
-    }
-
-    func asDriver() -> Driver<Output> {
-        self.catch { _ in Empty() }
-            .receive(on: RunLoop.current)
-            .eraseToAnyPublisher()
-    }
-
     static func just(_ output: Output) -> Driver<Output> {
         Just(output).eraseToAnyPublisher()
     }
@@ -449,7 +462,11 @@ public enum AnyPublisherSampleUsage {
             AnyPublisherSampleUsageAux.sayHelloIfAuthenticated()
         }.eraseToAnyPublisher()
             .retry(
-                withPublisher: AnyPublisherSampleUsageAux.authenticateUserV2().asBoolDriver(),
+                withPublisher: AnyPublisherSampleUsageAux.authenticateUserV2()
+                    .flatMap { _ in
+                        Just(true).eraseToAnyPublisher()
+                    }.eraseToAnyPublisher()
+                ,
                 if: { $0 == .userIsNotAuthenticated },
                 delay: delay,
                 times: 5
