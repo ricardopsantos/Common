@@ -9,7 +9,7 @@ import Foundation
 public extension Just where Output == Void {
     /// Returns a `Just<Void>` publisher with the specified failure type.
     /// Example: `Just.withErrorType(MyError.self)`
-    static func withErrorType<E>(_ errorType: E.Type) -> AnyPublisher<Void, E> where E: Error {
+    static func withErrorType<E>(_: E.Type) -> AnyPublisher<Void, E> where E: Error {
         Just(())
             .setFailureType(to: E.self)
             .eraseToAnyPublisher()
@@ -19,7 +19,7 @@ public extension Just where Output == Void {
 public extension Just {
     /// Returns a `Just<Output>` publisher with the specified failure type.
     /// Example: `Just.withErrorType(123, MyError.self)`
-    static func withErrorType<E>(_ value: Output, _ errorType: E.Type) -> AnyPublisher<Output, E> where E: Error {
+    static func withErrorType<E>(_ value: Output, _: E.Type) -> AnyPublisher<Output, E> where E: Error {
         Just(value)
             .setFailureType(to: E.self)
             .eraseToAnyPublisher()

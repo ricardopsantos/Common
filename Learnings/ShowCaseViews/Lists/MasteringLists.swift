@@ -3,10 +3,10 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
+import Combine
 import Foundation
 import SwiftUI
-import Combine
+import UIKit
 
 // https://blog.stackademic.com/swiftui-mastering-list-programmatically-scroll-set-initial-visible-item-check-if-an-item-is-e9a8b86dd9a8
 
@@ -16,10 +16,10 @@ public extension CommonLearnings {
 
 public extension CommonLearnings.MasteringLists {
     struct ListDemoV1: View {
-        @State var list: [String] = (0...30).map { "Index\($0)" }
+        @State var list: [String] = (0 ... 30).map { "Index\($0)" }
         public var body: some View {
             List {
-                ForEach(0..<list.count, id: \.self) { i in
+                ForEach(0 ..< list.count, id: \.self) { i in
                     let item = list[i]
                     let view = Text(item)
                         .frame(height: 100, alignment: .leading)
@@ -45,7 +45,7 @@ public extension CommonLearnings.MasteringLists {
             self.setInitialIndex = setInitialIndex
         }
 
-        @State var list: [String] = (0...30).map { "Index\($0)" }
+        @State var list: [String] = (0 ... 30).map { "Index\($0)" }
         public var body: some View {
             ScrollViewReader { proxy in
                 VStack {
@@ -55,7 +55,7 @@ public extension CommonLearnings.MasteringLists {
                         }
                     }
                     List {
-                        ForEach(0..<list.count, id: \.self) { i in
+                        ForEach(0 ..< list.count, id: \.self) { i in
                             let item = list[i]
                             let view = Text(item)
                                 .frame(height: 100, alignment: .leading)
@@ -80,7 +80,7 @@ public extension CommonLearnings.MasteringLists {
 
 public extension CommonLearnings.MasteringLists {
     struct ListDemoV3: View {
-        @State var list: [String] = (0...30).map { "Index\($0)" }
+        @State var list: [String] = (0 ... 30).map { "Index\($0)" }
         let setInitialIndex: Int?
         let canPrependItems: Bool
         public init(setInitialIndex: Int?, canPrependItems: Bool) {
@@ -98,7 +98,7 @@ public extension CommonLearnings.MasteringLists {
                     }
 
                     List {
-                        ForEach(0..<list.count, id: \.self) { i in
+                        ForEach(0 ..< list.count, id: \.self) { i in
                             let item = list[i]
                             Text(item)
                                 .frame(height: 100, alignment: .leading)
@@ -107,13 +107,14 @@ public extension CommonLearnings.MasteringLists {
                                 .onAppear {
                                     if i == list.count - 1 {
                                         Task {
-                                            let newItemsList = (list.count...list.count + 30).map { "New Item: Index\($0)" }
+                                            let newItemsList = (list.count ... list.count + 30)
+                                                .map { "New Item: Index\($0)" }
                                             list.append(contentsOf: newItemsList)
                                         }
                                     } else if i == 0 {
                                         if canPrependItems {
                                             Task {
-                                                let newItemsList = (0...10).map { "Previous Item: Index\($0)" }
+                                                let newItemsList = (0 ... 10).map { "Previous Item: Index\($0)" }
                                                 list.insert(contentsOf: newItemsList, at: 0)
                                                 proxy.scrollTo(10, anchor: .top)
                                             }
@@ -132,13 +133,15 @@ public extension CommonLearnings.MasteringLists {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-#Preview {
-    // CommonLearnings.MasteringLists.ListDemoV1()
-    // CommonLearnings.MasteringLists.ListDemoV2(setInitialIndex: 10)
-    CommonLearnings.MasteringLists.ListDemoV3(setInitialIndex: 10, canPrependItems: true)
-}
+    #Preview {
+        // CommonLearnings.MasteringLists.ListDemoV1()
+        // CommonLearnings.MasteringLists.ListDemoV2(setInitialIndex: 10)
+        CommonLearnings.MasteringLists.ListDemoV3(setInitialIndex: 10, canPrependItems: true)
+    }
 #endif

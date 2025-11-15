@@ -2,8 +2,8 @@
 //  Created by Ricardo Santos on 14/08/2024.
 //
 
-import Foundation
 @testable import Common
+import Foundation
 
 //
 // Mappers
@@ -19,7 +19,7 @@ extension CoreDataSampleUsageNamespace.CRUDEntity {
         [
             "id": id,
             "name": name,
-            "recordDate": recordDate
+            "recordDate": recordDate,
         ]
     }
 }

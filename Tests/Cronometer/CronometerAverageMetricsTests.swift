@@ -2,14 +2,14 @@
 //  Created by Ricardo Santos on 12/08/2024.
 //
 
+@testable import Common
 import Foundation
 import Testing
-@testable import Common
 
 @Suite
 struct CronometerAverageMetricsTests {
-
     // MARK: - Setup helper (replaces setUp/tearDown)
+
     private func resetState() {
         // Reset the shared instance before each test to ensure a clean state.
         CronometerAverageMetrics.shared.reset()
@@ -36,9 +36,9 @@ struct CronometerAverageMetricsTests {
 
         let key = #function
 
-        let t1 = Double(Int.random(in: 1...3))
-        let t2 = Double(Int.random(in: 1...3))
-        let t3 = Double(Int.random(in: 1...3))
+        let t1 = Double(Int.random(in: 1 ... 3))
+        let t2 = Double(Int.random(in: 1 ... 3))
+        let t3 = Double(Int.random(in: 1 ... 3))
 
         _ = performOperation(key: key, timeInSeconds: t1)
         _ = performOperation(key: key, timeInSeconds: t2)
@@ -57,9 +57,9 @@ struct CronometerAverageMetricsTests {
         let key1 = "\(#function)_1"
         let key2 = "\(#function)_2"
 
-        let t1 = Double(Int.random(in: 1...3))
-        let t2 = Double(Int.random(in: 1...3))
-        let t3 = Double(Int.random(in: 1...3))
+        let t1 = Double(Int.random(in: 1 ... 3))
+        let t2 = Double(Int.random(in: 1 ... 3))
+        let t3 = Double(Int.random(in: 1 ... 3))
 
         _ = performOperation(key: key1, timeInSeconds: t1)
         _ = performOperation(key: key1, timeInSeconds: t2)
@@ -87,6 +87,7 @@ struct CronometerAverageMetricsTests {
 }
 
 // MARK: - Helpers
+
 extension CronometerAverageMetricsTests {
     @discardableResult
     private func performOperation(key: String, timeInSeconds: Double) -> Double {
@@ -97,7 +98,7 @@ extension CronometerAverageMetricsTests {
 
     /// Returns true if `value` is within ±1% of `refValue`.
     private func timeInOnRange(value: Double, refValue: Double) -> Bool {
-        let k: Double = 0.01 // 1% deviation
+        let k = 0.01 // 1% deviation
         if refValue > value * (1 + k) { return false }
         if refValue < value * (1 - k) { return false }
         return true

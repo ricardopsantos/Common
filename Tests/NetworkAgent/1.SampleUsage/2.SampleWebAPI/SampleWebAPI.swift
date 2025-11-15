@@ -3,9 +3,9 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
 @testable import Common
+import Foundation
 
 public class SampleWebAPI: CommonNetworking.NetworkAgentClient, NetworkAgentProtocol {
     public var client: CommonNetworking.NetworkAgentClient {
@@ -13,8 +13,8 @@ public class SampleWebAPI: CommonNetworking.NetworkAgentClient, NetworkAgentProt
     }
 
     #if targetEnvironment(simulator)
-    public var defaultLogger: CommonNetworking.NetworkLogger { .requestAndResponses }
+        public var defaultLogger: CommonNetworking.NetworkLogger { .requestAndResponses }
     #else
-    public var defaultLogger: CommonNetworking.NetworkLogger { .allOff }
+        public var defaultLogger: CommonNetworking.NetworkLogger { .allOff }
     #endif
 }

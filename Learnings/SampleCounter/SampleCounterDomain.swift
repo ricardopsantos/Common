@@ -1,5 +1,5 @@
 //
-//  SampleCounter.swift
+//  SampleCounterDomain.swift
 //  Common
 //
 //  Created by Ricardo Santos on 28/03/2024.
@@ -9,7 +9,9 @@ import Foundation
 import SwiftUI
 
 //
+
 // MARK: Protocols
+
 //
 
 public protocol SampleCounterV3_ViewModelProtocol: ObservableObject {
@@ -26,7 +28,9 @@ protocol SampleCounterV4_IncrementCounterProtocol {
 }
 
 //
+
 // MARK: SampleCounterDomain
+
 //
 
 public enum SampleCounterDomain {
@@ -63,7 +67,9 @@ public enum SampleCounterDomain {
 }
 
 //
+
 // MARK: SampleCounterShared
+
 //
 
 public enum SampleCounterShared {
@@ -71,7 +77,8 @@ public enum SampleCounterShared {
     static func displayView(
         title: String,
         counterValue: Binding<Int>,
-        onTap: @autoclosure @escaping () -> Void) -> some View {
+        onTap: @autoclosure @escaping () -> Void
+    ) -> some View {
         VStack {
             Divider()
             SwiftUIUtils.RenderedView("\(Self.self).\(#function)", visible: true)

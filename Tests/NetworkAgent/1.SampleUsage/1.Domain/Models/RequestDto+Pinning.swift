@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 @testable import Common
+import Foundation
 
 public extension RequestDto {
     struct Pinning {

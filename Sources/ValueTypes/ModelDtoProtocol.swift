@@ -20,7 +20,6 @@ extension String: ModelDtoProtocol {
 
 /// Allow Arrays of Strings to act as a DTO type
 extension [String]: ModelDtoProtocol {
-
     /// Custom string formatting
     public var description: String {
         "[" + joined(separator: ", ") + "]"

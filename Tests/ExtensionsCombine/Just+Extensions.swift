@@ -1,23 +1,21 @@
 //
-//  JustWithErrorTypeTests.swift
+//  Just+Extensions.swift
 //  Common
 //
 //  Created by Ricardo Santos on 15/11/2025.
 //
 
-
-import Testing
 import Combine
 @testable import Common
+import Testing
 
 @Suite
 struct JustWithErrorTypeTests {
-
     // MARK: - Helpers
 
     /// Simple sink helper to extract the value from AnyPublisher synchronously.
-    private func getValue<T, E: Error>(
-        from publisher: AnyPublisher<T, E>
+    private func getValue<T>(
+        from publisher: AnyPublisher<T, some Error>
     ) async throws -> T {
         try await withCheckedThrowingContinuation { continuation in
             publisher.sink(
@@ -83,6 +81,6 @@ struct JustWithErrorTypeTests {
 
 // MARK: - Local Combine cancellables for tests
 
-private final class Cancellables {
+private enum Cancellables {
     static var shared = Set<AnyCancellable>()
 }

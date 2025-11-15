@@ -2,10 +2,10 @@
 //  Created by Ricardo Santos on 12/08/2024.
 //
 
-import Foundation
-import Testing
 import Combine
 @testable import Common
+import Foundation
+import Testing
 
 @Suite(.serialized)
 struct CoreDataManagerSingersTests {
@@ -26,7 +26,7 @@ struct CoreDataManagerSingersTests {
         #expect(bd.allSingers().count == 1)
         #expect(bd.allSongs().count == 3)
     }
-    
+
     @Test
     func deleteSinger() {
         bd.deleteAllSingers()
@@ -48,7 +48,7 @@ struct CoreDataManagerSingersTests {
         #expect(bd.allSongs().isEmpty)
         #expect(bd.allSingers().isEmpty)
     }
-        
+
     @Test
     func deleteAllSongs() {
         bd.deleteAllSingers()
@@ -58,7 +58,6 @@ struct CoreDataManagerSingersTests {
         #expect(bd.allSongs().isEmpty)
     }
 
-    
     @Test
     func mapToModel() {
         bd.deleteAllSingers()
@@ -88,9 +87,9 @@ struct CoreDataManagerSingersTests {
         var didFinished = 0
         let toStore = randomCDataSinger(songs: 0)
         bd.output().sink { event in
-            if case .generic(let genericEvent) = event {
+            if case let .generic(genericEvent) = event {
                 switch genericEvent {
-                case .databaseDidInsertedContentOn(_, let id):
+                case let .databaseDidInsertedContentOn(_, id):
                     didInserted = (true, id ?? "")
                 case .databaseDidChangedContentItemOn:
                     didChanged += 1
@@ -109,16 +108,14 @@ struct CoreDataManagerSingersTests {
         #expect(didChanged == 1)
         #expect(didFinished == 1)
     }
-
 }
 
 extension CoreDataManagerSingersTests {
-
     @discardableResult
     func randomCDataSinger(songs: Int = 0) -> CDataSinger {
         let singer = bd.newSingerInstance(name: "Singer \(String.random(10))")
         if songs > 0 {
-            let songs = (0..<songs).map {
+            let songs = (0 ..< songs).map {
                 bd.newSongInstance(title: "Song \($0)", releaseDate: Date.now)
             }
             songs.forEach { singer.addToSongs($0) }
@@ -135,7 +132,9 @@ extension CoreDataManagerSingersTests {
 }
 
 //
+
 // MARK: - CommonCoreDataSongsPerformanceTests
+
 //
 
 import XCTest
@@ -143,7 +142,6 @@ import XCTest
 class CommonCoreDataSongsPerformanceTests: XCTestCase {
     var bd: DatabaseRepository { .shared }
 
-    
     // Test to check performance when saving a large number of songs
     func testPerformanceSaveMany() {
         bd.deleteAllSingers() // Clear all existing singers
@@ -159,20 +157,20 @@ class CommonCoreDataSongsPerformanceTests: XCTestCase {
 }
 
 extension CommonCoreDataSongsPerformanceTests {
-    
     // MARK: - Helpers
+
     @discardableResult
     func randomCDataSinger(songs: Int = 0) -> CDataSinger {
         let singer = bd.newSingerInstance(name: "Singer \(String.random(10))")
         if songs > 0 {
-            let songs = (0..<songs).map {
+            let songs = (0 ..< songs).map {
                 bd.newSongInstance(title: "Song \($0)", releaseDate: Date.now)
             }
             songs.forEach { singer.addToSongs($0) }
         }
         return singer
     }
-    
+
     @discardableResult
     func syncSaveRandomCDataSinger(songs: Int = 0) -> CDataSinger {
         let singer = randomCDataSinger(songs: songs)
@@ -180,4 +178,3 @@ extension CommonCoreDataSongsPerformanceTests {
         return singer
     }
 }
-

@@ -32,9 +32,7 @@ public extension View {
     // Executes a closure if the condition is true, then returns an empty view.
     // Useful when you want to conditionally trigger side effects without rendering content.
     func performAndReturnEmpty(if condition: Bool, _ block: () -> Void) -> some View {
-        if condition {
-            block()
-        }
+        if condition { block() }
         return EmptyView()
     }
 
@@ -46,8 +44,13 @@ public extension View {
 
     // Applies a transformation to the view if running on a simulator, otherwise returns the original view.
     // Useful for applying simulator-specific modifications to views.
+    @ViewBuilder
     func ifOnSimulator(then transform: (Self) -> some View) -> some View {
-        Common_Utils.onSimulator ? transform(self).erasedToAnyView : erasedToAnyView
+        if Common_Utils.onSimulator {
+            transform(self)
+        } else {
+            self
+        }
     }
 
     // Conditionally applies one of two transformations to the view based on a condition.
@@ -72,7 +75,11 @@ public extension View {
         _ condition: Bool,
         then trueContent: (Self) -> some View
     ) -> some View {
-        ifElseCondition(condition, then: trueContent, else: { _ in self })
+        if condition {
+            trueContent(self)
+        } else {
+            self
+        }
     }
 
     // Applies a transformation to the view based on a condition.
@@ -83,15 +90,20 @@ public extension View {
         _ condition: @autoclosure () -> Bool,
         transform: (Self) -> some View
     ) -> some View {
-        ifCondition(condition(), then: transform).erased
+        if condition() {
+            transform(self)
+        } else {
+            self
+        }
     }
 
     // A backwards-compatible wrapper around the `onChange` modifier.
     // Triggers a callback whenever the specified value changes.
     @ViewBuilder
-    func onChangeBackwardsCompatible<T: Equatable>(of value: T,
-                                                   perform completion: @escaping (T) -> Void) -> some View
-    {
+    func onChangeBackwardsCompatible<T: Equatable>(
+        of value: T,
+        perform completion: @escaping (T) -> Void
+    ) -> some View {
         onChange(of: value, perform: completion)
     }
 }
@@ -149,5 +161,4 @@ public extension View {
     #Preview {
         Common_Preview.SampleViewsConditionals()
     }
-
 #endif

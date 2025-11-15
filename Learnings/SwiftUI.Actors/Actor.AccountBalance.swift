@@ -1,5 +1,5 @@
 //
-//  Actor.swift
+//  Actor.AccountBalance.swift
 //  Common
 //
 //  Created by Ricardo Santos on 23/09/2024.
@@ -20,14 +20,18 @@ import Foundation
 extension CommonLearnings {
     /// Here’s the crux: Suppose the first thread checks the balance and finds it sufficient (balance >= amount).
     /// But before it can deduct the amount, a context switch happens, and the second thread starts executing.
-    /// This second thread also finds the balance sufficient because the first thread hasn’t completed its withdrawal yet.
-    /// So, it proceeds to withdraw the money, leaving the balance at zero. Then, when the first thread resumes, it continues from
-    /// where it left off — which is to withdraw the money, even though the balance has already been depleted by the second thread.
+    /// This second thread also finds the balance sufficient because the first thread hasn’t completed its withdrawal
+    /// yet.
+    /// So, it proceeds to withdraw the money, leaving the balance at zero. Then, when the first thread resumes, it
+    /// continues from
+    /// where it left off — which is to withdraw the money, even though the balance has already been depleted by the
+    /// second thread.
     actor Account {
         let accountNumber: String = "IBAN..." // A constant, non-isolated property
         var balance: Int = 20 // Current user balance is 20
 
-        /// Non-isolated members allow certain parts of an actor to be accessed without the need for asynchronous calls or awaiting their turn in the actor’s task queue.
+        /// Non-isolated members allow certain parts of an actor to be accessed without the need for asynchronous calls
+        /// or awaiting their turn in the actor’s task queue.
         nonisolated func getMaskedAccountNumber() -> String {
             String(repeating: "*", count: 12) + accountNumber.suffix(4)
         }

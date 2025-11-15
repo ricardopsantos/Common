@@ -1,16 +1,15 @@
 //
-//  FutureAsyncTests.swift
+//  Future+Extensions.swift
 //  Common
 //
 
-import Testing
 import Combine
-import Foundation
 @testable import Common
+import Foundation
+import Testing
 
 @Suite
 struct FutureAsyncTests {
-
     /// Async function that succeeds after a short delay
     func asyncSuccess(_ value: Int) async throws -> Int {
         try await Task.sleep(nanoseconds: 5_000_000)
@@ -81,8 +80,8 @@ struct FutureAsyncTests {
         }
 
         // Two subscriptions — Future must run only once.
-        let _ = try await subscribe(future)
-        let _ = try await subscribe(future)
+        _ = try await subscribe(future)
+        _ = try await subscribe(future)
 
         #expect(executionCount == 1)
     }
@@ -104,7 +103,6 @@ struct FutureAsyncTests {
     private func subscribe(
         _ future: Future<Int, Error>
     ) async throws -> Int {
-
         try await withCheckedThrowingContinuation { continuation in
             future.sink(
                 receiveCompletion: { completion in
@@ -124,6 +122,6 @@ struct FutureAsyncTests {
 // MARK: - Local cancellable store
 
 /// Minimal shared storage for Combine subscriptions during tests.
-private final class Cancellables {
+private enum Cancellables {
     static var shared = Set<AnyCancellable>()
 }

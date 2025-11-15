@@ -1,13 +1,13 @@
 //
-//  InterfaceStyleTests.swift
+//  ModelTests.swift
 //  Common
 //
 //  Created by Ricardo Santos on 15/11/2025.
 //
 
+@testable @preconcurrency import Common
 import Foundation
 import Testing
-@testable @preconcurrency import Common
 
 // MARK: - Mock Types
 
@@ -20,7 +20,6 @@ struct AccountModel: ModelForViewProtocol {
 
 @Suite(.serialized)
 struct ModelTests {
-
     @Test
     func testModelProtocolDescription() {
         let model = AccountModel(id: .init(), name: "Ricardo")

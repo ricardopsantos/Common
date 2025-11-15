@@ -2,9 +2,9 @@
 //  Created by Ricardo Santos on 12/08/2024.
 //
 
+@testable import Common
 import Foundation
 import Testing
-@testable import Common
 
 @Suite
 struct CronometerTests {
@@ -38,4 +38,3 @@ struct CronometerTests {
         #expect(measured > minB && measured < maxB, "Elapsed \(measured)s not in [\(minB)s, \(maxB)s]")
     }
 }
-

@@ -4,25 +4,26 @@
 //
 
 import Combine
-import Foundation
 import SwiftUI
 
 // @Binding property: a two-way connection to a state owned by someone else.
 // Can be updated by both and changes to it will trigger updates on both views.
 
 public extension Binding {
+    /// Executes `handler` every time the binding's value changes.
     func onChange(_ handler: @escaping (Value) -> Void) -> Binding<Value> {
-        didSet(handler)
-    }
-
-    func didSet(_ handler: @escaping (Value) -> Void) -> Binding {
         Binding(
-            get: { wrappedValue },
-            set: {
-                wrappedValue = $0
-                handler($0)
+            get: { self.wrappedValue },
+            set: { newValue in
+                self.wrappedValue = newValue
+                handler(newValue)
             }
         )
+    }
+
+    /// Same as onChange, semantic alias.
+    func didSet(_ handler: @escaping (Value) -> Void) -> Binding<Value> {
+        onChange(handler)
     }
 }
 

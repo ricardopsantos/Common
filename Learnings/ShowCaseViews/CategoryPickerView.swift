@@ -3,13 +3,15 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
+import Combine
 import Foundation
 import SwiftUI
-import Combine
+import UIKit
 
 //
+
 // MARK: - CategoryPickerView
+
 //
 
 public extension CommonLearnings {
@@ -18,7 +20,7 @@ public extension CommonLearnings {
         let onSelect: (Int) -> Void
         public var body: some View {
             Picker("Select Category", selection: $id) {
-                ForEach(1...10, id: \.self) { index in
+                ForEach(1 ... 10, id: \.self) { index in
                     Text("Category \(index)").tag(Optional(index))
                 }
             }.pickerStyle(.wheel)
@@ -45,11 +47,13 @@ public extension CommonLearnings {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-#Preview {
-    CommonLearnings.CategoryPickerUsageView()
-}
+    #Preview {
+        CommonLearnings.CategoryPickerUsageView()
+    }
 #endif

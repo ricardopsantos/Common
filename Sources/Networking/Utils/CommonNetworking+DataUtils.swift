@@ -13,27 +13,52 @@ import UIKit
 public extension CommonNetworking {
     enum DataUtils {
         /// this function is fetching the json from URL
+        @discardableResult
         public static func dataFrom(
             _ urlString: String,
             completion: @escaping ((Data?, Bool) -> Void)
-        ) {
+        ) -> URLSessionDataTask? {
             guard let url = URL(string: urlString) else {
                 assertionFailure("Invalid url : \(urlString)")
-                completion(nil, false)
-                return
+                DispatchQueue.main.async { completion(nil, false) }
+                return nil
             }
-            URLSession.shared.dataTask(with: url, completionHandler: { data, response, error in
-                guard let httpURLResponse = response as? HTTPURLResponse,
-                      httpURLResponse.statusCode == 200,
-                      let data,
-                      error == nil
-                else {
-                    assertionFailure("\(String(describing: error))")
-                    DispatchQueue.executeInMainTread { completion(nil, false) }
+
+            let task = URLSession.shared.dataTask(with: url) { data, response, error in
+
+                // Handle errors first
+                if let error {
+                    assertionFailure("URLSession error: \(error.localizedDescription)")
+                    DispatchQueue.main.async { completion(nil, false) }
                     return
                 }
-                DispatchQueue.executeInMainTread { completion(data, true) }
-            }).resume()
+
+                // Validate response
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    assertionFailure("Invalid response type for URL: \(url)")
+                    DispatchQueue.main.async { completion(nil, false) }
+                    return
+                }
+
+                guard (200 ... 299).contains(httpResponse.statusCode) else {
+                    assertionFailure("Bad status: \(httpResponse.statusCode) for URL: \(url)")
+                    DispatchQueue.main.async { completion(nil, false) }
+                    return
+                }
+
+                // Validate data
+                guard let data else {
+                    assertionFailure("Empty data received for URL: \(url)")
+                    DispatchQueue.main.async { completion(nil, false) }
+                    return
+                }
+
+                // Success
+                DispatchQueue.main.async { completion(data, true) }
+            }
+
+            task.resume()
+            return task
         }
     }
 }

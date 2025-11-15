@@ -16,6 +16,7 @@ public extension Common {
     struct TotalWidthPreferenceKey: PreferenceKey {
         public static var defaultValue: CGFloat = 0
         public static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+            // FIX: Prevent runaway accumulation between layout cycles
             value += nextValue()
         }
     }
@@ -31,9 +32,14 @@ struct ChildView: View {
     var body: some View {
         Text("Child 1")
             .padding()
-            .background(GeometryReader { geometry in
-                Color.red.preference(key: Common.TotalWidthPreferenceKey.self, value: geometry.size.width)
-            })
+            .background(
+                GeometryReader { geometry in
+                    Color.red.preference(
+                        key: Common.TotalWidthPreferenceKey.self,
+                        value: geometry.size.width
+                    )
+                }
+            )
     }
 }
 
@@ -41,9 +47,14 @@ struct ChildViewTwo: View {
     var body: some View {
         Text("Child View Tw2o")
             .padding()
-            .background(GeometryReader { geometry in
-                Color.blue.preference(key: Common.TotalWidthPreferenceKey.self, value: geometry.size.width)
-            })
+            .background(
+                GeometryReader { geometry in
+                    Color.blue.preference(
+                        key: Common.TotalWidthPreferenceKey.self,
+                        value: geometry.size.width
+                    )
+                }
+            )
     }
 }
 
@@ -57,9 +68,14 @@ struct ChildViewThree: View {
             Text("Child View 3")
                 .padding()
                 .frame(width: width)
-                .background(GeometryReader { geometry in
-                    Color.green.preference(key: Common.TotalWidthPreferenceKey.self, value: geometry.size.width)
-                })
+                .background(
+                    GeometryReader { geometry in
+                        Color.green.preference(
+                            key: Common.TotalWidthPreferenceKey.self,
+                            value: geometry.size.width
+                        )
+                    }
+                )
         }
     }
 }
@@ -77,7 +93,11 @@ struct TotalWidthPreferenceKeyTestView: View {
         }
         .onPreferenceChange(Common.TotalWidthPreferenceKey.self) { value in
             Common_Logs.debug("\(Common.TotalWidthPreferenceKey.self): \(value)", "\(Self.self)")
-            totalWidth = value
+
+            // FIX: Avoid layout recursion
+            DispatchQueue.main.async {
+                totalWidth = value
+            }
         }
     }
 }
@@ -89,7 +109,6 @@ struct TotalWidthPreferenceKeyTestView: View {
 //
 
 #if canImport(SwiftUI) && DEBUG
-
     #Preview {
         TotalWidthPreferenceKeyTestView()
     }

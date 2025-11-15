@@ -3,9 +3,9 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
 @testable import Common
+import Foundation
 
 public enum SampleWebAPIMethods {
     case fetchEmployees(_ request: RequestDto.Employee)
@@ -16,10 +16,10 @@ extension SampleWebAPIMethods {
     /// Url paramenters
     var queryItems: [String: String?] {
         switch self {
-        case .updateEmployee(let request):
+        case let .updateEmployee(request):
             return [
                 "id": request.id,
-                "timezone": TimeZone.autoupdatingCurrent.identifier
+                "timezone": TimeZone.autoupdatingCurrent.identifier,
             ]
         default:
             return [:]
@@ -28,7 +28,7 @@ extension SampleWebAPIMethods {
 
     var parameters: Encodable? {
         switch self {
-        case .updateEmployee(let some):
+        case let .updateEmployee(some):
             return some
         default:
             return nil

@@ -3,9 +3,9 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
+import Combine
 import Foundation
 import SwiftUI
-import Combine
 
 public struct CommonLearnings {
     private init() {}
@@ -13,27 +13,29 @@ public struct CommonLearnings {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-#Preview {
-    ScrollView {
-        VStack {
-            SwiftUIUtils.RenderedView("\(#function)", visible: true)
-            CommonLearnings.UseDrawingGroupToSpeedUpView(
-                useCompositingGroup: false,
-                useDrawingGroup: false
-            )
-            CommonLearnings.UseDrawingGroupToSpeedUpView(
-                useCompositingGroup: true,
-                useDrawingGroup: true
-            )
-            CommonLearnings.NeumorphicButton()
-            CommonLearnings.KeyboardPinToTextField()
-            CommonLearnings.SolvingRedraw_TimerCountFixedView()
-            CommonLearnings.CategoryPickerUsageView()
+    #Preview {
+        ScrollView {
+            VStack {
+                SwiftUIUtils.RenderedView("\(#function)", visible: true)
+                CommonLearnings.UseDrawingGroupToSpeedUpView(
+                    useCompositingGroup: false,
+                    useDrawingGroup: false
+                )
+                CommonLearnings.UseDrawingGroupToSpeedUpView(
+                    useCompositingGroup: true,
+                    useDrawingGroup: true
+                )
+                CommonLearnings.NeumorphicButton()
+                CommonLearnings.KeyboardPinToTextField()
+                CommonLearnings.SolvingRedraw_TimerCountFixedView()
+                CommonLearnings.CategoryPickerUsageView()
+            }
         }
     }
-}
 #endif

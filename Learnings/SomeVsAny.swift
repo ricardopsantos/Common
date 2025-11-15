@@ -56,7 +56,9 @@ public extension CommonLearnings {
         }
 
         //
+
         // MARK: - Difference Between Opaque Types and Protocol Types
+
         //
 
         // Opaque types (some) hide the type but guarantee a single, consistent underlying type.

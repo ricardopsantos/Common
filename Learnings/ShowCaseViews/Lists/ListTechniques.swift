@@ -3,10 +3,10 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
+import Combine
 import Foundation
 import SwiftUI
-import Combine
+import UIKit
 
 // https://medium.com/@wesleymatlock/advanced-techniques-for-using-list-in-swiftui-a03ee8e28f0e
 
@@ -18,7 +18,9 @@ public extension CommonLearnings {
 }
 
 //
+
 // MARK: - ListAdvancedTechniques
+
 //
 
 public extension CommonLearnings.ListTechniques {
@@ -177,42 +179,44 @@ public extension CommonLearnings.ListTechniques {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-#Preview {
-    VStack {
-        if Common_Utils.true {
-            CommonLearnings.ListTechniques.DisplayView(content: {
-                CommonLearnings.ListTechniques.SimpleListView()
-            }, title: "SimpleListView")
-        }
-        if Common_Utils.false {
-            CommonLearnings.ListTechniques.DisplayView(content: {
-                CommonLearnings.ListTechniques.CustomRowListView()
-            }, title: "CustomRowListView")
-        }
-        if Common_Utils.false {
-            CommonLearnings.ListTechniques.DisplayView(content: {
-                CommonLearnings.ListTechniques.SectionedListView()
-            }, title: "SectionedListView")
-        }
-        if Common_Utils.false {
-            CommonLearnings.ListTechniques.DisplayView(content: {
-                CommonLearnings.ListTechniques.SwipeActionListView()
-            }, title: "SwipeActionListView")
-        }
-        if Common_Utils.false {
-            CommonLearnings.ListTechniques.DisplayView(content: {
-                CommonLearnings.ListTechniques.ReorderableListView()
-            }, title: "ReorderableListView")
-        }
-        if Common_Utils.false {
-            CommonLearnings.ListTechniques.DisplayView(content: {
-                CommonLearnings.ListTechniques.SearchableListView()
-            }, title: "SearchableListView")
+    #Preview {
+        VStack {
+            if Common_Utils.true {
+                CommonLearnings.ListTechniques.DisplayView(content: {
+                    CommonLearnings.ListTechniques.SimpleListView()
+                }, title: "SimpleListView")
+            }
+            if Common_Utils.false {
+                CommonLearnings.ListTechniques.DisplayView(content: {
+                    CommonLearnings.ListTechniques.CustomRowListView()
+                }, title: "CustomRowListView")
+            }
+            if Common_Utils.false {
+                CommonLearnings.ListTechniques.DisplayView(content: {
+                    CommonLearnings.ListTechniques.SectionedListView()
+                }, title: "SectionedListView")
+            }
+            if Common_Utils.false {
+                CommonLearnings.ListTechniques.DisplayView(content: {
+                    CommonLearnings.ListTechniques.SwipeActionListView()
+                }, title: "SwipeActionListView")
+            }
+            if Common_Utils.false {
+                CommonLearnings.ListTechniques.DisplayView(content: {
+                    CommonLearnings.ListTechniques.ReorderableListView()
+                }, title: "ReorderableListView")
+            }
+            if Common_Utils.false {
+                CommonLearnings.ListTechniques.DisplayView(content: {
+                    CommonLearnings.ListTechniques.SearchableListView()
+                }, title: "SearchableListView")
+            }
         }
     }
-}
 #endif

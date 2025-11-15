@@ -1,5 +1,5 @@
 //
-//  CoreDataSample.swift
+//  CoreDataSampleUsageNamespace.swift
 //
 //
 //  Created by Ricardo Santos on 23/09/2024.

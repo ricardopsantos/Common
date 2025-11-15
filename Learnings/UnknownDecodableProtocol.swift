@@ -18,7 +18,9 @@ extension UnknownDecodableProtocol where RawValue: Decodable {
 }
 
 //
+
 // MARK: - Usage
+
 //
 enum UnknownDecodableProtocol_SampleEnum1: Int, UnknownDecodableProtocol {
     case active = 1

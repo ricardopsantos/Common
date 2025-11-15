@@ -1,17 +1,13 @@
-//
-//  Created by Ricardo Santos on 01/01/2023.
-//  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
-//
-
-import Foundation
 import SwiftUI
 
 public extension Color {
+    /// Generates a random color with full opacity.
+    /// Ensures the result is not too dark or too bright.
     static var random: Color {
-        Color(
-            red: .random(in: 0 ... 1),
-            green: .random(in: 0 ... 1),
-            blue: .random(in: 0 ... 1)
-        )
+        let red = Double.random(in: 0.1 ... 0.9)
+        let green = Double.random(in: 0.1 ... 0.9)
+        let blue = Double.random(in: 0.1 ... 0.9)
+
+        return Color(red: red, green: green, blue: blue)
     }
 }

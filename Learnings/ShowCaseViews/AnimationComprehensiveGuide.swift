@@ -3,10 +3,10 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
+import Combine
 import Foundation
 import SwiftUI
-import Combine
+import UIKit
 
 // https://medium.com/codex/swiftui-animation-a-comprehensive-guide-from-basic-to-advanced-8571a6cd55b5
 
@@ -28,9 +28,10 @@ public extension CommonLearnings.AnimationComprehensiveGuide {
             Button(name) {
                 withAnimation(animation) {
                     isAnimated.toggle()
-                }}
-                .padding()
-                .background(isAnimated ? Color.red : Color.green)
+                }
+            }
+            .padding()
+            .background(isAnimated ? Color.red : Color.green)
         }
     }
 }
@@ -90,7 +91,7 @@ public extension CommonLearnings.AnimationComprehensiveGuide {
                     .frame(width: 100, height: 100)
                     .rotationEffect(.degrees(angle)) // Fixed rotationEffect
 
-                Slider(value: $angle, in: 0...360, step: 1) // Fixed range and spacing
+                Slider(value: $angle, in: 0 ... 360, step: 1) // Fixed range and spacing
 
                 Button("Spin!") {
                     withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
@@ -117,13 +118,13 @@ public extension CommonLearnings.AnimationComprehensiveGuide {
                     .rotation3DEffect(.degrees(degrees.z), axis: (x: 0, y: 0, z: 1))
 
                 VStack {
-                    Slider(value: $degrees.x, in: 0...360, step: 1)
+                    Slider(value: $degrees.x, in: 0 ... 360, step: 1)
                     Text("X-axis: \(Int(degrees.x))°")
 
-                    Slider(value: $degrees.y, in: 0...360, step: 1)
+                    Slider(value: $degrees.y, in: 0 ... 360, step: 1)
                     Text("Y-axis: \(Int(degrees.y))°")
 
-                    Slider(value: $degrees.z, in: 0...360, step: 1)
+                    Slider(value: $degrees.z, in: 0 ... 360, step: 1)
                     Text("Z-axis: \(Int(degrees.z))°")
 
                     Button("Reset") {
@@ -149,7 +150,7 @@ public extension CommonLearnings.AnimationComprehensiveGuide {
                     .font(.system(size: 50)) // Fixed font syntax
                     .scaleEffect(scale) // Applied scaleEffect
 
-                Slider(value: $scale, in: 0.5...3) // Fixed slider range and syntax
+                Slider(value: $scale, in: 0.5 ... 3) // Fixed slider range and syntax
 
                 Button("Pulse") {
                     withAnimation(.easeInOut(duration: 1).repeatForever(autoreverses: true)) { // Fixed animation syntax
@@ -164,7 +165,7 @@ public extension CommonLearnings.AnimationComprehensiveGuide {
 
 public extension CommonLearnings.AnimationComprehensiveGuide {
     struct Teleport: View {
-        @State private var position: CGPoint = CGPoint(x: UIScreen.main.bounds.midX, y: UIScreen.main.bounds.midY)
+        @State private var position: CGPoint = .init(x: UIScreen.main.bounds.midX, y: UIScreen.main.bounds.midY)
 
         public var body: some View {
             GeometryReader { geometry in
@@ -176,8 +177,8 @@ public extension CommonLearnings.AnimationComprehensiveGuide {
 
                     Button("Teleport") {
                         withAnimation(.spring()) {
-                            let randomX = CGFloat.random(in: 0...geometry.size.width)
-                            let randomY = CGFloat.random(in: 0...geometry.size.height)
+                            let randomX = CGFloat.random(in: 0 ... geometry.size.width)
+                            let randomY = CGFloat.random(in: 0 ... geometry.size.height)
                             position = CGPoint(x: randomX, y: randomY)
                         }
                     }
@@ -371,63 +372,65 @@ public extension CommonLearnings.AnimationComprehensiveGuide {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-#Preview("Basic") {
-    VStack {
-        CommonLearnings.AnimationComprehensiveGuide.Basic(.linear(duration: 1), "linear")
-        CommonLearnings.AnimationComprehensiveGuide.Basic(.easeOut(duration: 1), "easeOut")
-        CommonLearnings.AnimationComprehensiveGuide.Basic(.spring, "spring")
+    #Preview("Basic") {
+        VStack {
+            CommonLearnings.AnimationComprehensiveGuide.Basic(.linear(duration: 1), "linear")
+            CommonLearnings.AnimationComprehensiveGuide.Basic(.easeOut(duration: 1), "easeOut")
+            CommonLearnings.AnimationComprehensiveGuide.Basic(.spring, "spring")
+        }
     }
-}
 
-#Preview("Misc1") {
-    VStack {
-        Spacer()
-        CommonLearnings.AnimationComprehensiveGuide.MovingXY()
-        Spacer()
-        Divider()
-        Spacer()
-        CommonLearnings.AnimationComprehensiveGuide.Rotate2D()
-        Spacer()
-        Divider()
-        Spacer()
-        CommonLearnings.AnimationComprehensiveGuide.Rotate3D()
-        Spacer()
+    #Preview("Misc1") {
+        VStack {
+            Spacer()
+            CommonLearnings.AnimationComprehensiveGuide.MovingXY()
+            Spacer()
+            Divider()
+            Spacer()
+            CommonLearnings.AnimationComprehensiveGuide.Rotate2D()
+            Spacer()
+            Divider()
+            Spacer()
+            CommonLearnings.AnimationComprehensiveGuide.Rotate3D()
+            Spacer()
+        }
     }
-}
 
-#Preview("Misc2") {
-    VStack {
-        Spacer()
-        CommonLearnings.AnimationComprehensiveGuide.GrowingAndShrinking()
-        Spacer()
-        Divider()
-        Spacer()
-        CommonLearnings.AnimationComprehensiveGuide.Teleport()
-        Spacer()
-        Divider()
-        Spacer()
-        CommonLearnings.AnimationComprehensiveGuide.MorphingShapeView()
-        Spacer()
+    #Preview("Misc2") {
+        VStack {
+            Spacer()
+            CommonLearnings.AnimationComprehensiveGuide.GrowingAndShrinking()
+            Spacer()
+            Divider()
+            Spacer()
+            CommonLearnings.AnimationComprehensiveGuide.Teleport()
+            Spacer()
+            Divider()
+            Spacer()
+            CommonLearnings.AnimationComprehensiveGuide.MorphingShapeView()
+            Spacer()
+        }
     }
-}
 
-#Preview("Misc3") {
-    VStack {
-        Spacer()
-        CommonLearnings.AnimationComprehensiveGuide.Gesture()
-        Spacer()
-        Divider()
-        Spacer()
-        CommonLearnings.AnimationComprehensiveGuide.AnimatedCard()
-        Spacer()
+    #Preview("Misc3") {
+        VStack {
+            Spacer()
+            CommonLearnings.AnimationComprehensiveGuide.Gesture()
+            Spacer()
+            Divider()
+            Spacer()
+            CommonLearnings.AnimationComprehensiveGuide.AnimatedCard()
+            Spacer()
+        }
     }
-}
 
-#Preview("Misc4") {
-    CommonLearnings.AnimationComprehensiveGuide.PathAnimationView()
-}
+    #Preview("Misc4") {
+        CommonLearnings.AnimationComprehensiveGuide.PathAnimationView()
+    }
 #endif

@@ -44,7 +44,8 @@ public extension CommonLearnings {
 
                         dataWithTimeout = try await fetchDataWithTimeout().utf8String ?? ""
 
-                        dataWithGroup = try await fetchMultipleDataWithGroup(urls: [url1, url2]).compactMap(\.utf8String).description
+                        dataWithGroup = try await fetchMultipleDataWithGroup(urls: [url1, url2])
+                            .compactMap(\.utf8String).description
 
                         dataWithDependency = try await fetchAndProcessData()
 
@@ -127,12 +128,14 @@ public extension CommonLearnings {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
 
-#Preview {
-    CommonLearnings.AsyncAwaitTestView()
-}
+    #Preview {
+        CommonLearnings.AsyncAwaitTestView()
+    }
 #endif

@@ -3,13 +3,15 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
+import Combine
 import Foundation
 import SwiftUI
-import Combine
+import UIKit
 
 //
+
 // MARK: - KeyboardPinToTextField
+
 //
 
 public extension CommonLearnings {
@@ -39,11 +41,13 @@ public extension CommonLearnings {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-#Preview {
-    CommonLearnings.KeyboardPinToTextField()
-}
+    #Preview {
+        CommonLearnings.KeyboardPinToTextField()
+    }
 #endif

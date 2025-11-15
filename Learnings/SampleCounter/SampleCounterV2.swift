@@ -3,17 +3,19 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
+import Combine
 import Foundation
 import SwiftUI
-import Combine
+import UIKit
 
 //
 // Simple MVVM with @StateObject
 //
 
 //
+
 // MARK: View
+
 //
 
 public extension SampleCounterDomain {
@@ -21,7 +23,7 @@ public extension SampleCounterDomain {
         public typealias ViewModel = SampleCounterDomain.SampleCounter_ViewModel
         @StateObject private var viewModel: ViewModel
         public init(viewModel: @autoclosure @escaping () -> ViewModel) {
-            self._viewModel = StateObject(wrappedValue: viewModel())
+            _viewModel = StateObject(wrappedValue: viewModel())
         }
 
         public var body: some View {
@@ -30,22 +32,24 @@ public extension SampleCounterDomain {
                 SampleCounterShared.displayView(
                     title: "ViewModel with @StateObject",
                     counterValue: $viewModel.count,
-                    onTap: {
-                        viewModel.increment()
-                    }())
+                    onTap: viewModel.increment()
+                )
             }
         }
     }
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-#Preview {
-    SampleCounterDomain.SampleCounterV2_View(
-        viewModel:
-        .init(count: SampleCounterDomain.startValue))
-}
+    #Preview {
+        SampleCounterDomain.SampleCounterV2_View(
+            viewModel:
+            .init(count: SampleCounterDomain.startValue)
+        )
+    }
 #endif

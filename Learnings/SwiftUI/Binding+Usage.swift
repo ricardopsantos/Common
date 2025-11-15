@@ -1,5 +1,5 @@
 //
-//  Binding+Examples.swift
+//  Binding+Usage.swift
 //  Common
 //
 //  Created by Ricardo Santos on 04/09/2024.

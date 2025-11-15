@@ -2,13 +2,12 @@
 //  Created by Ricardo Santos on 12/08/2024.
 //
 
+@testable @preconcurrency import Common
 import Foundation
 import Testing
-@testable @preconcurrency import Common
 
 @Suite(.serialized)
 struct SampleWebAPITests {
-
     // MARK: - Config / Helpers
 
     private let maxTimeoutSeconds = Double(TestsGlobal.timeout)

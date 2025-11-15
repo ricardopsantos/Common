@@ -3,17 +3,21 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
-import CryptoKit
 @testable import Common
+import CryptoKit
+import Foundation
 
 //
+
 // MARK: - SampleWebAPIProtocol
+
 //
 extension SampleWebAPI: SampleWebAPIProtocol {
     //
+
     // MARK: - Generic api calls
+
     //
     public func requestAsync<T: Decodable>(_ api: SampleWebAPIMethods) async throws -> T {
         switch api {
@@ -35,7 +39,9 @@ extension SampleWebAPI: SampleWebAPIProtocol {
         }
     }
 
-    public func requestPublisher<T: Decodable>(_ api: SampleWebAPIMethods) -> AnyPublisher<T, CommonNetworking.APIError> {
+    public func requestPublisher<T: Decodable>(_ api: SampleWebAPIMethods)
+        -> AnyPublisher<T, CommonNetworking.APIError>
+    {
         switch api {
         case .updateEmployee:
             // Custom implementation (if needed)
@@ -61,13 +67,15 @@ extension SampleWebAPI: SampleWebAPIProtocol {
     }
 
     //
+
     // MARK: - Verbose/Custom api calls
+
     //
     public typealias EmployeesAvailabilityResponse = AnyPublisher<
         ResponseDto.EmployeeServiceAvailability,
         CommonNetworking.APIError
     >
-    public func fetchEmployeesAvailability(_ requestDto: RequestDto.Employee) -> EmployeesAvailabilityResponse {
+    public func fetchEmployeesAvailability(_: RequestDto.Employee) -> EmployeesAvailabilityResponse {
         let request = CommonNetworking.NetworkAgentRequest(
             path: "raw/8f0f03e6bdfe0dd522ff494022f3aa7a676e882f/Article_13_G8.json",
             queryItems: nil,
@@ -96,9 +104,11 @@ extension SampleWebAPI: SampleWebAPIProtocol {
 }
 
 //
+
 // MARK: - SampleWebAPIProtocol
+
 //
-fileprivate extension SampleWebAPI {
+private extension SampleWebAPI {
     private func buildRequest(api: SampleWebAPIMethods) -> CommonNetworking.NetworkAgentRequest {
         .init(
             path: api.data.path,

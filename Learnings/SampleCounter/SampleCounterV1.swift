@@ -3,17 +3,19 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
+import Combine
 import Foundation
 import SwiftUI
-import Combine
+import UIKit
 
 //
 // Simple MVVM with @EnvironmentObject
 //
 
 //
+
 // MARK: View
+
 //
 
 public extension SampleCounterDomain {
@@ -26,9 +28,7 @@ public extension SampleCounterDomain {
                 SampleCounterShared.displayView(
                     title: "ViewModel with @EnvironmentObject",
                     counterValue: $viewModel.count,
-                    onTap: {
-                        viewModel.increment()
-                    }()
+                    onTap: viewModel.increment()
                 )
             }
         }
@@ -36,17 +36,19 @@ public extension SampleCounterDomain {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-public struct SampleCounterV1_Preview: PreviewProvider {
-    static let viewModel = SampleCounterDomain.SampleCounter_ViewModel(
-        count: SampleCounterDomain.startValue
-    )
-    public static var previews: some View {
-        SampleCounterDomain.SampleCounterV1_View()
-            .environmentObject(viewModel)
+    public struct SampleCounterV1_Preview: PreviewProvider {
+        static let viewModel = SampleCounterDomain.SampleCounter_ViewModel(
+            count: SampleCounterDomain.startValue
+        )
+        public static var previews: some View {
+            SampleCounterDomain.SampleCounterV1_View()
+                .environmentObject(viewModel)
+        }
     }
-}
 #endif

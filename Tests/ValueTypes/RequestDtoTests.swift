@@ -5,9 +5,9 @@
 //  Created by Ricardo Santos on 15/11/2025.
 //
 
+@testable @preconcurrency import Common
 import Foundation
 import Testing
-@testable @preconcurrency import Common
 
 // MARK: - Mock DTO
 
@@ -17,9 +17,9 @@ struct LoginRequestDto: RequestDtoProtocol {
 }
 
 // MARK: - Tests
+
 @Suite(.serialized)
 struct RequestDtoTests {
-
     @Test
     func testDefaultDescription() {
         let dto = LoginRequestDto(username: "ricardo", password: "123")

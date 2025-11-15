@@ -2,13 +2,13 @@
 //  Created by Ricardo Santos on 23/07/2024.
 //
 
-import Foundation
 import Combine
-import Nimble
 import Common
+import Foundation
+import Nimble
 import XCTest
 
-internal class CommonBundleFinder {}
+class CommonBundleFinder {}
 
 public struct ResponseDto {
     private init() {}
@@ -31,7 +31,7 @@ public enum TestsGlobal {
 
 // MARK: - Helper
 
-//Nimble-like eventually (no Duration/Clock)
+// Nimble-like eventually (no Duration/Clock)
 @discardableResult
 func eventually(
     timeoutSeconds: Double = Double(TestsGlobal.timeout),
@@ -55,7 +55,7 @@ func averageOperationTime(
     onComplete: (Double) -> Void
 ) {
     var timeElapsed: Double = 0
-    for _ in 1...iterations {
+    for _ in 1 ... iterations {
         precondition()
         timeElapsed += Common_CronometerManager.measure {
             operation()

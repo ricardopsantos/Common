@@ -2,13 +2,12 @@
 //  Created by Ricardo Santos on 12/08/2024.
 //
 
+@testable import Common
 import SwiftUI
 import Testing
-@testable import Common
 
 @Suite
 struct AssetsTests {
-    
     @Test
     func validImageLoadSwiftUI() {
         let validImageName = "back"

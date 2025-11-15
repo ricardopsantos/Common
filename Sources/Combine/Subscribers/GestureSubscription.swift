@@ -12,7 +12,8 @@ import UIKit
 open class GestureSubscription<S: Subscriber>: Subscription where S.Input == GestureType, S.Failure == Never {
     private var subscriber: S?
     private var gestureType: GestureType
-    private var view: UIView
+    private weak var view: UIView?
+    private weak var gesture: UIGestureRecognizer?
 
     init(subscriber: S, view: UIView, gestureType: GestureType) {
         self.subscriber = subscriber
@@ -22,15 +23,23 @@ open class GestureSubscription<S: Subscriber>: Subscription where S.Input == Ges
     }
 
     private func configureGesture(_ gestureType: GestureType) {
-        let gesture = gestureType.get()
+        let gesture = gestureType.makeGesture()
+        self.gesture = gesture
         gesture.addTarget(self, action: #selector(handler))
-        view.addGestureRecognizer(gesture)
+        view?.addGestureRecognizer(gesture)
     }
 
-    public func request(_: Subscribers.Demand) {}
+    public func request(_: Subscribers.Demand) {
+        // No back-pressure for gesture events.
+    }
 
     public func cancel() {
         subscriber = nil
+
+        // Clean Up: remove gesture recognizer to avoid leaks
+        if let gesture, let view {
+            view.removeGestureRecognizer(gesture)
+        }
     }
 
     @objc
@@ -43,7 +52,7 @@ public struct GesturePublisher: Publisher {
     public typealias Output = GestureType
     public typealias Failure = Never
 
-    private let view: UIView
+    private weak var view: UIView?
     private let gestureType: GestureType
 
     public init(view: UIView, gestureType: GestureType) {
@@ -51,9 +60,16 @@ public struct GesturePublisher: Publisher {
         self.gestureType = gestureType
     }
 
-    public func receive<S>(subscriber: S) where S: Subscriber, GesturePublisher.Failure == S.Failure,
+    public func receive<S>(subscriber: S) where S: Subscriber,
+        GesturePublisher.Failure == S.Failure,
         GesturePublisher.Output == S.Input
     {
+        guard let view else {
+            // View was deallocated → complete immediately
+            subscriber.receive(completion: .finished)
+            return
+        }
+
         let subscription = GestureSubscription(
             subscriber: subscriber,
             view: view,
@@ -71,7 +87,8 @@ public enum GestureType {
     case pinch(UIPinchGestureRecognizer = .init())
     case edge(UIScreenEdgePanGestureRecognizer = .init())
 
-    public func get() -> UIGestureRecognizer {
+    // Modern: renamed from "get()" but still exposes original "get()" for backward compatibility
+    public func makeGesture() -> UIGestureRecognizer {
         switch self {
         case let .tap(tapGesture):
             return tapGesture
@@ -86,6 +103,11 @@ public enum GestureType {
         case let .edge(edgePanGesture):
             return edgePanGesture
         }
+    }
+
+    // Backwards compatible API (do NOT delete)
+    public func get() -> UIGestureRecognizer {
+        makeGesture()
     }
 }
 

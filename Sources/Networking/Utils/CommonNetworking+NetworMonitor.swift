@@ -37,8 +37,10 @@ public extension CommonNetworking {
         @Published public private(set) var networkStatus: NetworkStatus = .unknown
 
         private init() {
-            networkStatus = Common_Utils
-                .existsInternetConnection() ? .internetConnectionAvailable : .internetConnectionLost
+            networkStatus = Common_Utils.existsInternetConnection()
+                ? .internetConnectionAvailable
+                : .internetConnectionLost
+
             Self.networkMonitor.start { [weak self] newStatus in
                 self?.networkStatus = newStatus
             }
@@ -49,34 +51,41 @@ public extension CommonNetworking {
         public typealias Status = NetworkStatus
         public static let shared = NetworkMonitor()
 
-        private var monitor: NWPathMonitor!
+        private let monitor = NWPathMonitor()
+        private var lastStatus: Status?
         private var isInternetConnectionAvailable: Bool?
-        private var statusHistory = [Status]()
 
         private init() {
-            monitor = NWPathMonitor()
             monitor.start(queue: DispatchQueue(label: "\(Self.self).queue", qos: .userInitiated))
         }
 
         public func start(statusUpdate: @escaping (Status) -> Void) {
             monitor.pathUpdateHandler = { [weak self] path in
-                Common_Utils.executeInMainTread { [weak self] in
-                    guard let self else { return }
-                    let newStatus: Status = if path.status == .satisfied {
-                        if isInternetConnectionAvailable == nil {
-                            .internetConnectionAvailable
-                        } else {
-                            .internetConnectionRecovered
-                        }
-                    } else {
-                        .internetConnectionLost
-                    }
+                guard let self else { return }
 
-                    if statusHistory.last != newStatus {
-                        statusHistory.append(newStatus)
-                        statusUpdate(newStatus)
-                        isInternetConnectionAvailable = newStatus.existsInternetConnection
+                let status: Status = {
+                    if path.status == .satisfied {
+                        // First ever update
+                        if self.isInternetConnectionAvailable == nil {
+                            return .internetConnectionAvailable
+                        }
+                        // Only "recovered" when transitioning from lost → available
+                        return self.lastStatus == .internetConnectionLost
+                            ? .internetConnectionRecovered
+                            : .internetConnectionAvailable
+                    } else {
+                        return .internetConnectionLost
                     }
+                }()
+
+                // Prevent duplicate events
+                guard status != lastStatus else { return }
+
+                lastStatus = status
+                isInternetConnectionAvailable = status.existsInternetConnection
+
+                Common_Utils.executeInMainTread {
+                    statusUpdate(status)
                 }
             }
         }

@@ -2,23 +2,22 @@
 //  Created by Ricardo Santos on 12/08/2024.
 //
 
-import XCTest
-import Foundation
 import Combine
+import Foundation
+import XCTest
 
 @testable import Common
+
 class CoreDataManagerCRUDPerformanceTests: XCTestCase {
     let iterations = 20
     let maxDeviation = 1.1
-    let stressLoadValue = 1_000
+    let stressLoadValue = 1000
 
     func enabled() -> Bool {
         true
     }
 
-    var bd: DatabaseRepository = {
-        .shared
-    }()
+    var bd: DatabaseRepository = .shared
 
     override func setUp() {
         super.setUp()
@@ -39,7 +38,7 @@ class CoreDataManagerCRUDPerformanceTests: XCTestCase {
         averageOperationTime(iterations: iterations) {
             bd.syncClearAll()
         } operation: {
-            _ = (1...stressLoadValue).map { _ in bd.syncStore(.random) }
+            _ = (1 ... stressLoadValue).map { _ in bd.syncStore(.random) }
         } onComplete: { avg in
             averageTime = avg
             expectation.fulfill()
@@ -60,7 +59,7 @@ class CoreDataManagerCRUDPerformanceTests: XCTestCase {
         let expectedTime: Double = [0.0063312768936157225, 0.006880849599838257, 0.006965309381484985].max()!
         let expectation = expectation(description: #function)
         var averageTime: Double = 0
-        let records: [CoreDataSampleUsageNamespace.CRUDEntity] = (1...stressLoadValue).map { _ in .random }
+        let records: [CoreDataSampleUsageNamespace.CRUDEntity] = (1 ... stressLoadValue).map { _ in .random }
         averageOperationTime(iterations: iterations) {
             bd.syncClearAll()
         } operation: {
@@ -87,7 +86,7 @@ class CoreDataManagerCRUDPerformanceTests: XCTestCase {
         let expectation = expectation(description: #function)
         var averageTime: Double = 0
         averageOperationTime(iterations: iterations) {
-            bd.syncStoreBatch((1...stressLoadValue).map { _ in .random })
+            bd.syncStoreBatch((1 ... stressLoadValue).map { _ in .random })
         } operation: {
             bd.syncClearAll()
         } onComplete: { avg in

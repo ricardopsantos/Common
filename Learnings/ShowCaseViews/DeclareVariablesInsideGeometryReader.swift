@@ -3,10 +3,10 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
+import Combine
 import Foundation
 import SwiftUI
-import Combine
+import UIKit
 
 // https://paigeshin1991.medium.com/swiftui-how-to-declare-variables-inside-geometryreader-aa5ebade46a8
 public extension CommonLearnings {
@@ -56,11 +56,13 @@ public extension CommonLearnings {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-#Preview {
-    CommonLearnings.DeclareVariablesInsideGeometryReader()
-}
+    #Preview {
+        CommonLearnings.DeclareVariablesInsideGeometryReader()
+    }
 #endif

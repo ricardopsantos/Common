@@ -5,123 +5,139 @@
 
 import Foundation
 import SwiftUI
+import UIKit
+
+// MARK: - UIView Auto-size Helpers
 
 public extension UIView {
-    func setNeedsUpdateSize(animated: Bool = false, duration: TimeInterval = Common.Constants.defaultAnimationsTime) {
-        let block = { [weak self] in
-            self?.invalidateIntrinsicContentSize()
-            self?.superview?.invalidateIntrinsicContentSize()
-            self?.layoutIfNeeded()
-            self?.superview?.layoutIfNeeded()
+    /// Forces UIKit to recalculate intrinsicContentSize of a view and its parent.
+    /// Useful when hosting dynamic SwiftUI content inside UIKit.
+    func setNeedsUpdateSize(animated: Bool = false,
+                            duration: TimeInterval = Common.Constants.defaultAnimationsTime)
+    {
+        let updateBlock = {
+            self.invalidateIntrinsicContentSize()
+            self.superview?.invalidateIntrinsicContentSize()
+            self.layoutIfNeeded()
+            self.superview?.layoutIfNeeded()
         }
+
         if animated {
-            UIView.animate(withDuration: duration) {
-                block()
-            }
+            UIView.animate(withDuration: duration, animations: updateBlock)
         } else {
-            block()
-            Common_Utils.delay {
-                block()
-            }
+            updateBlock()
+            // Safety: run once more on next runloop to catch async SwiftUI changes.
+            Common_Utils.delay { updateBlock() }
         }
     }
 }
 
-//
-// References:
-// https://www.avanderlee.com/swiftui/integrating-swiftui-with-uikit/
-//
+// MARK: - Hosting Controller that auto-resizes
 
-public class SelfSizingHostingController<Content>: UIHostingController<Content> where Content: View {
+public class SelfSizingHostingController<Content: View>: UIHostingController<Content> {
     override public func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         view.setNeedsUpdateSize()
     }
 }
 
+// MARK: - SwiftUI → UIView & UIViewController
+
 public extension View {
-    /// SwiftUIView -> UIViewController
+    /// Converts a SwiftUI view to a UIViewController.
     var asViewController: UIViewController {
-        // https://stackoverflow.com/questions/58399123/uihostingcontroller-should-expand-to-fit-contents
-        let hostingViewController = UIHostingController(rootView: self)
         if #available(iOS 16.0, *) {
-            hostingViewController.sizingOptions = [.intrinsicContentSize]
-            return hostingViewController
+            let host = UIHostingController(rootView: self)
+            host.sizingOptions = [.intrinsicContentSize]
+            return host
         } else {
-            // Fallback on earlier versions
             return SelfSizingHostingController(rootView: self)
         }
     }
 
-    //// SwiftUI View -> UIView
+    /// Converts a SwiftUI View directly into a UIView.
     var uiView: UIView {
-        let view = asViewController.view
-        view?.backgroundColor = .clear
-        return view!
+        let controller = asViewController
+        controller.view.backgroundColor = .clear
+        return controller.view
     }
 
+    /// Loads this SwiftUI view inside a UIKit view.
     func loadInside(view: UIView) {
-        view.loadWithSwiftUIView(self)
+        view.embedSwiftUIView(self)
     }
 
+    /// Loads this SwiftUI view inside a UIViewController.
     func loadInside(viewController: UIViewController) {
         viewController.addChildSwiftUIView(self)
     }
 }
 
-public extension UIView {
-    func loadWithSwiftUIView(_ swiftUIView: some View) {
-        addSwiftUIView(swiftUIView)
-    }
+// MARK: - UIView helpers for injecting SwiftUI content
 
-    func addSwiftUIView(_ swiftUIView: some View) {
-        if let view = swiftUIView.asViewController.view {
-            addSubview(view)
-            view.edgesToSuperview()
-        }
+public extension UIView {
+    /// Embeds a SwiftUI view into this UIView using a HostingController.
+    func embedSwiftUIView(_ swiftUIView: some View) {
+        let controller = swiftUIView.asViewController
+        guard let hostedView = controller.view else { return }
+
+        // Important: prevent adding hosting view twice
+        subviews.forEach { if $0 === hostedView { return } }
+
+        addSubview(hostedView)
+        hostedView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            hostedView.topAnchor.constraint(equalTo: topAnchor),
+            hostedView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            hostedView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            hostedView.bottomAnchor.constraint(equalTo: bottomAnchor),
+        ])
     }
 }
 
+// MARK: - UIViewController helpers
+
 public extension UIViewController {
-    /// Add a SwiftUI `View` as a child of the input `UIView`.
-    /// - Parameters:
-    ///   - swiftUIView: The SwiftUI `View` to add as a child.
-    ///   - view: The `UIView` instance to which the view should be added.
-    private func addSwiftUIView(_ swiftUIView: some View, to view: UIView) {
-        let hostingController = swiftUIView.asViewController
-        if let newView = hostingController.view {
-            // Add as a child of the current view controller.
-            addChild(hostingController)
+    /// Internal function — adds a child HostingController into a target view.
+    private func addSwiftUIView(_ swiftUIView: some View, to container: UIView) {
+        let host = swiftUIView.asViewController
 
-            // Add the SwiftUI view to the view controller view hierarchy.
-            view.addSubview(newView)
-            newView.layouts.edgesToSuperview()
+        addChild(host)
 
-            // Notify the hosting controller that it has been moved to the current view controller.
-            hostingController.didMove(toParent: self)
-        }
+        guard let hostedView = host.view else { return }
+        hostedView.backgroundColor = .clear
+
+        container.addSubview(hostedView)
+        hostedView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            hostedView.topAnchor.constraint(equalTo: container.topAnchor),
+            hostedView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            hostedView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            hostedView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+        ])
+
+        host.didMove(toParent: self)
     }
 
-    // Add Content inside a container
-    func addChildSwiftUIView(_ swiftUIView: some View, into view: UIView) {
-        addSwiftUIView(swiftUIView, to: view)
+    /// Adds a SwiftUI view to a specific container UIView.
+    func addChildSwiftUIView(_ swiftUIView: some View, into container: UIView) {
+        addSwiftUIView(swiftUIView, to: container)
     }
 
-    // Add Content inside the UIViewController view
+    /// Adds a SwiftUI view into this controller's view.
     func addChildSwiftUIView(_ swiftUIView: some View) {
         addSwiftUIView(swiftUIView, to: view)
     }
 
-    // Present Content from UIViewController
+    /// Presents a SwiftUI view modally.
     func presentSwiftUIView(
         _ swiftUIView: some View,
         modalPresentationStyle: UIModalPresentationStyle = .fullScreen,
         animated: Bool = true,
         completion: (() -> Void)? = nil
     ) {
-        let viewController = swiftUIView.asViewController
-        viewController.modalPresentationStyle = modalPresentationStyle
-        viewController.view.backgroundColor = .clear
-        present(viewController, animated: animated, completion: completion)
+        let host = swiftUIView.asViewController
+        host.modalPresentationStyle = modalPresentationStyle
+        present(host, animated: animated, completion: completion)
     }
 }

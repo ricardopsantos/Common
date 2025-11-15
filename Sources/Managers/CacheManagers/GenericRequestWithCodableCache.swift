@@ -86,7 +86,7 @@ public extension Common {
                         if let model = model as? T1 {
                             return Just(model).setFailureType(to: E1.self).eraseToAnyPublisher()
                         } else {
-                            Common_Utils.assert(false, message: "Not predicted!")
+                            Common_Utils.assertionFailure(message: "Not predicted!")
                             switch onCachedRecordNotFound {
                             case .returnEmpty:
                                 return .empty()

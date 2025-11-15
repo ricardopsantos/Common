@@ -3,12 +3,12 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
-import Foundation
-import SwiftUI
 import Combine
-import MapKit
 import CoreLocation
+import Foundation
+import MapKit
+import SwiftUI
+import UIKit
 
 // https://medium.com/@davidhu-sg/mapkit-in-swiftui-79bcea6b76fc
 
@@ -25,14 +25,17 @@ public extension CommonLearnings {
 public extension CommonLearnings.Maps {
     struct MapSample: View {
         @State private var searchResults: [CommonLearnings.Maps.KopiTiam] = []
-        @State private var region: MKCoordinateRegion = MKCoordinateRegion(
+        @State private var region: MKCoordinateRegion = .init(
             center: CLLocationCoordinate2D(latitude: 1.280716, longitude: 103.850442),
             span: MKCoordinateSpan(latitudeDelta: 0.008, longitudeDelta: 0.008)
         )
         var searchQuery: String = "KopiTiam"
         let locations = [
             KopiTiam(name: "Lau Pa Sat", coordinate: CLLocationCoordinate2D(latitude: 1.280716, longitude: 103.850442)),
-            KopiTiam(name: "Test location", coordinate: CLLocationCoordinate2D(latitude: 1.284983, longitude: 103.851615))
+            KopiTiam(
+                name: "Test location",
+                coordinate: CLLocationCoordinate2D(latitude: 1.284983, longitude: 103.851615)
+            ),
         ]
         public var body: some View {
             Map(coordinateRegion: $region, annotationItems: searchResults) { foodCourt in
@@ -68,13 +71,17 @@ public extension CommonLearnings.Maps.MapSample {
         }
     }
 
-    func startSearchLocations(_ searchKeyword: String, _ region: MKCoordinateRegion, completion: @escaping ([MKMapItem]) -> Void) {
+    func startSearchLocations(
+        _ searchKeyword: String,
+        _ region: MKCoordinateRegion,
+        completion: @escaping ([MKMapItem]) -> Void
+    ) {
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = searchKeyword
         request.region = region
         let search = MKLocalSearch(request: request)
         search.start { response, _ in
-            guard let response = response else {
+            guard let response else {
                 return
             }
             completion(response.mapItems)
@@ -101,12 +108,14 @@ public extension CommonLearnings.Maps.MapSample {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
 
-#Preview {
-    CommonLearnings.Maps.MapSample()
-}
+    #Preview {
+        CommonLearnings.Maps.MapSample()
+    }
 #endif

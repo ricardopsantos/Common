@@ -3,21 +3,25 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
+import Combine
 import Foundation
 import SwiftUI
-import Combine
+import UIKit
 
 //
 // https://azamsharp.medium.com/environmentobject-in-views-may-not-be-a-good-idea-but-avoiding-them-is-probably-much-worse-f5461cfb218
 //
 
 //
+
 // MARK: AppState
+
 //
 
 //
+
 // MARK: DisplayCounterViewModel
+
 //
 
 extension SampleCounterDomain {
@@ -34,7 +38,9 @@ extension SampleCounterDomain {
 }
 
 //
+
 // MARK: DisplayCounterView
+
 //
 extension SampleCounterDomain {
     struct DisplayCounterView_V1: View {
@@ -54,7 +60,9 @@ extension SampleCounterDomain {
 }
 
 //
+
 // MARK: IncrementCounterView
+
 //
 
 extension SampleCounterDomain {
@@ -71,7 +79,9 @@ extension SampleCounterDomain {
 }
 
 //
+
 // MARK: IncrementCounterView
+
 //
 
 public extension SampleCounterDomain {
@@ -106,7 +116,9 @@ public extension SampleCounterDomain {
     }
 
     //
+
     // MARK: AuthView & ParentView:
+
     //
 
     struct AuthView: View {
@@ -144,7 +156,9 @@ public extension SampleCounterDomain {
     }
 
     //
+
     // MARK: - Main View
+
     //
 
     struct SampleCounterV4_View: View {
@@ -192,15 +206,17 @@ public extension SampleCounterDomain {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-public enum SampleCounterV4_Preview: PreviewProvider {
-    static let appState = SampleCounterDomain.AppState()
-    public static var previews: some View {
-        SampleCounterDomain.SampleCounterV4_View()
-            .environmentObject(appState)
+    public enum SampleCounterV4_Preview: PreviewProvider {
+        static let appState = SampleCounterDomain.AppState()
+        public static var previews: some View {
+            SampleCounterDomain.SampleCounterV4_View()
+                .environmentObject(appState)
+        }
     }
-}
 #endif

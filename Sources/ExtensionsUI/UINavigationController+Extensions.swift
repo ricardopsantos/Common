@@ -12,52 +12,88 @@ public extension UINavigationController {
             .foregroundColor: color,
         ]
         navigationBar.titleTextAttributes = attributes
+
+        if #available(iOS 15.0, *) {
+            let appearance = navigationBar.standardAppearance
+            appearance.titleTextAttributes = attributes
+            navigationBar.standardAppearance = appearance
+            navigationBar.scrollEdgeAppearance = appearance
+        }
     }
 
     func setNavigationBarColor(_ color: UIColor) {
-        if color.extractAlpha != 1.0 {
-            navigationBar.setBackgroundImage(UIImage(), for: .default)
-            navigationBar.isTranslucent = true
-            navigationBar.backgroundColor = color
+        if #available(iOS 15.0, *) {
+            let appearance = UINavigationBarAppearance()
+
+            if color.extractAlpha < 1.0 {
+                appearance.configureWithTransparentBackground()
+            } else {
+                appearance.configureWithOpaqueBackground()
+            }
+
+            appearance.backgroundColor = color
+
+            navigationBar.standardAppearance = appearance
+            navigationBar.scrollEdgeAppearance = appearance
+            navigationBar.compactAppearance = appearance
         } else {
-            navigationBar.isTranslucent = false
+            // Fallback for iOS < 15
+            if color.extractAlpha != 1.0 {
+                navigationBar.setBackgroundImage(UIImage(), for: .default)
+                navigationBar.isTranslucent = true
+                navigationBar.backgroundColor = color
+            } else {
+                navigationBar.isTranslucent = false
+            }
+            navigationBar.barTintColor = color
         }
-        navigationBar.barTintColor = color
     }
 
     func removeShadowAndHairline() {
-        navigationBar.setBackgroundImage(UIImage(), for: .default)
-        navigationBar.shadowImage = UIImage()
-        hideHairline()
+        if #available(iOS 15.0, *) {
+            let appearance = navigationBar.standardAppearance
+            appearance.shadowColor = .clear
+            navigationBar.standardAppearance = appearance
+            navigationBar.scrollEdgeAppearance = appearance
+        } else {
+            navigationBar.setBackgroundImage(UIImage(), for: .default)
+            navigationBar.shadowImage = UIImage()
+            hideHairline()
+        }
         navigationBar.layoutIfNeeded()
     }
 
     func restoreShadowAndHairline() {
-        navigationBar.setBackgroundImage(nil, for: .default)
-        navigationBar.shadowImage = nil
-        restoreHairline()
+        if #available(iOS 15.0, *) {
+            let appearance = UINavigationBarAppearance()
+            appearance.configureWithDefaultBackground()
+            navigationBar.standardAppearance = appearance
+            navigationBar.scrollEdgeAppearance = appearance
+        } else {
+            navigationBar.setBackgroundImage(nil, for: .default)
+            navigationBar.shadowImage = nil
+            restoreHairline()
+        }
         navigationBar.layoutIfNeeded()
     }
 
     func hideHairline() {
-        if let hairline = findHairlineImageViewUnder(navigationBar) {
-            hairline.isHidden = true
-        }
+        findHairlineImageViewUnder(navigationBar)?.isHidden = true
     }
 
     func restoreHairline() {
-        if let hairline = findHairlineImageViewUnder(navigationBar) {
-            hairline.isHidden = false
-        }
+        findHairlineImageViewUnder(navigationBar)?.isHidden = false
     }
 
     func findHairlineImageViewUnder(_ view: UIView) -> UIImageView? {
-        if view is UIImageView, view.bounds.size.height <= 1.0 {
-            return view as? UIImageView
+        if let imageView = view as? UIImageView,
+           imageView.bounds.height <= 1.0
+        {
+            return imageView
         }
         for subview in view.subviews {
-            if let imageView = findHairlineImageViewUnder(subview) {
-                return imageView
+            if let found = findHairlineImageViewUnder(subview) {
+                return found
             }
         }
         return nil
@@ -69,21 +105,21 @@ public extension UINavigationController {
         completion: @escaping () -> Void
     ) {
         CATransaction.begin()
-        CATransaction.setCompletionBlock(completion)
+        CATransaction.setCompletionBlock { DispatchQueue.main.async(execute: completion) }
         pushViewController(viewController, animated: animated)
         CATransaction.commit()
     }
 
     func popViewController(animated: Bool = true, completion: @escaping () -> Void) {
         CATransaction.begin()
-        CATransaction.setCompletionBlock(completion)
+        CATransaction.setCompletionBlock { DispatchQueue.main.async(execute: completion) }
         popViewController(animated: animated)
         CATransaction.commit()
     }
 
     func popToRootViewController(animated: Bool = true, completion: @escaping () -> Void) {
         CATransaction.begin()
-        CATransaction.setCompletionBlock(completion)
+        CATransaction.setCompletionBlock { DispatchQueue.main.async(execute: completion) }
         popToRootViewController(animated: animated)
         CATransaction.commit()
     }

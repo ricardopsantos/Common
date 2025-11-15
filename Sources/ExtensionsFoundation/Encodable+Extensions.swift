@@ -6,15 +6,16 @@
 import Foundation
 
 public extension Encodable {
+    /// Convert struct/class to JSON `Data`
     func toData() throws -> Data {
         try JSONEncoder().encode(self)
     }
 
+    /// Size of encoded JSON in MB (returns 0 if encoding fails)
     var sizeInMB: Double {
         do {
-            let dataSizeInBytes = try Double(toData().count)
-            let sizeInMB = dataSizeInBytes / (1024 * 1024)
-            return sizeInMB
+            let data = try toData()
+            return Double(data.count) / (1024 * 1024)
         } catch {
             return 0
         }
@@ -37,13 +38,19 @@ public extension Encodable {
     var toDictionary: [String: Any]? {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
+
+        // Encode to JSON data
         guard let data = try? encoder.encode(self) else {
             return nil
         }
-        let jsonObject = try? JSONSerialization.jsonObject(with: data, options: [])
-        if let dictionary = jsonObject as? [String: Any] {
-            return dictionary
+
+        // Convert JSON → Dictionary
+        guard let json = try? JSONSerialization.jsonObject(with: data, options: []),
+              let dictionary = json as? [String: Any]
+        else {
+            return nil
         }
-        return nil
+
+        return dictionary
     }
 }

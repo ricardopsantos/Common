@@ -21,7 +21,8 @@ extension CommonLearnings {
         let age: Int
     }
 
-    /// The view shows the user’s name and age and conforms to Equatable. This ensures the view only re-renders when the user data actually changes.
+    /// The view shows the user’s name and age and conforms to Equatable. This ensures the view only re-renders when the
+    /// user data actually changes.
     struct UserProfileView: View, Equatable {
         let user: UserProfileModel
 
@@ -65,11 +66,13 @@ extension CommonLearnings {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-#Preview {
-    CommonLearnings.EquatableViewSampleUsage()
-}
+    #Preview {
+        CommonLearnings.EquatableViewSampleUsage()
+    }
 #endif

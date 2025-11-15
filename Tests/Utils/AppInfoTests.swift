@@ -5,10 +5,10 @@
 //  Created by Ricardo Santos on 15/11/2025.
 //
 
-import UIKit
+@testable @preconcurrency import Common
 import Foundation
 import Testing
-@testable @preconcurrency import Common
+import UIKit
 
 struct MockAppEnvironment: AppEnvironmentProtocol {
     var supportsMultipleScenes = false
@@ -35,10 +35,8 @@ struct MockDeviceEnvironment: DeviceEnvironmentProtocol {
     var isSimulator = false
 }
 
-
 @Suite(.serialized)
 struct AppInfoTests {
-
     @Test
     func testVersion() {
         Common.AppInfo.inject(MockAppEnvironment())

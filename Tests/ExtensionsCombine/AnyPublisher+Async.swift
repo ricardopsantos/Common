@@ -1,17 +1,16 @@
 //
-//  AsyncPublisherAttachedDetachedTests.swift
+//  AnyPublisher+Async.swift
 //  Common
 //
 //  Created by Ricardo Santos on 16/11/2025.
 //
 
-import Testing
 import Combine
 @testable import Common
+import Testing
 
 @Suite(.serialized)
 struct AsyncPublisherAttachedDetachedTests {
-
     // MARK: - Test Helpers
 
     struct DummyError: Error {}
@@ -27,7 +26,7 @@ struct AsyncPublisherAttachedDetachedTests {
     func goodPublisher(_ values: [Int]) -> AnyPublisher<Int, Never> {
         values.publisher.eraseToAnyPublisher()
     }
-    
+
     /// immediately fails
     func failingPublisher() -> AnyPublisher<Int, Error> {
         Fail(outputType: Int.self, failure: DummyError())
@@ -38,7 +37,7 @@ struct AsyncPublisherAttachedDetachedTests {
     func emptyPublisher() -> AnyPublisher<Int, Error> {
         Empty<Int, Error>().eraseToAnyPublisher()
     }
-    
+
     // MARK: - asyncAttached
 
     @Test
@@ -115,7 +114,6 @@ struct AsyncPublisherAttachedDetachedTests {
     /// They run independently.
     @Test
     func testAsyncDetachedDoesNotBlock() async throws {
-
         // We measure the order of events:
         //   1. parent started
         //   2. detached task returns
@@ -140,17 +138,19 @@ struct AsyncPublisherAttachedDetachedTests {
         #expect(log == [
             "parent_start",
             "parent_continues",
-            "detached_finished_1"
+            "detached_finished_1",
         ])
     }
-    
+
     //
+
     // MARK: - StreamTests
+
     //
-    
+
     @Test
     func testStreamValuesArriveCorrectly() async {
-        let pub = goodPublisher([1,2,3]).eraseToAnyPublisher()
+        let pub = goodPublisher([1, 2, 3]).eraseToAnyPublisher()
 
         var collected = [Int]()
 
@@ -158,12 +158,12 @@ struct AsyncPublisherAttachedDetachedTests {
             collected.append(v)
         }
 
-        #expect(collected == [1,2,3])
+        #expect(collected == [1, 2, 3])
     }
 
     @Test
     func testStreamOrderPreserved() async {
-        let pub = goodPublisher([7,8,9])
+        let pub = goodPublisher([7, 8, 9])
 
         var order = [Int]()
 
@@ -171,7 +171,6 @@ struct AsyncPublisherAttachedDetachedTests {
             order.append(v)
         }
 
-        #expect(order == [7,8,9])
+        #expect(order == [7, 8, 9])
     }
-    
 }

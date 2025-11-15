@@ -5,18 +5,16 @@
 //  Created by Ricardo Santos on 15/11/2025.
 //
 
-import Testing
 import Combine
-import Foundation
 @testable import Common
+import Foundation
+import Testing
 
 @Suite(.serialized)
 struct AnyPublisherExtensionsTests {
-
-
     // MARK: - Cancellable Store (for Testing framework)
 
-    private final class Store {
+    private enum Store {
         static var bag = Set<AnyCancellable>()
     }
 
@@ -30,7 +28,7 @@ struct AnyPublisherExtensionsTests {
                     switch c {
                     case .finished:
                         cont.resume(returning: .success(values))
-                    case .failure(let error):
+                    case let .failure(error):
                         cont.resume(returning: .failure(error))
                     }
                 },
@@ -108,7 +106,7 @@ struct AnyPublisherExtensionsTests {
 
         let dt = Date().timeIntervalSince(start)
         #expect(result == .success([1]))
-        #expect(dt >= 0.045)    // approx threshold
+        #expect(dt >= 0.045) // approx threshold
     }
 
     // MARK: - trackError
@@ -158,9 +156,8 @@ struct AnyPublisherExtensionsTests {
         let result = await collect(retried.eraseToAnyPublisher())
 
         #expect(result == .failure(TestError()))
-        #expect(attempts == 4)    // 1 + 3 retries
+        #expect(attempts == 4) // 1 + 3 retries
     }
-
 
     // MARK: - RetryWithClosure
 
@@ -182,15 +179,14 @@ struct AnyPublisherExtensionsTests {
             delay: 0,
             times: 2
         )
-        .eraseToAnyPublisher()   // ← REQUIRED FIX
+        .eraseToAnyPublisher() // ← REQUIRED FIX
 
         let result = await collect(pub)
 
         #expect(result == .failure(TestError()))
-        #expect(attempts == 3)      // 1 initial + 2 retries
-        #expect(closureCount == 2)  // closure runs before each retry
+        #expect(attempts == 3) // 1 initial + 2 retries
+        #expect(closureCount == 2) // closure runs before each retry
     }
-
 
     // MARK: - RetryWithPublisher
 
@@ -219,7 +215,7 @@ struct AnyPublisherExtensionsTests {
             delay: 0.01,
             times: 3
         )
-        .eraseToAnyPublisher()  // ← REQUIRED FIX
+        .eraseToAnyPublisher() // ← REQUIRED FIX
 
         // Flip auth after a tiny delay so retry will eventually succeed
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.001) {
@@ -229,7 +225,6 @@ struct AnyPublisherExtensionsTests {
         let result = await collect(pub)
 
         #expect(result == .success([7]))
-        #expect(attempts >= 2)   // first fails, retry succeeds
+        #expect(attempts >= 2) // first fails, retry succeeds
     }
-
 }

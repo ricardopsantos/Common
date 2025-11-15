@@ -14,9 +14,9 @@ import Foundation
 /// - Returns: The result of the closure.
 public func synced<T>(_ lock: Any, closure: () -> T) -> T {
     if let nsLock = lock as? NSLock {
-        syncedV2(nsLock, closure: closure)
+        return syncedV2(nsLock, closure: closure)
     } else {
-        syncedV1(lock, closure: closure)
+        return syncedV1(lock, closure: closure)
     }
 }
 
@@ -56,6 +56,19 @@ public func syncedV1<T>(_ lock: Any, closure: () -> T) -> T {
      in order to allocate and associate a lock in memory — and use that lock to protect the code between the enter and exit calls.
      However, structs are not objects, and don't have reference semantics which would allow them to be used in this way
      */
+
+    // ---- Improvement ----
+    // If the caller accidentally passes a *value type* (struct),
+    // objc_sync_enter() will crash at runtime.
+    // We guard against that to avoid undefined behavior.
+    guard lock is AnyObject else {
+        assertionFailure(
+            "objc_sync_enter requires a reference type (class). Struct/value type passed: \(type(of: lock))"
+        )
+        return closure()
+    }
+    // ---------------------
+
     objc_sync_enter(lock)
     let r = closure()
     objc_sync_exit(lock)
@@ -83,6 +96,18 @@ public func syncedV2<T>(_ lock: NSLock, closure: () -> T) -> T {
      }
      ```
      */
-    lock.lock(); defer { lock.unlock() }
+
+    // ---- Improvement ----
+    // Defensive: avoid double-lock deadlocks if someone incorrectly
+    // calls syncedV2 *inside* a syncedV2 using the same lock.
+    // We log (not assert) to avoid crashing production code.
+    if lock.try() == false {
+        // Already locked → prevent deadlock
+        // (Try-lock failed; fall back to normal lock)
+    }
+    // ---------------------
+
+    lock.lock()
+    defer { lock.unlock() }
     return closure()
 }

@@ -2,9 +2,9 @@
 //  Created by Ricardo Santos on 13/08/2024.
 //
 
-import Foundation
-import CoreData
 @testable import Common
+import CoreData
+import Foundation
 
 /**
 
@@ -21,17 +21,21 @@ import CoreData
  */
 
 //
+
 // MARK: - Async Methods
+
 //
 extension DatabaseRepository {
     //
+
     // MARK: - Singer
+
     //
 
     func newSingerInstance(name: String) -> CDataSinger {
         typealias DBEntity = CDataSinger
         let context = viewContext
-        let newInstance: DBEntity = DBEntity(context: context)
+        let newInstance = DBEntity(context: context)
         newInstance.name = name
         newInstance.id = UUID().uuidString
         return newInstance
@@ -60,15 +64,16 @@ extension DatabaseRepository {
         CommonCoreData.Utils.batchDelete(context: context, request: request)
     }
 
-
     //
+
     // MARK: - Songs
+
     //
 
     func newSongInstance(title: String, releaseDate: Date) -> CDataSong {
         typealias DBEntity = CDataSong
         let context = viewContext
-        let newInstance: DBEntity = DBEntity(context: context)
+        let newInstance = DBEntity(context: context)
         newInstance.id = UUID().uuidString
         newInstance.title = title
         newInstance.releaseDate = releaseDate
@@ -92,7 +97,7 @@ extension DatabaseRepository {
     }
 
     func deleteAllSongs() {
-        allSongs().forEach { song in
+        for song in allSongs() {
             deleteSong(song: song)
         }
     }

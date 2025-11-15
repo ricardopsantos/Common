@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 //
 // https://betterprogramming.pub/how-to-create-your-own-combine-subscriber-in-swift-5-702b3f9c68c4
@@ -26,7 +26,8 @@ extension Common {
             subscription.request(.unlimited)
         }
 
-        // Because we’ve already specified the .unlimited number of values, we return .none so the max limit remains the same.
+        // Because we’ve already specified the .unlimited number of values, we return .none so the max limit remains the
+        // same.
         func receive(_ input: T) -> Subscribers.Demand {
             LogsManager.debug("Received: \(input), \(T.self)", "\(Self.self)")
             return .none
@@ -49,7 +50,8 @@ extension Common {
             subscription.request(.unlimited)
         }
 
-        // Because we’ve already specified the .unlimited number of values, we return .none so the max limit remains the same.
+        // Because we’ve already specified the .unlimited number of values, we return .none so the max limit remains the
+        // same.
         func receive(_ input: String) -> Subscribers.Demand {
             LogsManager.debug("Received: \(input) Transformed into: \(input.uppercased())", "\(Self.self)")
             return .none
@@ -61,7 +63,7 @@ extension Common {
     }
 }
 
-fileprivate extension Common {
+private extension Common {
     func sample1() {
         let customPublisher = ["Warsaw", "Barcelona", "New York", "Toronto"].publisher
         let customSubscriber = CustomSubscriber()

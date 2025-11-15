@@ -4,8 +4,8 @@
 //
 
 import Foundation
-import UIKit
 import SwiftUI
+import UIKit
 
 // MARK: - Environment Protocols (Testable)
 
@@ -60,12 +60,13 @@ public struct LiveDeviceEnvironment: DeviceEnvironmentProtocol {
         get { UIDevice.current.isBatteryMonitoringEnabled }
         set { UIDevice.current.isBatteryMonitoringEnabled = newValue }
     }
+
     public var isLowPowerModeEnabled: Bool { ProcessInfo.processInfo.isLowPowerModeEnabled }
     public var isSimulator: Bool {
         #if targetEnvironment(simulator)
-        return true
+            return true
         #else
-        return false
+            return false
         #endif
     }
 }
@@ -73,14 +74,14 @@ public struct LiveDeviceEnvironment: DeviceEnvironmentProtocol {
 // MARK: - Public Facade (testable)
 
 public extension Common {
-    struct AppInfo {
+    enum AppInfo {
         private static var env: AppEnvironmentProtocol = LiveAppEnvironment()
         static func inject(_ mock: AppEnvironmentProtocol) { env = mock }
 
         public static var supportsMultipleScene: Bool { env.supportsMultipleScenes }
         public static var supportsAlternateIcons: Bool { env.supportsAlternateIcons }
         public static var supportsShakeToEdit: Bool { env.supportsShakeToEdit }
-        
+
         public static var version: String {
             if let bv = env.bundleVersion, let bsv = env.bundleShortVersion {
                 return "\(bsv) (\(bv))"
@@ -95,7 +96,7 @@ public extension Common {
         }
     }
 
-    struct DeviceInfo {
+    enum DeviceInfo {
         private static var env: DeviceEnvironmentProtocol = LiveDeviceEnvironment()
         static func inject(_ mock: DeviceEnvironmentProtocol) { env = mock }
 
@@ -136,7 +137,6 @@ public extension Common {
         public static var isSimulator: Bool { env.isSimulator }
     }
 }
-
 
 //
 

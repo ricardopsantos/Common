@@ -1,5 +1,5 @@
 //
-//  AsyncAwaitMainActorView.swift
+//  MainActor.swift
 //  Common
 //
 //  Created by Ricardo Santos on 07/08/2024.
@@ -50,7 +50,7 @@ public extension CommonLearnings.AsyncAwaitMainActorView {
         @Published var message: String?
         let loader: AccountLoader
         init(loader: AccountLoader) {
-            self.accounts = []
+            accounts = []
             self.loader = loader
         }
 
@@ -58,9 +58,9 @@ public extension CommonLearnings.AsyncAwaitMainActorView {
             do {
                 let accounts = try await loader.load()
                 self.accounts = accounts
-                self.message = nil
+                message = nil
             } catch {
-                self.message = "Unable to load"
+                message = "Unable to load"
             }
         }
     }
@@ -79,7 +79,7 @@ public extension CommonLearnings.AsyncAwaitMainActorView {
         @Published var message: String?
         let loader: AccountLoader
         init(loader: AccountLoader) {
-            self.accounts = []
+            accounts = []
             self.loader = loader
         }
 
@@ -111,7 +111,7 @@ public extension CommonLearnings.AsyncAwaitMainActorView {
         @Published var message: String?
         let loader: AccountLoader
         init(loader: AccountLoader) {
-            self.accounts = []
+            accounts = []
             self.loader = loader
         }
 
@@ -146,7 +146,7 @@ public extension CommonLearnings.AsyncAwaitMainActorView {
         @Published var message: String?
         let loader: AccountLoader
         init(loader: AccountLoader) {
-            self.accounts = []
+            accounts = []
             self.loader = loader
         }
 
@@ -187,7 +187,7 @@ public extension CommonLearnings.AsyncAwaitMainActorView {
         @Published var message: String?
         let loader: AccountLoader
         init(loader: AccountLoader) {
-            self.accounts = []
+            accounts = []
             self.loader = loader
         }
 
@@ -217,7 +217,7 @@ public extension CommonLearnings.AsyncAwaitMainActorView {
         @Published var message: String?
         let loader: AccountLoader
         init(loader: AccountLoader) {
-            self.accounts = []
+            accounts = []
             self.loader = loader
         }
 
@@ -242,7 +242,7 @@ public extension CommonLearnings.AsyncAwaitMainActorView {
         @Published var message: String?
         let loader: AccountLoader
         init(loader: AccountLoader) {
-            self.accounts = []
+            accounts = []
             self.loader = loader
         }
 
@@ -264,7 +264,7 @@ public extension CommonLearnings.AsyncAwaitMainActorView {
 public extension CommonLearnings.AsyncAwaitMainActorView {
     class AccountLoader {
         func load() async throws -> [Account] {
-            (1...(Int.random(in: 10...20))).map { _ in .random }
+            (1 ... (Int.random(in: 10 ... 20))).map { _ in .random }
         }
     }
 
@@ -278,12 +278,14 @@ public extension CommonLearnings.AsyncAwaitMainActorView {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
 
-#Preview {
-    CommonLearnings.AsyncAwaitMainActorView()
-}
+    #Preview {
+        CommonLearnings.AsyncAwaitMainActorView()
+    }
 #endif

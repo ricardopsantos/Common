@@ -3,9 +3,9 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
+import Combine
 import Foundation
 import SwiftUI
-import Combine
 
 /**
  `PreferenceKey` is a protocol in SwiftUI that allows views to communicate data up the view hierarchy.
@@ -22,7 +22,9 @@ extension CommonLearnings {
 }
 
 //
+
 // MARK: - Sample 1 - ChildViewWidthPreferenceKey
+
 //
 extension CommonLearnings.PreferenceKeyStudy {
     struct ChildViewWidthPreferenceKey: PreferenceKey {
@@ -44,7 +46,7 @@ extension CommonLearnings.PreferenceKeyStudy {
                         }
                     )
                 Button("Change Text") {
-                    text = String.randomWithSpaces(Int.random(in: 10...15))
+                    text = String.randomWithSpaces(Int.random(in: 10 ... 15))
                 }
             }
             .padding()
@@ -69,7 +71,9 @@ extension CommonLearnings.PreferenceKeyStudy {
 }
 
 //
+
 // MARK: - Other examples
+
 //
 
 public extension Common {
@@ -90,7 +94,9 @@ public extension Common {
 }
 
 //
+
 // MARK: - Test/Usage View
+
 //
 
 struct PreferenceKeyStudyTestView: View {
@@ -126,11 +132,13 @@ struct PreferenceKeyStudyTestView: View {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-#Preview("Examples") {
-    PreferenceKeyStudyTestView()
-}
+    #Preview("Examples") {
+        PreferenceKeyStudyTestView()
+    }
 #endif

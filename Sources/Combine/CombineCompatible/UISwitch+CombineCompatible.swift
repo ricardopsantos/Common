@@ -18,7 +18,7 @@ public extension CombineCompatible {
 
     var onChangedPublisher: AnyPublisher<Bool, Never> {
         if let target = target as? UISwitch {
-            target.onTurnedOnPublisher
+            target.onChangedPublisher
         } else {
             AnyPublisher.never()
         }
@@ -26,13 +26,18 @@ public extension CombineCompatible {
 }
 
 public extension CombineCompatibleProtocol where Self: UISwitch {
+    /// Emits the switch `.isOn` value anytime it changes.
     var onChangedPublisher: AnyPublisher<Bool, Never> {
-        Common.UIControlPublisher(control: self, events: [.allEditingEvents, .valueChanged]).map(\.isOn)
+        Common.UIControlPublisher(control: self, events: [.valueChanged])
+            .map(\.isOn)
             .eraseToAnyPublisher()
     }
 
+    /// Emits only **when the switch turns ON** (ignores OFF).
     var onTurnedOnPublisher: AnyPublisher<Bool, Never> {
-        Common.UIControlPublisher(control: self, events: [.allEditingEvents, .valueChanged]).map(\.isOn)
+        Common.UIControlPublisher(control: self, events: [.valueChanged])
+            .map(\.isOn)
+            .filter { $0 == true }
             .eraseToAnyPublisher()
     }
 }
@@ -42,14 +47,19 @@ private extension Common {
     func sample() {
         let switcher = UISwitch()
         switcher.isOn = false
+
         let submitButton = UIButton()
         submitButton.isEnabled = false
 
+        // Enabled only when switch turns ON
         _ = switcher.onTurnedOnPublisher.assign(to: \.isEnabled, on: submitButton)
+
+        // Same but via .combine wrapper
         _ = switcher.combine.onTurnedOnPublisher.assign(to: \.isEnabled, on: submitButton)
 
         switcher.isOn = true
         switcher.sendActions(for: .valueChanged)
+
         LogsManager.debug(submitButton.isEnabled.description, "\(Self.self)")
     }
 }

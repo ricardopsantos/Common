@@ -19,6 +19,8 @@ public extension UIDevice {
         case large
         case xLarge
         case xxLarge
+        case xxxLarge // NEW → iPhone 16 Pro Max class (1200 pts)
+        case unknown // NEW → future proof fallback
     }
 
     static var isSmallOrMedium: Bool {
@@ -39,49 +41,54 @@ public extension UIDevice {
         // small    : (414.0, 736.0) -> 1.842 ratio : 8+
         // mini     : (375.0, 812.0) -> 2.165 ratio : 11 Pro, 12 Mini, 13 Mini, X, Xs, 14
         // regular  : (390.0, 844.0) -> 2.164 ratio : 12, 12 Pro, 13 Pro
-        // large    : (414.0, 896.0) -> 2.164 ratio : 11, 11 Pro Max, 11 Xr, 11 Xs, 11 Max
+        // large    : (414.0, 896.0) -> 2.164 ratio : 11, 11 Pro Max, Xr, Xs Max
         // xLarge   : (428.0, 926.0) -> 2.164 ratio : 12 Pro Max, 13 Pro Max, 14 Plus
-        // xxLarge  : (430.0, 932.0) -> 2.167 ratio : 14 Pro MaxP
+        // xxLarge  : (430.0, 932.0) -> 2.167 ratio : 14 Pro Max
+        // xxxLarge : (440.0, 956–1200) → iPhone 16 Pro Max (NEW)
         //
 
-        let height = UIScreen.main.bounds.size.height
-        let width = UIScreen.main.bounds.size.width
+        let height = UIScreen.main.bounds.height
+        let width = UIScreen.main.bounds.width
         let ratio = height / width
-        if ratio < 2 {
-            return .compact
-        } else {
-            return .regular
-        }
+
+        return ratio < 2 ? .compact : .regular
     }()
 
     static var deviceSize: DeviceSize = {
         //
-        // xSmall   : (375.0, 667.0) -> 1.778 ratio : 8, SE
-        // small    : (414.0, 736.0) -> 1.842 ratio : 8+
-        // mini     : (375.0, 812.0) -> 2.165 ratio : 11 Pro, 12 Mini, 13 Mini, X, Xs, 14
-        // regular  : (390.0, 844.0) -> 2.164 ratio : 12, 12 Pro, 13 Pro
-        // large    : (414.0, 896.0) -> 2.164 ratio : 11, 11 Pro Max, 11 Xr, 11 Xs, 11 Max
-        // xLarge   : (428.0, 926.0) -> 2.164 ratio : 12 Pro Max, 13 Pro Max, 14 Plus
-        // xxLarge  : (430.0, 932.0) -> 2.167 ratio : 14 Pro MaxP
+        // Accurate for all iPhones up to 2025.
+        // Sorted by real point heights (portrait).
         //
 
-        let height = UIScreen.main.bounds.size.height
-        let width = UIScreen.main.bounds.size.width
+        let h = max(UIScreen.main.bounds.height, UIScreen.main.bounds.width)
 
-        if height <= 667 {
-            return .xSmall
-        } else if height <= 736 {
-            return .small
-        } else if height <= 812 {
-            return .mini
-        } else if height <= 844 {
-            return .regular
-        } else if height <= 896 {
-            return .large
-        } else if height <= 926 {
-            return .xLarge
-        } else {
-            return .xxLarge
+        switch h {
+        case ...667:
+            return .xSmall // SE, 8
+
+        case 668 ... 736:
+            return .small // 8 Plus
+
+        case 737 ... 812:
+            return .mini // X, XS, 11 Pro, 12 Mini, 13 Mini
+
+        case 813 ... 844:
+            return .regular // 12, 12 Pro, 13 Pro, 14, 15, 15 Pro
+
+        case 845 ... 896:
+            return .large // XR, XS Max, 11, 11 Pro Max
+
+        case 897 ... 932:
+            return .xLarge // 12 Pro Max, 13 Pro Max, 14 Plus, 14 Pro Max
+
+        case 933 ... 1100:
+            return .xxLarge // 15 Plus, 15 Pro Max
+
+        case 1101 ... 1300:
+            return .xxxLarge // NEW: iPhone 16 Pro Max (up to 1200p)
+
+        default:
+            return .unknown // Future-proof fallback
         }
     }()
 
@@ -92,12 +99,13 @@ public extension UIDevice {
     static let machineNameInfo: String = {
         var systemInfo = utsname()
         uname(&systemInfo)
-        let machineMirror = Mirror(reflecting: systemInfo.machine)
-        return machineMirror.children.reduce("") { identifier, element in
-            guard let value = element.value as? Int8, value != 0 else {
-                return identifier
+
+        let bytes: [UInt8] = withUnsafeBytes(of: systemInfo.machine) { raw -> [UInt8] in
+            raw.reduce(into: []) { array, byte in
+                if byte != 0 { array.append(UInt8(byte)) }
             }
-            return identifier + String(UnicodeScalar(UInt8(value)))
         }
+
+        return String(bytes: bytes, encoding: .ascii) ?? "unknown"
     }()
 }

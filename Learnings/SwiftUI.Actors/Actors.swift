@@ -29,7 +29,9 @@ extension CommonLearnings {
 }
 
 //
+
 // MARK: - Basic Usage
+
 //
 extension CommonLearnings.Actors {
     actor Counter {
@@ -43,7 +45,8 @@ extension CommonLearnings.Actors {
             value
         }
 
-        /// You can create a new asynchronous task using Task {}. This allows you to perform asynchronous work in parallel with other tasks.
+        /// You can create a new asynchronous task using Task {}. This allows you to perform asynchronous work in
+        /// parallel with other tasks.
         func usage() {
             let counter = Counter()
 
@@ -59,7 +62,9 @@ extension CommonLearnings.Actors {
 }
 
 //
+
 // MARK: - Global Actors
+
 //
 extension CommonLearnings.Actors {
     /**
@@ -77,10 +82,12 @@ extension CommonLearnings.Actors {
         // Code that updates the UI
     }
 
-    /// In addition to the built-in @MainActor, you can create custom global actors to control the execution context of certain parts of your app.
+    /// In addition to the built-in @MainActor, you can create custom global actors to control the execution context of
+    /// certain parts of your app.
     @globalActor
     enum MyGlobalActor {
-        /// In this example, __MyGlobalActor__ is a custom global actor. It encapsulates its own actor type (__ActorType__),
+        /// In this example, __MyGlobalActor__ is a custom global actor. It encapsulates its own actor type
+        /// (__ActorType__),
         /// which is used to provide the shared instance for concurrency management.
         actor ActorType {}
         static let shared = ActorType()
@@ -97,7 +104,9 @@ extension CommonLearnings.Actors {
 }
 
 //
+
 // MARK: - Actors instead of Singletons
+
 //
 
 extension CommonLearnings.Actors {

@@ -3,14 +3,16 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
+import Combine
 import Foundation
 import SwiftUI
-import Combine
+import UIKit
 
 public extension CommonLearnings {
     //
+
     // MARK: -  Solving redraw issues in SwiftUI
+
     // https://www.avanderlee.com/swiftui/debugging-swiftui-views/
     //
 
@@ -40,7 +42,9 @@ public extension CommonLearnings {
                     .background(Color.red)
                     .cornerRadius(50)
                     .shadow(color: .secondary, radius: 1, x: 0, y: 5)
-            }.rotationEffect(Angle(degrees: animateButton ? Double.random(in: -8.0...1.5) : Double.random(in: 0.5...16))).onAppear {
+            }
+            .rotationEffect(Angle(degrees: animateButton ? Double.random(in: -8.0 ... 1.5) : Double
+                    .random(in: 0.5 ... 16))).onAppear {
                 withAnimation(.easeInOut(duration: 1).delay(0.5).repeatForever(autoreverses: true)) {
                     animateButton.toggle()
                 }
@@ -50,12 +54,14 @@ public extension CommonLearnings {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
 
-#Preview {
-    CommonLearnings.SolvingRedraw_TimerCountFixedView()
-}
+    #Preview {
+        CommonLearnings.SolvingRedraw_TimerCountFixedView()
+    }
 #endif

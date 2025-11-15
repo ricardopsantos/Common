@@ -17,6 +17,13 @@ public extension UIViewController {
     var swiftUIView: AnyView { asAnyView }
     var asAnyView: AnyView { Common_ViewControllerRepresentable { self }.erased }
 
+    /// Safe presentation helper to ensure alerts present on the topmost VC
+    private func presentSafely(_ controller: UIViewController, animated: Bool) {
+        DispatchQueue.main.async {
+            (Self.topViewController ?? self).present(controller, animated: animated)
+        }
+    }
+
     func alert(
         title: String?,
         message: String?,
@@ -24,18 +31,19 @@ public extension UIViewController {
         actions: [AlertAction]
     ) {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: preferredStyle)
+
         for item in actions {
             let action = UIAlertAction(title: item.title, style: item.style) { _ in
-                if let doAction = item.action {
-                    doAction()
-                }
+                item.action?()
             }
             alertController.addAction(action)
         }
+
         if actions.isEmpty {
             alertController.addAction(.ok)
         }
-        Self.topViewController?.present(alertController, animated: true)
+
+        presentSafely(alertController, animated: true)
     }
 
     func showOkAlert(
@@ -45,7 +53,7 @@ public extension UIViewController {
         completion: (() -> Void)? = nil,
         animated: Bool = true
     ) {
-        let okAction = UIAlertAction.ok(title: actionTitle, completion: { completion?() })
+        let okAction = UIAlertAction.ok(title: actionTitle) { completion?() }
         showAlertWithActions(title: title, message: message, actions: [okAction], animated: animated)
     }
 
@@ -57,7 +65,7 @@ public extension UIViewController {
     ) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         actions.forEach(alert.addAction)
-        present(alert, animated: animated)
+        presentSafely(alert, animated: animated)
     }
 
     static func make(
@@ -75,8 +83,10 @@ public extension UIViewController {
             message: description,
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: action1Text, style: action1ButtonStyle, handler: { _ in onAction1() }))
-        alert.addAction(UIAlertAction(title: action2Text, style: action2ButtonStyle, handler: { _ in onAction2() }))
+
+        alert.addAction(UIAlertAction(title: action1Text, style: action1ButtonStyle) { _ in onAction1() })
+        alert.addAction(UIAlertAction(title: action2Text, style: action2ButtonStyle) { _ in onAction2() })
+
         return alert
     }
 }
@@ -87,6 +97,6 @@ public extension UIAlertAction {
     }
 
     static func ok(title: String = "OK", completion: @escaping () -> Void) -> UIAlertAction {
-        UIAlertAction(title: title, style: .default, handler: { _ in completion() })
+        UIAlertAction(title: title, style: .default) { _ in completion() }
     }
 }

@@ -5,9 +5,9 @@
 //  Created by Ricardo Santos on 15/11/2025.
 //
 
-import Testing
 import Combine
 @testable import Common
+import Testing
 
 // Reference container for escaping closure tests
 final class Box<T> {
@@ -17,7 +17,6 @@ final class Box<T> {
 
 @Suite(.serialized)
 struct CancelBagTests {
-
     // Helper: Creates a cancellable that toggles a flag when cancelled
     func makeCancellable(_ box: Box<Bool>) -> AnyCancellable {
         AnyCancellable { box.value = true }
@@ -50,7 +49,7 @@ struct CancelBagTests {
         c1.store(in: bag, subscriptionId: "X")
         c2.store(in: bag, subscriptionId: "X") // replaces c1
 
-        #expect(first.value == true)   // c1 cancelled
+        #expect(first.value == true) // c1 cancelled
         #expect(second.value == false) // c2 alive
         #expect(bag.count == 1)
     }
@@ -100,8 +99,8 @@ struct CancelBagTests {
         let c1 = makeCancellable(f1)
         let c2 = makeCancellable(f2)
 
-        c1.store(in: bag, subscriptionId: "1")     // auto-release
-        c2.store(in: bag, autoRelease: false)      // retained
+        c1.store(in: bag, subscriptionId: "1") // auto-release
+        c2.store(in: bag, autoRelease: false) // retained
 
         bag.cancelAll()
 

@@ -29,7 +29,9 @@ public extension CommonLearnings {
 }
 
 //
+
 // MARK: - Approach 1: GeometryReader
+
 //
 public extension CommonLearnings {
     struct DynamicStackV1<Content: View>: View {
@@ -57,7 +59,9 @@ public extension CommonLearnings {
 }
 
 //
+
 // MARK: - Approach 2: Size Classes
+
 //
 
 public extension CommonLearnings {
@@ -88,7 +92,9 @@ public extension CommonLearnings {
 }
 
 //
+
 // MARK: - Approach 3: ViewThatFits (iOS 16)
+
 //
 
 struct DynamicStackV3<Content: View>: View {
@@ -113,26 +119,28 @@ struct DynamicStackV3<Content: View>: View {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
 
-#Preview("DynamicStackV1") {
-    CommonLearnings.DynamicStackV1 {
-        CommonLearnings.LoginActionsView()
+    #Preview("DynamicStackV1") {
+        CommonLearnings.DynamicStackV1 {
+            CommonLearnings.LoginActionsView()
+        }
     }
-}
 
-#Preview("DynamicStackV2") {
-    CommonLearnings.DynamicStackV2 {
-        CommonLearnings.LoginActionsView()
+    #Preview("DynamicStackV2") {
+        CommonLearnings.DynamicStackV2 {
+            CommonLearnings.LoginActionsView()
+        }
     }
-}
 
-#Preview("DynamicStackV3") {
-    CommonLearnings.DynamicStackV2 {
-        CommonLearnings.LoginActionsView()
+    #Preview("DynamicStackV3") {
+        CommonLearnings.DynamicStackV2 {
+            CommonLearnings.LoginActionsView()
+        }
     }
-}
 #endif

@@ -3,9 +3,9 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
 @testable import Common
+import Foundation
 
 public class SampleWebAPIUseCase {
     private let webAPI: SampleWebAPIProtocol = SampleWebAPI(session: .defaultForNetworkAgent)
@@ -17,7 +17,9 @@ public class SampleWebAPIUseCase {
     >
 
     //
+
     // MARK: - Simple API Requests
+
     //
     func fetchEmployeesAvailabilityCustom() -> EmployeesAvailabilityResponse {
         let requestDto = RequestDto.Employee(id: UUID().uuidString)
@@ -35,7 +37,9 @@ public class SampleWebAPIUseCase {
     }
 
     //
+
     // MARK: - API Request + Cache
+
     //
     func fetchEmployees(cachePolicy: Common.CachePolicy) -> EmployeesAvailabilityResponse {
         //
@@ -59,9 +63,13 @@ public class SampleWebAPIUseCase {
     }
 
     //
+
     // MARK: - API Request + SSL Pinning (with Certificate)
+
     //
-    func fetchEmployeesAvailabilitySLLCertificate(server: CommonNetworking.AuthenticationHandler.Server) -> EmployeesAvailabilityResponse {
+    func fetchEmployeesAvailabilitySLLCertificate(server: CommonNetworking.AuthenticationHandler
+        .Server) -> EmployeesAvailabilityResponse
+    {
         let webAPISSLPinningWithCertificates = SampleWebAPI(
             session: .defaultForNetworkAgent,
             pathToCertificates: server.pathToCertificates ?? []
@@ -71,9 +79,13 @@ public class SampleWebAPIUseCase {
     }
 
     //
+
     // MARK: - API Request + SSL Pinning (with Certificate)
+
     //
-    func fetchEmployeesAvailabilitySLLHashKeys(server: CommonNetworking.AuthenticationHandler.Server) -> EmployeesAvailabilityResponse {
+    func fetchEmployeesAvailabilitySLLHashKeys(server: CommonNetworking.AuthenticationHandler
+        .Server) -> EmployeesAvailabilityResponse
+    {
         let webAPISSLPinningWithCertificates = SampleWebAPI(
             session: .defaultForNetworkAgent,
             pathToCertificates: server.publicHashKeys

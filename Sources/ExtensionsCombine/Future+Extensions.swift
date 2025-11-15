@@ -19,7 +19,6 @@ import UIKit
  */
 
 public extension Future where Failure == Error {
-
     /// Creates a Combine Future from an async throwing operation.
     ///
     /// The async operation is executed inside a separate `Task`.

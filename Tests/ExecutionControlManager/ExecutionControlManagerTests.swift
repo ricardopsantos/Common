@@ -2,20 +2,19 @@
 //  Created by Ricardo Santos on 12/08/2024.
 //
 
+@testable import Common
 import Foundation
 import Testing
-@testable import Common
 
 @Suite(.serialized)
 struct ExecutionControlManagerTests {
-
     // MARK: - Per-test reset (replaces setUp)
+
     private func resetState() {
         TestsGlobal.loadedAny = nil
         TestsGlobal.cancelBag.cancel()
         Common.ExecutionControlManager.reset()
     }
-
 
     // MARK: - Tests
 

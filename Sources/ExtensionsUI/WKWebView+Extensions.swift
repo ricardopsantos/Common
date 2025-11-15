@@ -17,7 +17,8 @@ public struct CookieInfo: Sendable, Hashable {
     public let isHTTPOnly: Bool
     public let sameSitePolicy: HTTPCookieStringPolicy?
 
-    init(_ cookie: HTTPCookie) {
+    /// Public so consumers can manually wrap cookies if needed.
+    public init(_ cookie: HTTPCookie) {
         name = cookie.name
         value = cookie.value
         domain = cookie.domain
@@ -43,11 +44,11 @@ public struct CookieInfo: Sendable, Hashable {
         }
 
         if isSecure {
-            props["Secure"] = "TRUE"
+            props["Secure"] = true
         }
 
         if isHTTPOnly {
-            props["HTTPOnly"] = "TRUE"
+            props["HTTPOnly"] = true
         }
 
         if let sameSitePolicy {
@@ -64,20 +65,24 @@ public extension WKWebView {
     /// Async version that returns typed cookies. Pass `matchingDomain` to filter (substring match).
     static func getCookies(matchingDomain: String? = nil) async -> [CookieInfo] {
         let store = WKWebsiteDataStore.default().httpCookieStore
-        let cookies: [HTTPCookie] = await withCheckedContinuation { cont in
-            store.getAllCookies { cont.resume(returning: $0) }
+
+        let cookies: [HTTPCookie] = await withCheckedContinuation { continuation in
+            store.getAllCookies { continuation.resume(returning: $0) }
         }
+
         let filtered = cookies.filter { cookie in
             guard let matchingDomain else { return true }
             return cookie.domain.range(of: matchingDomain, options: .caseInsensitive) != nil
         }
+
         return filtered.map(CookieInfo.init)
     }
 
     /// Backward-compatible completion wrapper that mimics your original signature.
-    static func getCookies(for domain: String? = nil,
-                           completion: @escaping ([String: Any]) -> Void)
-    {
+    static func getCookies(
+        for domain: String? = nil,
+        completion: @escaping @Sendable ([String: Any]) -> Void
+    ) {
         Task {
             let cookies = await getCookies(matchingDomain: domain)
             // Preserve previous API shape: [cookieName: properties]
@@ -90,29 +95,30 @@ public extension WKWebView {
 
     /// Deletes ALL cookies (WK + URLSession/HTTPCookieStorage) and website data.
     /// Optionally limit by `since` (defaults to .distantPast).
-    static func cleanAllCookies(since: Date = .distantPast) async {
-        // 1) URLSession/legacy store
+    static func cleanAllCookies(since _: Date = .distantPast) async {
+        // 1) URLSession / legacy cookies
         let httpStorage = HTTPCookieStorage.shared
-        httpStorage.cookies?.forEach(httpStorage.deleteCookie)
-        httpStorage.removeCookies(since: since)
+        httpStorage.cookies?.forEach { httpStorage.deleteCookie($0) }
+        // removeCookies(since:) automatically removes old cookies from storage
 
         // 2) WK cookies
         let wkStore = WKWebsiteDataStore.default().httpCookieStore
-        let all = await withCheckedContinuation { (cont: CheckedContinuation<[HTTPCookie], Never>) in
-            wkStore.getAllCookies { cont.resume(returning: $0) }
+        let all = await withCheckedContinuation { continuation in
+            wkStore.getAllCookies { continuation.resume(returning: $0) }
         }
+
         await withTaskGroup(of: Void.self) { group in
             for cookie in all {
                 group.addTask { await deleteCookie(cookie, in: wkStore) }
             }
         }
 
-        // 3) Website data (cache, local storage, etc.)
+        // 3) Clear all other website data (cache, local storage, indexed DB, etc.)
         let allTypes = WKWebsiteDataStore.allWebsiteDataTypes()
-        await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
+        await withCheckedContinuation { continuation in
             WKWebsiteDataStore.default().fetchDataRecords(ofTypes: allTypes) { records in
                 WKWebsiteDataStore.default().removeData(ofTypes: allTypes, for: records) {
-                    cont.resume()
+                    continuation.resume()
                 }
             }
         }
@@ -121,10 +127,15 @@ public extension WKWebView {
     /// Deletes cookies whose domain contains `matchingDomain` (case-insensitive).
     static func deleteCookies(matchingDomain: String) async {
         let wkStore = WKWebsiteDataStore.default().httpCookieStore
-        let all = await withCheckedContinuation { (cont: CheckedContinuation<[HTTPCookie], Never>) in
-            wkStore.getAllCookies { cont.resume(returning: $0) }
+
+        let all = await withCheckedContinuation { continuation in
+            wkStore.getAllCookies { continuation.resume(returning: $0) }
         }
-        let target = all.filter { $0.domain.range(of: matchingDomain, options: .caseInsensitive) != nil }
+
+        let target = all.filter { cookie in
+            cookie.domain.range(of: matchingDomain, options: .caseInsensitive) != nil
+        }
+
         await withTaskGroup(of: Void.self) { group in
             for cookie in target {
                 group.addTask { await deleteCookie(cookie, in: wkStore) }
@@ -133,8 +144,8 @@ public extension WKWebView {
     }
 
     private static func deleteCookie(_ cookie: HTTPCookie, in store: WKHTTPCookieStore) async {
-        await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
-            store.delete(cookie) { cont.resume() }
+        await withCheckedContinuation { continuation in
+            store.delete(cookie) { continuation.resume() }
         }
     }
 

@@ -2,14 +2,13 @@
 //  Created by Ricardo Santos on 12/08/2024.
 //
 
-import Foundation
 import Combine
-import Testing
 @testable import Common
+import Foundation
+import Testing
 
 @Suite(.serialized)
 struct CoreDataManagerCRUDTests {
-
     // MARK: - Config / State
 
     private func enabled() -> Bool { true }
@@ -76,8 +75,6 @@ struct CoreDataManagerCRUDTests {
 
     // MARK: - Others
 
-
-
     @Test
     func syncRecordCount() async {
         guard enabled() else { #expect(true); return }
@@ -102,9 +99,9 @@ struct CoreDataManagerCRUDTests {
         bd.output()
             .sink { event in
                 switch event {
-                case .generic(let genericEvent):
+                case let .generic(genericEvent):
                     switch genericEvent {
-                    case .databaseDidInsertedContentOn(_, id: let id):
+                    case let .databaseDidInsertedContentOn(_, id: id):
                         didInsertedContent = (true, id ?? "")
                     case .databaseDidChangedContentItemOn:
                         didChangedContent += 1
@@ -143,7 +140,7 @@ struct CoreDataManagerCRUDTests {
         bd.output()
             .sink { event in
                 switch event {
-                case .generic(let genericEvent):
+                case let .generic(genericEvent):
                     switch genericEvent {
                     case .databaseDidInsertedContentOn:
                         didInsertedContent += 1
@@ -160,7 +157,7 @@ struct CoreDataManagerCRUDTests {
             .store(in: TestsGlobal.cancelBag)
 
         Common_Utils.delay { [weak bd] in
-            for _ in 1...numberOfInserts {
+            for _ in 1 ... numberOfInserts {
                 bd?.syncStore(.random)
             }
         }
@@ -173,9 +170,9 @@ struct CoreDataManagerCRUDTests {
         #expect(okChanged, "Expected \(numberOfInserts) change-item events")
         #expect(okFinished, "Expected \(numberOfInserts) finish-change events")
     }
-    
+
     // MARK: - Async
-    
+
     @Test
     func aSyncCRUD() async {
         guard enabled() else { #expect(true); return }
@@ -240,4 +237,3 @@ struct CoreDataManagerCRUDTests {
         #expect(stored == 1)
     }
 }
-

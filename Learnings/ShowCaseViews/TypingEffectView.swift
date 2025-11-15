@@ -3,10 +3,10 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
+import Combine
 import Foundation
 import SwiftUI
-import Combine
+import UIKit
 
 // https://blog.devgenius.io/swiftui-5-crafting-onboarding-screens-with-animated-transitions-from-scratch-fd25882cf9a5
 
@@ -48,12 +48,14 @@ extension CommonLearnings {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
 
-#Preview {
-    CommonLearnings.TypingEffectView(fulltext: String.randomWithSpaces(500))
-}
+    #Preview {
+        CommonLearnings.TypingEffectView(fulltext: String.randomWithSpaces(500))
+    }
 #endif

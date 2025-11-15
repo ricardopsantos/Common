@@ -10,7 +10,6 @@ import Foundation
 // MARK: - Error Helpers
 
 public extension Error {
-
     /// Returns true if the async publisher finished with no value.
     /// Useful when converting Combine → async/await.
     var finishedWithoutValue: Bool {
@@ -26,7 +25,6 @@ public enum AsyncError: Error {
 // MARK: - AnyPublisher → async/await helper
 
 public extension AnyPublisher {
-
     /// Convert publisher to a value using async/await.
     @discardableResult
     func async(sender: String = #function) async throws -> Output {
@@ -61,7 +59,6 @@ public extension AnyPublisher {
     /// This is where the actual Combine → async bridge happens.
     @discardableResult
     func asyncJust(sender: String, firstEmission: Bool = true) async throws -> Output {
-
         try await withCheckedThrowingContinuation { continuation in
 
             var cancellable: AnyCancellable?
@@ -80,7 +77,7 @@ public extension AnyPublisher {
                         Common_Logs.error("\(sender) : Finished without value.", "\(Self.self)")
                         continuation.resume(throwing: AsyncError.finishedWithoutValue)
                     }
-                case .failure(let error):
+                case let .failure(error):
                     continuation.resume(throwing: error)
                 }
 
@@ -100,11 +97,9 @@ public extension AnyPublisher {
 // MARK: - AsyncStream for Never-Failure Publishers
 
 public extension AnyPublisher where Failure == Never {
-
     /// Convert a Combine publisher into AsyncStream.
     /// Works like an async `for await` loop.
     func stream(canFail: Bool = false) -> AsyncStream<Output> {
-
         AsyncStream { continuation in
 
             let cancellable = self.sink { completion in
@@ -135,7 +130,6 @@ public extension AnyPublisher where Failure == Never {
 // MARK: - AsyncThrowingStream
 
 public extension AnyPublisher where Failure == Error {
-
     /// Convert Combine publisher into AsyncThrowingStream.
     /// a stream that can produce values OR throw errors.
     var throwingStream: AsyncThrowingStream<Output, Failure> {
@@ -145,7 +139,7 @@ public extension AnyPublisher where Failure == Error {
                 switch completion {
                 case .finished:
                     continuation.finish()
-                case .failure(let error):
+                case let .failure(error):
                     continuation.finish(throwing: error)
                 }
             } receiveValue: { value in

@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 @testable import Common
+import Foundation
 
 public extension ResponseDto {
     struct EmployeeServiceAvailability: Codable, Hashable {
@@ -12,9 +12,9 @@ public extension ResponseDto {
         public let data: [Employee]
         public let message: String
         public init() {
-            self.status = ""
-            self.data = []
-            self.message = ""
+            status = ""
+            data = []
+            message = ""
         }
     }
 
@@ -25,11 +25,11 @@ public extension ResponseDto {
         public let profileImage: String
 
         public init() {
-            self.id = 0
-            self.employeeName = ""
-            self.employeeAge = 0
-            self.employeeSalary = 0
-            self.profileImage = ""
+            id = 0
+            employeeName = ""
+            employeeAge = 0
+            employeeSalary = 0
+            profileImage = ""
         }
 
         enum CodingKeys: String, CodingKey {

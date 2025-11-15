@@ -11,43 +11,56 @@ public extension UIView {
         let r: CGFloat = 80
         let g: CGFloat = 80
         let b: CGFloat = 80
+
         if Common.InterfaceStyle.current == .light {
-            return UIColor(red: CGFloat(r / 255.0), green: CGFloat(g / 255.0), blue: CGFloat(b / 255.0), alpha: 1)
-        } else {
             return UIColor(
-                red: CGFloat((255 - r) / 255.0),
-                green: CGFloat((255 - g) / 255.0),
-                blue: CGFloat((255 - b) / 255.0),
+                red: r / 255.0,
+                green: g / 255.0,
+                blue: b / 255.0,
+                alpha: 1
+            )
+        } else {
+            // Reverse color for dark mode
+            return UIColor(
+                red: (255 - r) / 255.0,
+                green: (255 - g) / 255.0,
+                blue: (255 - b) / 255.0,
                 alpha: 1
             )
         }
     }
 
-    static let defaultShadowOffset = CGSize(width: 1, height: 5) // Shadow bellow
+    static let defaultShadowOffset = CGSize(width: 1, height: 5) // Shadow below
 
     //
-    // More about shadows : https://medium.com/swlh/how-to-create-advanced-shadows-in-swift-ios-swift-guide-9d2844b653f8
+    // More about shadows :
+    // https://medium.com/swlh/how-to-create-advanced-shadows-in-swift-ios-swift-guide-9d2844b653f8
     //
 
     func addShadow(
         color: UIColor = defaultShadowColor,
         offset: CGSize = defaultShadowOffset,
         radius: CGFloat = defaultShadowOffset.height,
-        strength: CGFloat? = 0.95 // [0: 1] - The bigger, the lighter
+        strength: CGFloat? = 0.95 // [0 ... 1] - The bigger, the lighter
     ) {
+        let clampedRadius = max(0, radius)
+        let clampedStrength = max(0, min(strength ?? 0.95, 1))
+
         layer.shadowColor = color.cgColor
-        if let strength {
-            layer.shadowOpacity = Float(1 - strength)
-        }
         layer.shadowOffset = offset
-        layer.shadowRadius = radius
+        layer.shadowRadius = clampedRadius
+
+        // Keep your original logic (1 - strength)
+        layer.shadowOpacity = Float(1 - clampedStrength)
+
         layer.masksToBounds = false
         layer.shouldRasterize = false
     }
 }
 
 public extension CALayer {
-    // Extension from: https://stackoverflow.com/questions/34269399/how-to-control-shadow-spread-and-blur
+    // Extension from:
+    // https://stackoverflow.com/questions/34269399/how-to-control-shadow-spread-and-blur
     func addShadowSketch(
         color: UIColor = UIView.defaultShadowColor,
         alpha: Float = 0.5,
@@ -56,26 +69,31 @@ public extension CALayer {
         radius: CGFloat = 4,
         spread: CGFloat = 0
     ) {
-        // Optimize 1 : Ask iOS to cache the rendered shadow so that it doesn't need to be redrawn:
+        // Ensure values are valid
+        let clampedAlpha = max(0, min(alpha, 1))
+        let clampedRadius = max(0, radius)
+        let clampedSpread = spread
+
+        // Optimize 1: rasterize to cache output
         shouldRasterize = true
         rasterizationScale = UIScreen.main.scale
 
-        // Optimize 2: set the shadowPath property to a specific value so that iOS doesn't need to calculate
-        // transparency dynamically.
-        // For example, this creates a shadow path equivalent to the frame of the view:
-        shadowPath = UIBezierPath(rect: bounds).cgPath
+        // Optimize 2: Avoid dynamic shadow calculation
+        // Only apply shadowPath if bounds are valid (not zero)
+        if bounds.width > 0, bounds.height > 0 {
+            if clampedSpread == 0 {
+                shadowPath = UIBezierPath(rect: bounds).cgPath
+            } else {
+                let dx = -clampedSpread
+                let rect = bounds.insetBy(dx: dx, dy: dx)
+                shadowPath = UIBezierPath(rect: rect).cgPath
+            }
+        }
 
         // Add Shadow
         shadowColor = color.cgColor
-        shadowOpacity = alpha
+        shadowOpacity = clampedAlpha
         shadowOffset = CGSize(width: x, height: y)
-        shadowRadius = radius
-        if spread == 0 {
-            shadowPath = nil
-        } else {
-            let dx = -spread
-            let rect = bounds.insetBy(dx: dx, dy: dx)
-            shadowPath = UIBezierPath(rect: rect).cgPath
-        }
+        shadowRadius = clampedRadius
     }
 }

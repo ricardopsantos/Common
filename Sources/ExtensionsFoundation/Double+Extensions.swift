@@ -12,25 +12,61 @@ public extension Double {
     }
 
     var stringAsIntegerOrDecimal: String {
-        truncatingRemainder(dividingBy: 1) == 0 ? String(format: "%.0f", self) : String(self)
+        truncatingRemainder(dividingBy: 1) == 0
+            ? String(format: "%.0f", self)
+            : String(self)
     }
 
     var localeDecimalString: String {
-        let formatter = NumberFormatter()
-        formatter.locale = .current
-        formatter.numberStyle = .decimal
-        formatter.isLenient = true
-        return formatter.string(from: self as NSNumber) ?? "\(self)"
+        Double.decimalFormatter.string(from: self as NSNumber) ?? "\(self)"
     }
 
     func localeCurrencyString(currencyCode: String? = nil) -> String {
-        let formatter = NumberFormatter()
-        formatter.locale = .current
-        formatter.numberStyle = .currency
-        formatter.isLenient = true
-        if let code = currencyCode {
-            formatter.currencyCode = code
+        let formatter: NumberFormatter = if let code = currencyCode {
+            // Create a per-code cached formatter
+            Double.currencyFormatter(for: code)
+        } else {
+            Double.currencyFormatterDefault
         }
+
         return formatter.string(from: self as NSNumber) ?? "\(self)"
+    }
+}
+
+// MARK: - Cached Formatters (Huge performance improvement)
+
+private extension Double {
+    /// Cached decimal formatter
+    static let decimalFormatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.locale = .current
+        f.numberStyle = .decimal
+        f.isLenient = true
+        return f
+    }()
+
+    /// Cached default currency formatter
+    static let currencyFormatterDefault: NumberFormatter = {
+        let f = NumberFormatter()
+        f.locale = .current
+        f.numberStyle = .currency
+        f.isLenient = true
+        return f
+    }()
+
+    /// Cached currency formatter per-code
+    static var currencyCodeFormatters: [String: NumberFormatter] = [:]
+
+    static func currencyFormatter(for code: String) -> NumberFormatter {
+        if let existing = currencyCodeFormatters[code] {
+            return existing
+        }
+        let f = NumberFormatter()
+        f.locale = .current
+        f.numberStyle = .currency
+        f.currencyCode = code
+        f.isLenient = true
+        currencyCodeFormatters[code] = f
+        return f
     }
 }

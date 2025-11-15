@@ -3,16 +3,18 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
+import Combine
 import Foundation
 import SwiftUI
-import Combine
+import UIKit
 
 // https://peterfriese.dev/swift-combine-love/
 
 extension CommonLearnings {
     //
+
     // MARK: - ViewModel
+
     //
 
     class PasswordCheckerViewModel: ObservableObject {
@@ -141,7 +143,9 @@ extension CommonLearnings {
     }
 
     //
+
     // MARK: - View
+
     //
 
     struct PasswordCheckerView: View {
@@ -175,10 +179,12 @@ extension CommonLearnings {
 }
 
 //
+
 // MARK: - Preview
+
 //
 #if canImport(SwiftUI) && DEBUG
-#Preview {
-    CommonLearnings.PasswordCheckerView()
-}
+    #Preview {
+        CommonLearnings.PasswordCheckerView()
+    }
 #endif

@@ -2,9 +2,9 @@
 //  Created by Ricardo Santos on 13/08/2024.
 //
 
-import Foundation
-import CoreData
 @testable import Common
+import CoreData
+import Foundation
 
 /**
 
@@ -21,19 +21,20 @@ import CoreData
  */
 
 //
+
 // MARK: - CRUDEntityDBRepository / Async Methods
+
 //
 extension DatabaseRepository {
- 
     func aSyncStore(_ model: CoreDataSampleUsageNamespace.CRUDEntity) async {
         typealias DBEntity = CDataCRUDEntity
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         await withCheckedContinuation { [weak context] continuation in
             context?.performAndWait { [weak context] in
-                guard let context = context else {
+                guard let context else {
                     return
                 }
-                let newInstance: DBEntity = DBEntity(context: context)
+                let newInstance = DBEntity(context: context)
                 newInstance.id = model.id
                 newInstance.name = model.name
                 newInstance.recordDate = model.recordDate
@@ -49,7 +50,7 @@ extension DatabaseRepository {
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         await withCheckedContinuation { [weak context] continuation in
             context?.performAndWait { [weak context] in
-                guard let context = context else {
+                guard let context else {
                     return
                 }
                 let batchRequest = NSBatchInsertRequest(entity: DBEntity.entity(), objects: models.map { model in
@@ -68,7 +69,7 @@ extension DatabaseRepository {
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         await withCheckedContinuation { [weak context] continuation in
             context?.performAndWait { [weak context] in
-                guard let context = context else {
+                guard let context else {
                     return
                 }
                 let instances = try? context.fetch(DBEntity.fetchRequestWith(id: model.id))
@@ -104,13 +105,12 @@ extension DatabaseRepository {
         }
     }
 
-
     func aSyncRecordCount() async -> Int {
         typealias DBEntity = CDataCRUDEntity
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         return await withCheckedContinuation { [weak context] continuation in
             context?.performAndWait { [weak context] in
-                guard let context = context else {
+                guard let context else {
                     return
                 }
                 let count = (try? context.count(for: DBEntity.fetchRequest())) ?? 0
@@ -125,7 +125,7 @@ extension DatabaseRepository {
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         await withCheckedContinuation { [weak context] continuation in
             context?.performAndWait { [weak context] in
-                guard let context = context else {
+                guard let context else {
                     return
                 }
                 CommonCoreData.Utils.batchDelete(context: context, request: DBEntity.fetchRequest())
@@ -139,7 +139,7 @@ extension DatabaseRepository {
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         return await withCheckedContinuation { [weak context] continuation in
             context?.performAndWait { [weak context] in
-                guard let context = context else {
+                guard let context else {
                     return
                 }
                 let record = try? context
@@ -159,7 +159,7 @@ extension DatabaseRepository {
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         return await withCheckedContinuation { [weak context] continuation in
             context?.performAndWait { [weak context] in
-                guard let context = context else {
+                guard let context else {
                     return
                 }
                 var result: [String] = []

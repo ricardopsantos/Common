@@ -1,17 +1,16 @@
 //
-//  ResultExtensionsTests.swift
+//  Result+Extensions.swift
 //  Common
 //
 //  Created by Ricardo Santos on 15/11/2025.
 //
 
-import Testing
 import Combine
 @testable import Common
+import Testing
 
 @Suite(.serialized)
 struct ResultExtensionsTests {
-
     @Test
     func testIsSuccessAndIsFailure() {
         let ok: Result<Int, TestError> = .success(10)

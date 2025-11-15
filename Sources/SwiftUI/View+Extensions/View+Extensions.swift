@@ -35,6 +35,7 @@ public extension View {
 // MARK: - View (Frame)
 
 //
+
 public extension View {
     @ViewBuilder
     func frame(_ length: CGFloat) -> some View {
@@ -59,7 +60,7 @@ public extension View {
             .overlay(
                 Capsule()
                     .stroke(color, lineWidth: lineWidth)
-                    .foregroundColor(Color.clear)
+                    .foregroundColor(.clear)
             )
     }
 
@@ -144,18 +145,10 @@ public extension View {
 }
 
 public extension View {
-    /// Usage `Circle().maskContent(using: AngularGradient(gradient: colors, center: .center, startAngle: .degrees(0),
-    /// endAngle: .degrees(360)))`
-    func maskContent(using: some View) -> some View {
-        /** In SwiftUI, a view mask is a way to specify which parts of a view should be visible and which should be hidden.
-          View masks are created using the mask(_:) modifier, which takes a View as its parameter. The mask view defines
-         the shape that will be used to mask the view to which the modifier is applied.
-         ```
-          Image("my-image").mask(Circle())
-          Image("my-image").mask(Text("Hello, World!").font(.largeTitle).foregroundColor(.white))
-          ```
-          */
-        using.mask(self)
+    /// Usage:
+    /// `Circle().maskContent(using: AngularGradient(...))`
+    func maskContent(using mask: some View) -> some View {
+        self.mask(mask)
     }
 }
 

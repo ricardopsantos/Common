@@ -8,9 +8,9 @@ import SwiftUI
 // https://blog.stackademic.com/swiftui-two-views-same-size-2-ways-603db1093913
 
 private func randomString() -> String {
-    let length = Int.random(in: 10..<30)
+    let length = Int.random(in: 10 ..< 30)
     let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    return String((0..<length).map { _ in letters.randomElement()! })
+    return String((0 ..< length).map { _ in letters.randomElement()! })
 }
 
 public extension CommonLearnings {
@@ -210,23 +210,25 @@ extension CommonLearnings {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-#Preview("CustomWidthViewModifier") {
-    VStack {
-        CommonLearnings.TwoViewSameSizeProblemSolution1()
-        Divider()
-        CommonLearnings.TwoViewSameSizeProblemSolution2()
-        Divider()
-        CommonLearnings.TwoViewSameSizeProblemSolution3()
-        Divider()
-        CommonLearnings.TwoViewSameSizeProblemSolution4()
+    #Preview("CustomWidthViewModifier") {
+        VStack {
+            CommonLearnings.TwoViewSameSizeProblemSolution1()
+            Divider()
+            CommonLearnings.TwoViewSameSizeProblemSolution2()
+            Divider()
+            CommonLearnings.TwoViewSameSizeProblemSolution3()
+            Divider()
+            CommonLearnings.TwoViewSameSizeProblemSolution4()
+        }
     }
-}
 
-#Preview("EqualWidthPreferenceKeyTestView") {
-    EqualWidthPreferenceKeyTestView()
-}
+    #Preview("EqualWidthPreferenceKeyTestView") {
+        EqualWidthPreferenceKeyTestView()
+    }
 #endif

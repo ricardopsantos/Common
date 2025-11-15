@@ -19,7 +19,9 @@ import UIKit
  */
 
 //
+
 // MARK: - KeyPathStudy
+
 //
 
 extension CommonLearnings {
@@ -38,7 +40,9 @@ extension CommonLearnings {
 }
 
 //
+
 // MARK: - KeyPathConfigurationProtocol
+
 //
 
 protocol KeyPathConfigurationProtocol {}
@@ -53,7 +57,9 @@ extension KeyPathConfigurationProtocol where Self: Any {
 extension UIView: KeyPathConfigurationProtocol {}
 
 //
+
 // MARK: - Sample
+
 //
 
 extension CommonLearnings.KeyPathStudy {

@@ -6,7 +6,6 @@
 import Foundation
 
 public extension Result {
-
     /// Returns `true` if the result is `.success`.
     var isSuccess: Bool {
         if case .success = self { return true }
@@ -40,4 +39,3 @@ public extension Result {
         error.map { "\($0)" } ?? ""
     }
 }
-

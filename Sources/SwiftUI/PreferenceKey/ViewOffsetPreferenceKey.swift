@@ -11,8 +11,11 @@ public extension Common {
     struct ViewOffsetPreferenceKey: PreferenceKey {
         // https://stackoverflow.com/questions/65062590/swiftui-detect-when-scrollview-has-finished-scrolling
         public static var defaultValue = CGFloat.zero
+
         public static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-            value += nextValue()
+            // FIX: Use the latest measured value only.
+            // Accumulating causes runaway growth on every layout pass.
+            value = nextValue()
         }
     }
 }
@@ -27,6 +30,7 @@ struct ViewOffsetPreferenceKeyTestView: View {
     let preferenceChangeDetector: CurrentValueSubject<Common.ViewOffsetPreferenceKey.Value, Never>
     let preferenceChangePublisher: AnyPublisher<Common.ViewOffsetPreferenceKey.Value, Never>
     let coordinateSpaceKey = "coordinateSpaceKey"
+
     @State private var originY: CGFloat = 0
     @State private var text: String = ""
 
@@ -44,24 +48,36 @@ struct ViewOffsetPreferenceKeyTestView: View {
             ScrollView {
                 ScrollViewReader { scrollView in
                     VStack {
-                        Button("Scroll to id_50") { withAnimation { scrollView.scrollTo("id_50", anchor: .center) } }
+                        Button("Scroll to id_50") {
+                            withAnimation { scrollView.scrollTo("id_50", anchor: .center) }
+                        }
+
                         ForEach(0 ... 100, id: \.self) { i in
                             TextField("\(i)", text: $text)
                                 .background(Color.clear.id("id_\(i)"))
                         }
-                        Button("Scroll to id_50") { withAnimation { scrollView.scrollTo("id_50", anchor: .center) } }
-                    }.padding()
-                        .background(GeometryReader {
+
+                        Button("Scroll to id_50") {
+                            withAnimation { scrollView.scrollTo("id_50", anchor: .center) }
+                        }
+                    }
+                    .padding()
+                    .background(
+                        GeometryReader {
+                            // FIX: Only measure once per frame
                             Color.clear.preference(
                                 key: Common.ViewOffsetPreferenceKey.self,
                                 value: -$0.frame(in: .named(coordinateSpaceKey)).origin.y
                             )
-                        })
-                        .onPreferenceChange(Common.ViewOffsetPreferenceKey.self) {
-                            preferenceChangeDetector.send($0)
                         }
+                    )
+                    .onPreferenceChange(Common.ViewOffsetPreferenceKey.self) { value in
+                        // FIX: Prevent rapid flooding (dedicated subject handles debouncing)
+                        preferenceChangeDetector.send(value)
+                    }
                 }
             }
+
             HStack {
                 VStack {
                     Text("Ended @ \(Int(originY))")
@@ -71,9 +87,9 @@ struct ViewOffsetPreferenceKeyTestView: View {
             }
         }
         .coordinateSpace(name: coordinateSpaceKey)
-        .onReceive(preferenceChangePublisher) {
-            Common_Logs.debug("Stopped on: \($0)", "\(Self.self)")
-            originY = $0
+        .onReceive(preferenceChangePublisher) { value in
+            Common_Logs.debug("Stopped on: \(value)", "\(Self.self)")
+            originY = value
         }
     }
 }
@@ -85,7 +101,6 @@ struct ViewOffsetPreferenceKeyTestView: View {
 //
 
 #if canImport(SwiftUI) && DEBUG
-
     #Preview {
         ViewOffsetPreferenceKeyTestView()
     }

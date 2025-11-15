@@ -2,9 +2,9 @@
 //  Created by Ricardo Santos on 14/08/2024.
 //
 
-import Foundation
-import CoreData
 @testable import Common
+import CoreData
+import Foundation
 
 /**
 
@@ -21,12 +21,14 @@ import CoreData
  */
 
 //
+
 // MARK: - CRUDEntityDBRepository / Sync Methods
+
 //
 
 extension DatabaseRepository {
-
     // MARK: - Insert or Update (Upsert)
+
     func syncStore(_ model: CoreDataSampleUsageNamespace.CRUDEntity) {
         typealias DB = CDataCRUDEntity
         let context = viewContext
@@ -43,17 +45,19 @@ extension DatabaseRepository {
     }
 
     // MARK: - Batch Insert
+
     func syncStoreBatch(_ models: [CoreDataSampleUsageNamespace.CRUDEntity]) {
         typealias DB = CDataCRUDEntity
         let context = viewContext
 
-        let objects = models.map { $0.mapToDic }
+        let objects = models.map(\.mapToDic)
         let request = NSBatchInsertRequest(entity: DB.entity(), objects: objects)
 
         _ = try? context.execute(request)
     }
 
     // MARK: - Update
+
     func syncUpdate(_ model: CoreDataSampleUsageNamespace.CRUDEntity) {
         typealias DB = CDataCRUDEntity
         let context = viewContext
@@ -69,6 +73,7 @@ extension DatabaseRepository {
     }
 
     // MARK: - Delete
+
     func syncDelete(_ model: CoreDataSampleUsageNamespace.CRUDEntity) {
         typealias DB = CDataCRUDEntity
         let context = viewContext
@@ -83,18 +88,21 @@ extension DatabaseRepository {
     }
 
     // MARK: - Count
+
     func syncRecordCount() -> Int {
         typealias DB = CDataCRUDEntity
         return (try? viewContext.count(for: DB.fetchRequest())) ?? 0
     }
 
     // MARK: - Clear All
+
     func syncClearAll() {
         typealias DB = CDataCRUDEntity
         CommonCoreData.Utils.batchDelete(context: viewContext, request: DB.fetchRequest())
     }
 
     // MARK: - Retrieve (Optimized)
+
     func syncRetrieve(key: String) -> CoreDataSampleUsageNamespace.CRUDEntity? {
         typealias DB = CDataCRUDEntity
         let context = viewContext
@@ -102,7 +110,7 @@ extension DatabaseRepository {
         let request = DB.fetchRequestWith(id: key)
         request.fetchLimit = 1
         request.sortDescriptors = [
-            NSSortDescriptor(key: #keyPath(CDataCRUDEntity.recordDate), ascending: false)
+            NSSortDescriptor(key: #keyPath(CDataCRUDEntity.recordDate), ascending: false),
         ]
 
         guard let result = try? context.fetch(request).first else { return nil }
@@ -110,6 +118,7 @@ extension DatabaseRepository {
     }
 
     // MARK: - All IDs (Efficient)
+
     func syncAllIds() -> [String] {
         typealias DB = CDataCRUDEntity
         let context = viewContext
@@ -122,4 +131,3 @@ extension DatabaseRepository {
         return results.compactMap { $0["id"] as? String }
     }
 }
-

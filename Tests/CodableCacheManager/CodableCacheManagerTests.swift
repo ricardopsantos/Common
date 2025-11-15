@@ -2,17 +2,18 @@
 //  Created by Ricardo Santos on 12/08/2024.
 //
 
-import XCTest
-import Foundation
 import Combine
 @testable import Common
+import Foundation
+import XCTest
 
 //
+
 // MARK: - CodableCacheManagerBaseTests
+
 //
 
 class CodableCacheManagerBaseTests: XCTestCase {
-
     func codableCacheManager() -> CodableCacheManagerProtocol {
         // Override in subclass
         Common.CacheManagerForCodableUserDefaultsRepository.shared
@@ -39,7 +40,7 @@ class CodableCacheManagerBaseTests: XCTestCase {
         let composedKey2 = Commom_ExpiringKeyValueEntity.composedKey(key2, params2)
         XCTAssertEqual(composedKey1, composedKey2)
     }
-    
+
     func test_aSyncStoreAndRetrieve() async {
         let model = User.random
         let key = String.random(10)
@@ -62,7 +63,6 @@ class CodableCacheManagerBaseTests: XCTestCase {
     // MARK: - Sync CRUD
 
     func test_syncStoreAndRetrieve() {
-        
         let model = User.random
         let key = String.random(10)
         let params = [model.age.description, model.name]
@@ -84,7 +84,6 @@ class CodableCacheManagerBaseTests: XCTestCase {
     // MARK: - Cache Policy Tests
 
     func test_webapi_cachePolicy_ignoringCache() async {
-
         var counter = 0
 
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .ignoringCache)
@@ -98,7 +97,6 @@ class CodableCacheManagerBaseTests: XCTestCase {
     }
 
     func test_webapi_cachePolicy_cacheElseLoad() async {
-
         var counter = 0
 
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .cacheElseLoad)
@@ -112,7 +110,6 @@ class CodableCacheManagerBaseTests: XCTestCase {
     }
 
     func test_webapi_cachePolicy_cacheDontLoad() async {
-
         var counter = 0
 
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .cacheDontLoad)
@@ -126,7 +123,6 @@ class CodableCacheManagerBaseTests: XCTestCase {
     }
 
     func test_webapi_cachePolicy_cacheAndLoad_once() async {
-
         var counter = 0
 
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .cacheAndLoad)
@@ -140,7 +136,6 @@ class CodableCacheManagerBaseTests: XCTestCase {
     }
 
     func test_webapi_cachePolicy_cacheAndLoad_twice() async {
-
         var counter = 0
 
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .ignoringCache)
@@ -167,9 +162,8 @@ class CodableCacheManagerBaseTests: XCTestCase {
     }
 
     func test_fetchingFrom_10000Records() {
-
         syncClearAll()
-        syncStore(count: 10_000)
+        syncStore(count: 10000)
 
         // Time: ~0.004s
         measure {
@@ -179,11 +173,12 @@ class CodableCacheManagerBaseTests: XCTestCase {
 }
 
 //
+
 // MARK: - Helpers
+
 //
 
 private extension CodableCacheManagerBaseTests {
-    
     struct User: Codable, Equatable {
         let name: String
         let age: Int
@@ -191,14 +186,14 @@ private extension CodableCacheManagerBaseTests {
 
         static var random: Self {
             let randomName = UUID().uuidString
-            let randomAge = Int.random(in: 18...40)
-            let randomHeight = Double.random(in: 150...200)
+            let randomAge = Int.random(in: 18 ... 40)
+            let randomHeight = Double.random(in: 150 ... 200)
             return .init(name: randomName, age: randomAge, height: randomHeight)
         }
     }
-    
+
     func syncStore(count: Int) {
-        for i in 0...count {
+        for i in 0 ... count {
             codableCacheManager().syncStore(
                 User.random,
                 key: "cachedKey_\(i)",
@@ -219,7 +214,9 @@ private extension CodableCacheManagerBaseTests {
 }
 
 //
+
 // MARK: - Specific Implementations
+
 //
 
 final class CodableCacheManagerUserDefaultsTests: CodableCacheManagerBaseTests {

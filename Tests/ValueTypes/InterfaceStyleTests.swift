@@ -5,13 +5,12 @@
 //  Created by Ricardo Santos on 15/11/2025.
 //
 
+@testable @preconcurrency import Common
 import Foundation
 import Testing
-@testable @preconcurrency import Common
 
 @Suite(.serialized)
 struct InterfaceStyleTests {
-
     @Test
     func testRawValueInit() {
         #expect(Common.InterfaceStyle(rawValue: "light") == .light)

@@ -12,58 +12,70 @@ public extension UIApplication {
     }
 
     func resignFirstResponder() {
-        sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        sendAction(#selector(UIResponder.resignFirstResponder),
+                   to: nil, from: nil, for: nil)
     }
 
     func endEditing(_ force: Bool) {
-        // windows.first(where: \.isKeyWindow)?.endEditing(force)
-        // windows.filter { $0.isKeyWindow }.first?.endEditing(force)
-        Self.keyWindow?.endEditing(force)
+        // Ensure called on main thread
+        if Thread.isMainThread {
+            UIApplication.keyWindow?.endEditing(force)
+        } else {
+            DispatchQueue.main.async {
+                UIApplication.keyWindow?.endEditing(force)
+            }
+        }
     }
 
+    /// Best attempt at discovering the active window.
     static var keyWindow: UIWindow? {
-        let keyWindow = UIApplication.shared.connectedScenes
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
             .filter { $0.activationState == .foregroundActive }
-            .map { $0 as? UIWindowScene }
-            .compactMap { $0 }
-            .first?.windows
-            .filter(\.isKeyWindow).first
-        return keyWindow
+            .flatMap(\.windows)
+            .first(where: \.isKeyWindow)
     }
 
     var topViewController: UIViewController? {
         UIApplication.topViewController()
     }
 
-    class func topViewController(base: UIViewController? = UIApplication.keyWindow?
-        .rootViewController) -> UIViewController?
+    /// Recursively returns the top-most view controller in the key window.
+    class func topViewController(base: UIViewController? = UIApplication.keyWindow?.rootViewController)
+        -> UIViewController?
     {
         if let nav = base as? UINavigationController {
             return topViewController(base: nav.visibleViewController)
-        } else if let tab = base as? UITabBarController, let selected = tab.selectedViewController {
+        }
+
+        if let tab = base as? UITabBarController,
+           let selected = tab.selectedViewController
+        {
             return topViewController(base: selected)
-        } else if let presented = base?.presentedViewController {
+        }
+
+        if let presented = base?.presentedViewController {
             return topViewController(base: presented)
         }
+
         return base
     }
 
     var isInBackgroundOrInactive: Bool {
         switch applicationState {
-        case .background,
-             .inactive:
+        case .background, .inactive:
             true
         case .active:
             false
-        default:
+        @unknown default:
             false
         }
     }
 
     static func openAppSettings() {
-        guard let appSettings = URL(string: UIApplication.openSettingsURLString) else {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else {
             return
         }
-        UIApplication.shared.open(appSettings, options: [:], completionHandler: nil)
+        UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
 }

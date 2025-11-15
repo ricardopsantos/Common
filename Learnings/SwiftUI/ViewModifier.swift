@@ -34,12 +34,14 @@ extension View {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-#Preview {
-    Text("Hello, SwiftUI!")
-        .customStyle()
-}
+    #Preview {
+        Text("Hello, SwiftUI!")
+            .customStyle()
+    }
 #endif

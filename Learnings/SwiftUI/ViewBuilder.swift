@@ -27,13 +27,15 @@ extension CommonLearnings {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-#Preview {
-    CommonLearnings.ViewBuilderAsParam {
-        Text("Hi")
+    #Preview {
+        CommonLearnings.ViewBuilderAsParam {
+            Text("Hi")
+        }
     }
-}
 #endif

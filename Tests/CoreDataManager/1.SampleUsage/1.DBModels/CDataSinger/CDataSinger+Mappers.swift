@@ -3,8 +3,10 @@
 //
 
 import Foundation
+
 //
 @testable import Common
+
 //
 // Mappers
 //
@@ -27,7 +29,7 @@ extension CoreDataSampleUsageNamespace.Singer {
         [
             "id": id,
             "cascadeSongs": cascadeSongs ?? "",
-            "name": name
+            "name": name,
         ]
     }
 }

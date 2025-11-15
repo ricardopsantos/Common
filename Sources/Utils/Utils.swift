@@ -32,9 +32,9 @@ public extension Common {
 
         public static var onDebug: Bool {
             #if DEBUG
-            return true
+                return true
             #else
-            return false
+                return false
             #endif
         }
 
@@ -44,9 +44,9 @@ public extension Common {
 
         public static var onSimulator: Bool {
             #if targetEnvironment(simulator)
-            return true
+                return true
             #else
-            return false
+                return false
             #endif
         }
 

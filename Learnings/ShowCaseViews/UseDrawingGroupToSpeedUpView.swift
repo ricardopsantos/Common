@@ -3,10 +3,10 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
+import Combine
 import Foundation
 import SwiftUI
-import Combine
+import UIKit
 
 // https://benlmyers.medium.com/9-swiftui-hacks-for-beautiful-views-cd9682fbe2ec
 
@@ -51,21 +51,23 @@ public extension CommonLearnings {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
 
-#Preview {
-    VStack {
-        CommonLearnings.UseDrawingGroupToSpeedUpView(
-            useCompositingGroup: false,
-            useDrawingGroup: false
-        ).renderTimeTracker()
-        CommonLearnings.UseDrawingGroupToSpeedUpView(
-            useCompositingGroup: true,
-            useDrawingGroup: true
-        ).renderTimeTracker()
+    #Preview {
+        VStack {
+            CommonLearnings.UseDrawingGroupToSpeedUpView(
+                useCompositingGroup: false,
+                useDrawingGroup: false
+            ).renderTimeTracker()
+            CommonLearnings.UseDrawingGroupToSpeedUpView(
+                useCompositingGroup: true,
+                useDrawingGroup: true
+            ).renderTimeTracker()
+        }
     }
-}
 #endif

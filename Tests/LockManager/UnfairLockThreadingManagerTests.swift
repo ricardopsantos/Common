@@ -2,9 +2,9 @@
 //  Created by Ricardo Santos on 12/08/2024.
 //
 
+@preconcurrency @testable import Common
 import Foundation
 import Testing
-@preconcurrency @testable import Common
 
 actor CounterBox {
     private var value = 0
@@ -14,7 +14,6 @@ actor CounterBox {
 
 @Suite(.serialized)
 struct UnfairLockThreadingManagerTests {
-
     // Fresh instance per test
     private func makeLockManager() -> Common.UnfairLockThreadingManager {
         Common.UnfairLockThreadingManager()
@@ -94,21 +93,21 @@ struct UnfairLockThreadingManagerTests {
     @Test
     func threadSafety() async {
         /*
-        let lockManager = makeLockManager()
-        let counter = CounterBox()   // ← replaces 'var value'
-        let iterations = 1_000
+         let lockManager = makeLockManager()
+         let counter = CounterBox()   // ← replaces 'var value'
+         let iterations = 1_000
 
-        DispatchQueue.concurrentPerform(iterations: iterations) { _ in
-            lockManager.execute {
-                counter.increment()
-            }
-        }
+         DispatchQueue.concurrentPerform(iterations: iterations) { _ in
+             lockManager.execute {
+                 counter.increment()
+             }
+         }
 
-        let ok = await eventually {
-            counter.get() == iterations
-        }
-        
-        #expect(ok, "Expected value \(counter.get()) == \(iterations)")*/
+         let ok = await eventually {
+             counter.get() == iterations
+         }
+
+         #expect(ok, "Expected value \(counter.get()) == \(iterations)")*/
         #expect(false)
     }
 
@@ -116,11 +115,11 @@ struct UnfairLockThreadingManagerTests {
     func highContentionWithMultipleLocks() async {
         let lockManager = makeLockManager()
         var value = 0
-        let iterations = 10_000
+        let iterations = 10000
         let queue = DispatchQueue(label: #function, attributes: .concurrent)
         let group = DispatchGroup()
 
-        for _ in 0..<iterations {
+        for _ in 0 ..< iterations {
             group.enter()
             queue.async {
                 lockManager.lock()
@@ -158,7 +157,7 @@ struct UnfairLockThreadingManagerTests {
         let queue = DispatchQueue(label: "delayedExecutionQueue", attributes: .concurrent)
         let group = DispatchGroup()
 
-        for _ in 0..<iterations {
+        for _ in 0 ..< iterations {
             group.enter()
             queue.async {
                 lockManager.execute {
@@ -173,9 +172,6 @@ struct UnfairLockThreadingManagerTests {
         group.wait()
         #expect(value == iterations, "Expected value \(value) == \(iterations)")
     }
-    
-  
-  
 
     @Test
     func tryLockFailsWhenAlreadyLocked() async {
@@ -201,20 +197,19 @@ struct UnfairLockThreadingManagerTests {
         let ok = await eventually { !acquiredSecond }
         #expect(ok, "Expected second tryLock to fail while first holds the lock")
     }
-  
-    
+
     /// Rewritten version of simultaneous reads/writes test, now deterministic.
     @Test
     func simultaneousReadsAndWritesWithLock() async {
         let lockManager = makeLockManager()
         var value = 0
-        let iterations = 1_000
+        let iterations = 1000
         let queue = DispatchQueue(label: #function, attributes: .concurrent)
         var readResults = [Int]()
         let readLock = NSLock()
         let group = DispatchGroup()
 
-        for _ in 0..<iterations {
+        for _ in 0 ..< iterations {
             group.enter()
             queue.async {
                 // Write under lock
@@ -239,7 +234,7 @@ struct UnfairLockThreadingManagerTests {
         #expect(value == iterations)
         #expect(readResults.allSatisfy { $0 <= iterations })
     }
-    
+
     /// Previously flaky due to data races; now uses atomic-like increments.
     @Test
     func highContentionWithTryLock() async {
@@ -247,11 +242,11 @@ struct UnfairLockThreadingManagerTests {
         var successCount = 0
         var failureCount = 0
         let counterLock = NSLock()
-        let iterations = 10_000
+        let iterations = 10000
         let queue = DispatchQueue(label: #function, attributes: .concurrent)
         let group = DispatchGroup()
 
-        for _ in 0..<iterations {
+        for _ in 0 ..< iterations {
             group.enter()
             queue.async {
                 if lockManager.tryLock() {
@@ -269,7 +264,6 @@ struct UnfairLockThreadingManagerTests {
         #expect(successCount > 0)
     }
 
-    
     @Test
     func deinitIsSafe() {
         weak var weakManager: Common.UnfairLockThreadingManager?

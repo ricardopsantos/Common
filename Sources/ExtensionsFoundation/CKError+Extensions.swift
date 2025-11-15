@@ -11,67 +11,66 @@ import Foundation
 // https://www.toptal.com/ios/sync-data-across-devices-with-cloudkit
 
 public extension CKError {
+    // MARK: - Convenience flags
+
+    /// True if the record is missing because the zone or item doesn't exist
     var isRecordNotFound: Bool {
         isZoneNotFound || isUnknownItem
     }
 
     var isZoneNotFound: Bool {
-        isSpecificErrorCode(code: .zoneNotFound)
+        matches(.zoneNotFound)
     }
 
     var isUnknownItem: Bool {
-        isSpecificErrorCode(code: .unknownItem)
+        matches(.unknownItem)
     }
 
+    /// Conflict: server has a newer version of the record
     var isConflict: Bool {
-        isSpecificErrorCode(code: .serverRecordChanged)
+        matches(.serverRecordChanged)
     }
 
-    func isSpecificErrorCode(code: CKError.Code) -> Bool {
-        var match = false
-        if self.code == code {
-            match = true
-        } else if self.code == .partialFailure {
-            // This is a multiple-issue error. Check the underlying array
-            // of errors to see if it contains a match for the error in question.
-            guard let errors = partialErrorsByItemID else {
-                return false
-            }
-            for (_, error) in errors {
-                if let cke = error as? CKError {
-                    if cke.code == code {
-                        match = true
-                        break
-                    }
-                }
-            }
+    // MARK: - Error Matching
+
+    /// Checks if this CKError or any nested partialFailure CKErrors match the given code.
+    func matches(_ code: CKError.Code) -> Bool {
+        if self.code == code { return true }
+
+        guard self.code == .partialFailure,
+              let nested = partialErrorsByItemID?.values
+        else {
+            return false
         }
-        return match
+
+        return nested
+            .compactMap { $0 as? CKError }
+            .contains { $0.matches(code) }
     }
 
-    // ServerRecordChanged errors contain the CKRecord information
-    // for the change that failed, allowing the client to decide
-    // upon the best course of action in performing a merge.
+    // MARK: - Conflict Merge Records
+
+    /// Retrieves `(clientRecord, serverRecord)` if this or any nested error is a `.serverRecordChanged` conflict.
     func getMergeRecords() -> (CKRecord?, CKRecord?) {
+        // Direct conflict
         if code == .serverRecordChanged {
-            // This is the direct case of a simple serverRecordChanged Error.
             return (clientRecord, serverRecord)
         }
-        guard code == .partialFailure else {
+
+        // PartialFailure: search nested
+        guard code == .partialFailure,
+              let nested = partialErrorsByItemID?.values
+        else {
             return (nil, nil)
         }
-        guard let errors = partialErrorsByItemID else {
-            return (nil, nil)
-        }
-        for (_, error) in errors {
-            if let cke = error as? CKError {
-                if cke.code == .serverRecordChanged {
-                    // This is the case of a serverRecordChanged Error
-                    // contained within a multi-error PartialFailure Error.
-                    return cke.getMergeRecords()
-                }
+
+        for case let ckError as CKError in nested {
+            let merge = ckError.getMergeRecords()
+            if merge.0 != nil || merge.1 != nil {
+                return merge
             }
         }
+
         return (nil, nil)
     }
 }

@@ -3,13 +3,15 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
+import Combine
 import Foundation
 import SwiftUI
-import Combine
+import UIKit
 
 //
+
 // MARK: - NeumorphicButton
+
 // https://medium.com/devtechie/neumorphic-button-in-ios-16-and-swiftui-75360b41866e
 //
 
@@ -52,11 +54,13 @@ public extension CommonLearnings {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-#Preview {
-    CommonLearnings.NeumorphicButton()
-}
+    #Preview {
+        CommonLearnings.NeumorphicButton()
+    }
 #endif

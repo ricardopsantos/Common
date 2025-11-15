@@ -6,9 +6,13 @@
 import Foundation
 
 public extension DispatchQueue {
+    /// Default delay (usually animation time)
     static let defaultDelay: Double = Common.Constants.defaultAnimationsTime
 
-    static func synchronizedQueue(label: String = "\(Common.self)_\(UUID().uuidString)") -> DispatchQueue {
+    /// Creates a synchronized queue with a unique label.
+    static func synchronizedQueue(
+        label: String = "\(Common.self)_\(UUID().uuidString)"
+    ) -> DispatchQueue {
         DispatchQueue(
             label: label,
             qos: .unspecified,
@@ -16,50 +20,49 @@ public extension DispatchQueue {
         )
     }
 
+    /// Execution thread: main or background.
     enum Tread {
         case main
         case background
     }
 
-    static func executeWithDelay(tread: Tread = Tread.main, delay: Double = defaultDelay, block: @escaping () -> Void) {
-        if tread == .main {
-            if delay > 0 {
-                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { block() }
-            } else {
-                executeInMainTread(block)
-            }
+    /// Executes a block after a delay on the selected thread.
+    static func executeWithDelay(
+        tread: Tread = .main,
+        delay: Double = defaultDelay,
+        block: @escaping () -> Void
+    ) {
+        let queue: DispatchQueue = (tread == .main) ? .main : .global(qos: .background)
+
+        if delay > 0 {
+            queue.asyncAfter(deadline: .now() + delay, execute: block)
         } else {
-            DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + delay) { block() }
+            executeIn(tread: tread, block: block)
         }
     }
 
+    /// Executes a block immediately in the selected thread.
     static func executeIn(tread: Tread, block: @escaping () -> Void) {
-        if tread == .main {
+        switch tread {
+        case .main:
             executeInMainTread(block)
-        } else {
+        case .background:
             executeInBackgroundTread(block)
         }
     }
 
+    /// Executes on main thread, switching if needed.
     static func executeInMainTread(_ block: @escaping () -> Void) {
-        if Thread.isMain {
-            block()
-        } else {
-            DispatchQueue.main.async {
-                block()
-            }
-        }
+        Thread.isMainThread ? block() : DispatchQueue.main.async(execute: block)
     }
 
+    /// Executes on a background thread.
     static func executeInBackgroundTread(_ block: @escaping () -> Void) {
-        DispatchQueue.global(qos: .background).async {
-            block()
-        }
+        DispatchQueue.global(qos: .background).async(execute: block)
     }
 
+    /// Executes on user-interactive priority background thread.
     static func executeInUserInteractiveTread(_ block: @escaping () -> Void) {
-        DispatchQueue.global(qos: .userInteractive).async {
-            block()
-        }
+        DispatchQueue.global(qos: .userInteractive).async(execute: block)
     }
 }

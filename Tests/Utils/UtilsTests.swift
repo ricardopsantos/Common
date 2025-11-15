@@ -1,18 +1,17 @@
 //
-//  CommonUtilsTests.swift
+//  UtilsTests.swift
 //  Common
 //
 //  Created by Ricardo Santos on 15/11/2025.
 //
 
-import Testing
-import Foundation
 import Combine
 @testable import Common
+import Foundation
+import Testing
 
 @Suite(.serialized)
 struct UtilsTests {
-
     // MARK: - Static boolean helpers
 
     @Test
@@ -76,7 +75,7 @@ struct UtilsTests {
     @Test
     func testCustomAssertDoesNotCrash() {
         // This should never crash, even when the condition is false
-        Common.Utils.assert(false, message: "should not crash in tests")
+        Common.Utils.assertionFailure(message: "should not crash in tests")
         #expect(true) // If we got here, we're good
     }
 

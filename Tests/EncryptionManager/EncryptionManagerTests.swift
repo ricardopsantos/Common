@@ -2,13 +2,12 @@
 //  Created by Ricardo Santos on 12/08/2024.
 //
 
+@testable import Common
 import Foundation
 import Testing
-@testable import Common
 
 @Suite
 struct EncryptionManagerTests {
-
     @Test
     func encryptedToDecryptedString() {
         let string = String.random(1000)
@@ -35,5 +34,4 @@ struct EncryptionManagerTests {
         let decrypted = Common.EncryptionManager.decrypt(data: encrypted, method: .aesGCM)
         #expect(decrypted == data)
     }
-
 }

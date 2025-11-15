@@ -56,11 +56,12 @@ public extension AnyPublisher {
 }
 
 //
+
 // MARK: - Retry
+
 //
 
 public extension AnyPublisher {
-
     // MARK: - Public retry APIs
 
     typealias RetryPublisherType = Driver<Bool>
@@ -123,11 +124,9 @@ public extension AnyPublisher {
             )
     }
 
-
     // MARK: - RetryWithPublisherIf
 
     struct RetryWithPublisherIf<P: Publisher>: Publisher {
-
         public typealias Output = P.Output
         public typealias Failure = P.Failure
 
@@ -138,7 +137,8 @@ public extension AnyPublisher {
         let delay: TimeInterval
 
         public func receive<S>(subscriber: S)
-        where S: Subscriber, Failure == S.Failure, Output == S.Input {
+            where S: Subscriber, Failure == S.Failure, Output == S.Input
+        {
             attempt(times: times)
                 .receive(subscriber: subscriber)
         }
@@ -167,7 +167,6 @@ public extension AnyPublisher {
     // MARK: - RetryWithClosureIf
 
     struct RetryWithClosureIf<P: Publisher>: Publisher {
-
         public typealias Output = P.Output
         public typealias Failure = P.Failure
 
@@ -178,7 +177,8 @@ public extension AnyPublisher {
         let times: Int
 
         public func receive<S>(subscriber: S)
-        where S: Subscriber, Failure == S.Failure, Output == S.Input {
+            where S: Subscriber, Failure == S.Failure, Output == S.Input
+        {
             attempt(times: times)
                 .receive(subscriber: subscriber)
         }
@@ -205,7 +205,6 @@ public extension AnyPublisher {
     // MARK: - RetryIf
 
     struct RetryIf<P: Publisher>: Publisher {
-
         public typealias Output = P.Output
         public typealias Failure = P.Failure
 
@@ -215,7 +214,8 @@ public extension AnyPublisher {
         let delay: TimeInterval
 
         public func receive<S>(subscriber: S)
-        where S: Subscriber, Failure == S.Failure, Output == S.Input {
+            where S: Subscriber, Failure == S.Failure, Output == S.Input
+        {
             attempt(times: times)
                 .receive(subscriber: subscriber)
         }
@@ -465,8 +465,8 @@ public enum AnyPublisherSampleUsage {
                 withPublisher: AnyPublisherSampleUsageAux.authenticateUserV2()
                     .flatMap { _ in
                         Just(true).eraseToAnyPublisher()
-                    }.eraseToAnyPublisher()
-                ,
+                    }.eraseToAnyPublisher(),
+
                 if: { $0 == .userIsNotAuthenticated },
                 delay: delay,
                 times: 5

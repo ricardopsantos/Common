@@ -3,10 +3,10 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import UIKit
+import Combine
 import Foundation
 import SwiftUI
-import Combine
+import UIKit
 
 //
 // Simple MVVM with @StateObject + Protocols
@@ -30,14 +30,16 @@ public extension SampleCounterDomain {
 }
 
 //
+
 // MARK: View
+
 //
 
 public extension SampleCounterDomain {
     struct SampleCounterV3_View<ViewModel>: View where ViewModel: SampleCounterV3_ViewModelProtocol {
         @StateObject private var viewModel: ViewModel
         public init(viewModel: @autoclosure @escaping () -> ViewModel) {
-            self._viewModel = StateObject(wrappedValue: viewModel())
+            _viewModel = StateObject(wrappedValue: viewModel())
         }
 
         public var body: some View {
@@ -46,9 +48,7 @@ public extension SampleCounterDomain {
                 SampleCounterShared.displayView(
                     title: "ViewModel with @StateObjec + Protocols",
                     counterValue: $viewModel.count,
-                    onTap: {
-                        viewModel.increment()
-                    }()
+                    onTap: viewModel.increment()
                 )
             }
         }
@@ -56,16 +56,18 @@ public extension SampleCounterDomain {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-public struct SampleCounterV3_Preview: PreviewProvider {
-    static let viewModel = SampleCounterDomain.SampleCounterV3_ViewModel(count: SampleCounterDomain.startValue)
-    public static var previews: some View {
-        SampleCounterDomain.SampleCounterV3_View(
-            viewModel: viewModel
-        )
+    public struct SampleCounterV3_Preview: PreviewProvider {
+        static let viewModel = SampleCounterDomain.SampleCounterV3_ViewModel(count: SampleCounterDomain.startValue)
+        public static var previews: some View {
+            SampleCounterDomain.SampleCounterV3_View(
+                viewModel: viewModel
+            )
+        }
     }
-}
 #endif

@@ -13,9 +13,14 @@ public extension UIView {
         animations: @escaping () -> Void
     ) -> Future<Bool, Never> {
         Future { promise in
-            UIView.animate(withDuration: duration, animations: animations) {
-                promise(.success($0))
-            }
+            UIView.animate(
+                withDuration: duration,
+                animations: animations,
+                completion: { finished in
+                    // `finished == false` happens if interrupted
+                    promise(.success(finished))
+                }
+            )
         }
     }
 }

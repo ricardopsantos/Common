@@ -1,5 +1,5 @@
 //
-//  CancelBags.swift
+//  CancelBag.swift
 //  Common
 //
 //  Created by Ricardo Santos on 01/01/2025.
@@ -15,7 +15,6 @@ public typealias CancelBag = AutoReleasedCancelBag
 /// Stores AnyCancellable subscriptions with optional auto-release.
 /// Auto-released subscriptions are replaced when a new subscription arrives with the same ID.
 public final class AutoReleasedCancelBag {
-
     // Auto-release subscriptions: (subscription, id)
     @PWThreadSafe public fileprivate(set) var autoReleased = [(AnyCancellable, String)]()
 
@@ -34,7 +33,7 @@ public final class AutoReleasedCancelBag {
     public func cancel() {
         cancelAll()
     }
-    
+
     public func cancelAll() {
         synced(autoReleased) {
             let arr = autoReleased
@@ -111,7 +110,6 @@ public final class AutoReleasedCancelBag {
 // MARK: - AnyCancellable Store Extension
 
 public extension AnyCancellable {
-
     func store(
         in bag: CancelBag,
         autoRelease: Bool = true,
@@ -122,8 +120,8 @@ public extension AnyCancellable {
     ) {
         let computedID =
             !subscriptionId.trim.isEmpty
-            ? subscriptionId.trim
-            : "[\(file)|\(function)|\(line)]"
+                ? subscriptionId.trim
+                : "[\(file)|\(function)|\(line)]"
 
         // Manual, non-auto-release storage
         if !autoRelease {
@@ -151,7 +149,6 @@ public extension AnyCancellable {
 /// A cancel bag that keeps at most 2 subscriptions.
 /// Ideal for debounce-style publisher management.
 public final class DebounceCancelBag {
-
     public fileprivate(set) var subscriptions: [AnyCancellable] = []
 
     public init() {}
@@ -171,7 +168,6 @@ public final class DebounceCancelBag {
 }
 
 public extension AnyCancellable {
-
     func store(in bag: DebounceCancelBag) {
         bag.subscriptions.append(self)
 

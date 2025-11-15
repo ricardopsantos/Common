@@ -3,19 +3,23 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
 @testable import Common
+import Foundation
 
 public protocol SampleWebAPIProtocol {
     //
+
     // MARK: - Generic api calls
+
     //
     func requestAsync<T: Decodable>(_ api: SampleWebAPIMethods) async throws -> T
     func requestPublisher<T: Decodable>(_ api: SampleWebAPIMethods) -> AnyPublisher<T, CommonNetworking.APIError>
 
     //
+
     // MARK: - Verbose/Custom api calls
+
     //
     typealias EmployeesAvailabilityResponse = AnyPublisher<
         ResponseDto.EmployeeServiceAvailability,

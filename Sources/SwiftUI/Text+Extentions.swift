@@ -47,5 +47,4 @@ public extension TextField {
     #Preview {
         Common_Preview.TextExtensions()
     }
-
 #endif

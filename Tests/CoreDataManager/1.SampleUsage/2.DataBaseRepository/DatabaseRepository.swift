@@ -2,13 +2,15 @@
 //  Created by Ricardo Santos on 13/08/2024.
 //
 
-import Foundation
-import CoreData
 import Combine
 @testable import Common
+import CoreData
+import Foundation
 
 //
+
 // MARK: - CommonDataBaseRepository
+
 //
 
 public class DatabaseRepository: CommonBaseCoreDataManager {
@@ -48,7 +50,7 @@ public class DatabaseRepository: CommonBaseCoreDataManager {
             cacheName: nil
         )
 
-        fetchedResultsController.forEach { _, controller in
+        for (_, controller) in fetchedResultsController {
             controller.delegate = self
             try? controller.performFetch()
         }
