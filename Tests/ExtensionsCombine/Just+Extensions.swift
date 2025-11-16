@@ -11,76 +11,48 @@ import Testing
 
 @Suite
 struct JustWithErrorTypeTests {
-    // MARK: - Helpers
-
-    /// Simple sink helper to extract the value from AnyPublisher synchronously.
-    private func getValue<T>(
-        from publisher: AnyPublisher<T, some Error>
-    ) async throws -> T {
-        try await withCheckedThrowingContinuation { continuation in
-            publisher.sink(
-                receiveCompletion: { completion in
-                    if case let .failure(error) = completion {
-                        continuation.resume(throwing: error)
-                    }
-                },
-                receiveValue: { output in
-                    continuation.resume(returning: output)
-                }
-            )
-            .store(in: &Cancellables.shared)
-        }
-    }
-
     // MARK: - Tests
 
     @Test
     func testWithErrorTypeValueOutput() async throws {
         let publisher = Just.withErrorType(123, TestError.self)
-
-        let value = try await getValue(from: publisher)
-
+        let value = try await publisher.async()
         #expect(value == 123)
     }
 
     @Test
     func testWithErrorTypeVoidOutput() async throws {
         let publisher = Just<Void>.withErrorType(TestError.self)
-
-        let value = try await getValue(from: publisher)
-
+        let value: Void = try await publisher.async()
         #expect(value == ())
     }
 
     @Test
     func testFailureTypeIsCorrect() {
+        // If this compiles, the type is correct.
         let pub = Just.withErrorType(99, TestError.self)
-
-        typealias PubType = AnyPublisher<Int, TestError>
-        #expect(pub is PubType)
+        typealias Expected = AnyPublisher<Int, TestError>
+        let _: Expected = pub // compile-time assertion
+        #expect(true) // always true (success = compiles)
     }
 
     @Test
     func testVoidFailureTypeIsCorrect() {
         let pub = Just<Void>.withErrorType(TestError.self)
 
-        typealias PubType = AnyPublisher<Void, TestError>
-        #expect(pub is PubType)
+        // compile-time type check
+        typealias Expected = AnyPublisher<Void, TestError>
+        let _: Expected = pub
+
+        #expect(true)
     }
 
     @Test
     func testPublisherNeverFails() async throws {
-        // Even though it has an error type, Just never fails.
-        let pub = Just.withErrorType("Hello", TestError.self)
+        // Just never fails, even with a Failure type.
+        let publisher = Just.withErrorType("Hello", TestError.self)
 
-        let value = try await getValue(from: pub)
-
+        let value = try await publisher.async()
         #expect(value == "Hello")
     }
-}
-
-// MARK: - Local Combine cancellables for tests
-
-private enum Cancellables {
-    static var shared = Set<AnyCancellable>()
 }

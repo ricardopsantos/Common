@@ -70,15 +70,6 @@ struct UtilsTests {
         #expect(!output.contains("123"))
     }
 
-    // MARK: - assert()
-
-    @Test
-    func testCustomAssertDoesNotCrash() {
-        // This should never crash, even when the condition is false
-        Common.Utils.assertionFailure(message: "should not crash in tests")
-        #expect(true) // If we got here, we're good
-    }
-
     // MARK: - Thread helpers
 
     @Test

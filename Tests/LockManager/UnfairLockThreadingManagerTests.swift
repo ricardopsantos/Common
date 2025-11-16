@@ -92,23 +92,18 @@ struct UnfairLockThreadingManagerTests {
 
     @Test
     func threadSafety() async {
-        /*
-         let lockManager = makeLockManager()
-         let counter = CounterBox()   // ← replaces 'var value'
-         let iterations = 1_000
+        let lockManager = makeLockManager()
+        var value = 0
+        let iterations = 1000
 
-         DispatchQueue.concurrentPerform(iterations: iterations) { _ in
-             lockManager.execute {
-                 counter.increment()
-             }
-         }
+        DispatchQueue.concurrentPerform(iterations: iterations) { _ in
+            lockManager.execute {
+                value += 1
+            }
+        }
 
-         let ok = await eventually {
-             counter.get() == iterations
-         }
-
-         #expect(ok, "Expected value \(counter.get()) == \(iterations)")*/
-        #expect(false)
+        let ok = await eventually { value == iterations }
+        #expect(ok, "Expected value \(value) == \(iterations)")
     }
 
     @Test

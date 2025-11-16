@@ -33,17 +33,23 @@ public extension CommonNetworking {
             self.logOperationTime = logOperationTime
             self.number = number
         }
+    }
+}
 
-        public static var allOn: Self {
-            Self(dumpRequest: true, dumpResponse: true, logError: true, logOperationTime: true, number: 0)
-        }
+public extension CommonNetworking.NetworkLogger {
+    static var allOn: Self {
+        Self(dumpRequest: true, dumpResponse: true, logError: true, logOperationTime: true, number: 0)
+    }
 
-        public static var requestAndResponses: Self {
-            Self(dumpRequest: true, dumpResponse: true, logError: true, logOperationTime: false, number: 0)
-        }
+    static var requestAndResponses: Self {
+        Self(dumpRequest: true, dumpResponse: true, logError: true, logOperationTime: false, number: 0)
+    }
 
-        public static var allOff: Self {
-            Self(dumpRequest: false, dumpResponse: false, logError: false, logOperationTime: false, number: 0)
-        }
+    static var none: Self {
+        allOff
+    }
+
+    static var allOff: Self {
+        Self(dumpRequest: false, dumpResponse: false, logError: false, logOperationTime: false, number: 0)
     }
 }

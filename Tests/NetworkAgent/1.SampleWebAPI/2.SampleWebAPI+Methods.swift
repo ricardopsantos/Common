@@ -7,12 +7,29 @@ import Combine
 @testable import Common
 import Foundation
 
-public enum SampleWebAPIMethods {
-    case fetchEmployees(_ request: RequestDto.Employee)
-    case updateEmployee(_ request: RequestDto.Employee)
+extension SampleWebAPI {
+    enum Methods {
+        case fetchEmployees(_ request: SampleWebAPI.RequestModel.Employee)
+        case updateEmployee(_ request: SampleWebAPI.RequestModel.Employee)
+        case httpbin
+        case httpBinWith(status: Int)
+        
+        var urlRequest: URLRequest? {
+            let requestWrapper: CommonNetworking.URLRequestWrapper = .init(
+                path: data.path,
+                queryItems: queryItems.map { URLQueryItem(name: $0.key, value: $0.value) },
+                httpMethod: data.httpMethod,
+                httpBody: httpBody,
+                headerValues: headerValues,
+                serverURL: data.serverURL,
+                responseType: responseType
+            )
+            return requestWrapper.urlRequest
+        }
+    }
 }
 
-extension SampleWebAPIMethods {
+extension SampleWebAPI.Methods {
     /// Url paramenters
     var queryItems: [String: String?] {
         switch self {
@@ -53,6 +70,18 @@ extension SampleWebAPIMethods {
                 "https://gist.githubusercontent.com/ricardopsantos/10a31da1c6981acd216a93cb040524b9",
                 "raw/8f0f03e6bdfe0dd522ff494022f3aa7a676e882f/Article_13_G8.json"
             )
+        case .httpbin:
+            (
+                .get,
+                "https://httpbin.org",
+                "json"
+            )
+        case .httpBinWith(status: let status):
+            (
+                .get,
+                "https://httpbin.org",
+                "status/\(status)"
+            )
         }
     }
 
@@ -61,6 +90,8 @@ extension SampleWebAPIMethods {
         switch self {
         case .fetchEmployees: "fetchEmployees"
         case .updateEmployee: "updateUser"
+        case .httpbin: "httpbin"
+        case .httpBinWith: "httpBinWith"
         }
     }
 

@@ -410,7 +410,7 @@ public extension String {
     }
 
     static func random(_ length: Int, haveSpaces: Bool = false) -> String {
-        var letters: NSString! = if haveSpaces {
+        let letters: NSString! = if haveSpaces {
             "          abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         } else {
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

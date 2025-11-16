@@ -48,6 +48,23 @@ func eventually(
     return condition()
 }
 
+@discardableResult
+func eventually(
+    timeoutSeconds: Double = Double(TestsGlobal.timeout),
+    pollIntervalSeconds: Double = 0.025,
+    _ condition: @Sendable () async -> Bool
+) async -> Bool {
+    let start = Date()
+    let timeout = timeoutSeconds
+    let pollNS = UInt64(pollIntervalSeconds * 1_000_000_000)
+
+    while Date().timeIntervalSince(start) < timeout {
+        if await condition() { return true }
+        try? await Task.sleep(nanoseconds: pollNS)
+    }
+    return await condition()
+}
+
 func averageOperationTime(
     iterations: Int,
     precondition: () -> Void,

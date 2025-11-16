@@ -19,15 +19,14 @@ public extension CommonNetworking {
             jsonString: String?
         )
 
-        // UTILS
+        /// Wrapper around any unexpected system/framework error.
+        case underlying(Error)
+
+        // MARK: - UTILS
+
         public func isHTTPStatusCode(_ httpStatusCode: CommonNetworking.HTTPStatusCode) -> Bool {
             switch self {
-            case .finishWithStatusCodeAndJSONData(
-                code: let code,
-                description: _,
-                data: _,
-                jsonString: _
-            ):
+            case let .finishWithStatusCodeAndJSONData(code, _, _, _):
                 return CommonNetworking.HTTPStatusCode(rawValue: code) == httpStatusCode
             default:
                 return false
@@ -53,9 +52,27 @@ public extension CommonNetworking {
         public var isNetworkError: Bool {
             switch self {
             case .network:
-                true
+                return true
             default:
-                false
+                return false
+            }
+        }
+
+        /// Human readable error message (optional helper)
+        public var message: String {
+            switch self {
+            case .ok:
+                return "OK"
+            case let .genericError(msg):
+                return msg
+            case let .parsing(desc, _):
+                return desc
+            case let .network(desc):
+                return desc
+            case let .finishWithStatusCodeAndJSONData(_, desc, _, _):
+                return desc ?? "Unexpected server response"
+            case let .underlying(err):
+                return err.localizedDescription
             }
         }
     }

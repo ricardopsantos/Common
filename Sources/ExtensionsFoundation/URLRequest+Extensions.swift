@@ -1,11 +1,13 @@
 //
 //  Created by Ricardo Santos on 01/01/2023.
-//  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
+//  Copyright © 2024 - 2019 Ricardo Santos.
 //
 
 import Foundation
 
 public extension URLRequest {
+    // MARK: - curlCommand
+
     @discardableResult
     func curlCommand(
         doPrint: Bool,
@@ -17,31 +19,33 @@ public extension URLRequest {
         let newLine = ""
         var command = "curl '\(url.absoluteString)'\(newLine)"
 
-        // Set method
-        if let httpMethod {
-            command += " -X \(httpMethod)\(newLine)"
+        // HTTP Method
+        if let method = httpMethod {
+            command += " -X \(method)\(newLine)"
         }
 
-        // Set headers
+        // Headers
         if let headers = allHTTPHeaderFields {
-            let headersSorted = headers.sorted { $0.key < $1.key }
-            for (key, value) in headersSorted {
-                command += " -H '\(key): \(value)'\(newLine)"
+            for (key, value) in headers.sorted(by: { $0.key < $1.key }) {
+                // Escape single quotes in header values
+                let safeValue = value.replacingOccurrences(of: "'", with: "'\"'\"'")
+                command += " -H '\(key): \(safeValue)'\(newLine)"
             }
         }
 
-        // Set body data
-        if let bodyData = httpBody,
-           let bodyString = String(data: bodyData, encoding: .utf8)
+        // Body
+        if let body = httpBody,
+           let bodyString = String(data: body, encoding: .utf8)
         {
             // Escape single quotes for safe curl output
             let escaped = bodyString.replacingOccurrences(of: "'", with: "'\"'\"'")
             command += " -d '\(escaped)'\(newLine)"
         }
 
-        // Remove last newLine–style suffix
+        // Trim trailing newline if present
         command = command.dropLastIf(newLine)
 
+        // Printing
         if doPrint {
             // swiftlint:disable logs_rule_1
             if command.count > maxLogSize {
@@ -55,13 +59,16 @@ public extension URLRequest {
         return command
     }
 
+    // MARK: - Request Builder
+
+    /// Safe, predictable URLRequest builder.
     static func with(
         urlString: String,
         httpMethod: String,
         httpBody: [String: Any]?,
         headerValues: [String: String]?
     ) -> URLRequest? {
-        guard let theURL = URL(string: "\(urlString)") else {
+        guard let theURL = URL(string: urlString) else {
             Common_Logs.error("Invalid url [\(urlString)]", "\(Self.self)")
             return nil
         }
@@ -69,41 +76,41 @@ public extension URLRequest {
         var request = URLRequest(url: theURL)
         request.httpMethod = httpMethod.uppercased()
 
-        // Body handling
-        if let httpBody {
-            // Case 1: data-raw -> send raw body
-            if httpBody.keys.count == 1,
-               let dataRaw = httpBody["data-raw"] as? String
-            {
-                /**
-                 curl --request POST 'https://login.microsoftonline.com/xxx-82a0-4bff-b9e9-xxxx/oauth2/token' \
-                 --header 'Content-Type: application/x-www-form-urlencoded' \
-                 --data-raw 'client_id=xxxx-f206-xxxx-86d8-xxxx&client_secret=b13828ebbc09a965bc&grant_type=client_credentials&resource=https://api.xxxx.com/b2bgateway'
-                 */
-                request.httpBody = Data(dataRaw.utf8)
+        // MARK: - Body
 
-                // Case 2: JSON dictionary
-            } else if !httpBody.isEmpty {
+        if let bodyDict = httpBody, !bodyDict.isEmpty {
+            // Case 1 — raw string payload
+            if bodyDict.count == 1, let raw = bodyDict["data-raw"] as? String {
+                /**
+                 curl --request POST 'https://example.com' \
+                 --header 'Content-Type: application/x-www-form-urlencoded' \
+                 --data-raw 'key=value&param=123'
+                 */
+                request.httpBody = Data(raw.utf8)
+
+                // Case 2 — JSON dictionary
+            } else {
                 do {
                     request.httpBody = try JSONSerialization.data(
-                        withJSONObject: httpBody,
+                        withJSONObject: bodyDict,
                         options: .prettyPrinted
                     )
                 } catch {
                     Common_Logs.error(
-                        "Fail to serialize httpBody:\n\n\(httpBody)\nError: \(error)",
+                        "Fail to serialize httpBody:\n\n\(bodyDict)\nError: \(error)",
                         "\(Self.self)"
                     )
                 }
             }
         }
 
-        // Apply headers in sorted ordering
-        headerValues?
-            .sorted { $0.key < $1.key }
-            .forEach { key, value in
-                request.addValue(value, forHTTPHeaderField: key)
+        // MARK: - Headers (sorted for consistency)
+
+        if let headerValues {
+            for (key, value) in headerValues.sorted(by: { $0.key < $1.key }) {
+                request.setValue(value, forHTTPHeaderField: key)
             }
+        }
 
         return request
     }

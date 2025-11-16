@@ -27,7 +27,7 @@ public extension Common {
             _ serviceKey: String,
             _ serviceParams: [any Hashable],
             _ timeToLiveMinutes: Int? = nil,
-            _ cacheManager: CodableCacheManagerProtocol = Common.CacheManagerForCodableUserDefaultsRepository.shared,
+            _ cacheManager: CodableCacheManagerProtocol? = Common.CacheManagerForCodableUserDefaultsRepository.shared,
             _ onCachedRecordNotFound: OnCachedRecordNotFound = .returnEmpty
         )
             -> Common_GenericRequestWithCacheResponse<T1, E1>
@@ -41,12 +41,12 @@ public extension Common {
             }
 
             var existsCachedRecord: Bool {
-                cacheManager.syncRetrieve(type, key: serviceKey, params: serviceParams)?.model != nil
+                cacheManager?.syncRetrieve(type, key: serviceKey, params: serviceParams)?.model != nil
             }
 
             // Fetch for CACHED data
             func cacheDontLoad() -> Common_GenericRequestWithCacheResponse<T1, E1> {
-                if let storedModel = cacheManager.syncRetrieve(
+                if let storedModel = cacheManager?.syncRetrieve(
                     type,
                     key: serviceKey,
                     params: serviceParams
@@ -77,7 +77,7 @@ public extension Common {
                         defer {
                             unlock()
                         }
-                        cacheManager.syncStore(
+                        cacheManager?.syncStore(
                             model,
                             key: serviceKey,
                             params: serviceParams,
@@ -86,7 +86,6 @@ public extension Common {
                         if let model = model as? T1 {
                             return Just(model).setFailureType(to: E1.self).eraseToAnyPublisher()
                         } else {
-                            Common_Utils.assertionFailure(message: "Not predicted!")
                             switch onCachedRecordNotFound {
                             case .returnEmpty:
                                 return .empty()

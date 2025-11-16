@@ -22,6 +22,36 @@ public enum AsyncError: Error {
     case finishedWithoutValue
 }
 
+extension Publisher {
+    func asyncValue() async throws -> Output {
+        try await withCheckedThrowingContinuation { continuation in
+
+            var cancellable: AnyCancellable?
+
+            cancellable = self.sink(
+                receiveCompletion: { completion in
+                    switch completion {
+                    case let .failure(error):
+                        continuation.resume(throwing: error)
+                    case .finished:
+                        break
+                    }
+                    cancellable?.cancel()
+                    cancellable = nil
+                },
+                receiveValue: { value in
+                    continuation.resume(returning: value)
+                    cancellable?.cancel()
+                    cancellable = nil
+                }
+            )
+
+            // 🔥 Prevent “never read” warning by capturing it once.
+            _ = cancellable
+        }
+    }
+}
+
 // MARK: - AnyPublisher → async/await helper
 
 public extension AnyPublisher {
