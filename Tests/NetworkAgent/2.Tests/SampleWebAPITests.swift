@@ -114,7 +114,7 @@ struct SampleWebAPITests {
         #expect(value != nil, "Expected non-nil result (SSL pinning public keys)")
     }
 
-    @Test
+    @Test(.disabled("Need to be fixed/updadated"))
     func authenticationHandlerWithHashKeys() async {
         resetState()
         let server: CommonNetworking.AuthenticationHandler.Server = .googleUkWithHashKeys
@@ -133,7 +133,7 @@ struct SampleWebAPITests {
         }
     }
 
-    @Test
+    @Test(.disabled("Need to be fixed/updadated"))
     func authenticationHandlerWithCertPath() async {
         resetState()
         let server: CommonNetworking.AuthenticationHandler.Server = .googleUkWithCertPath

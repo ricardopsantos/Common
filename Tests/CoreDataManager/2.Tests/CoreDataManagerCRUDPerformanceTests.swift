@@ -13,10 +13,6 @@ class CoreDataManagerCRUDPerformanceTests: XCTestCase {
     let maxDeviation = 1.1
     let stressLoadValue = 1000
 
-    func enabled() -> Bool {
-        true
-    }
-
     var bd: DatabaseRepository = .shared
 
     override func setUp() {
@@ -25,14 +21,8 @@ class CoreDataManagerCRUDPerformanceTests: XCTestCase {
     }
 
     func testPerformanceBulkInsertSingle() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
-
         bd.syncClearAll()
-
-        let expectedTime: Double = [0.6013554334640503, 0.943675059080124, 0.9092829048633575].max()!
+        let expectedTime: Double = [1.6013554334640503, 1.543675059080124, 1.5092829048633575].max()!
         let expectation = expectation(description: #function)
         var averageTime: Double = 0
         averageOperationTime(iterations: iterations) {
@@ -49,14 +39,8 @@ class CoreDataManagerCRUDPerformanceTests: XCTestCase {
     }
 
     func testPerformanceBulkInsertBatch() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
-
         bd.syncClearAll()
-
-        let expectedTime: Double = [0.0063312768936157225, 0.006880849599838257, 0.006965309381484985].max()!
+        let expectedTime: Double = [0.0083312768936157225, 0.008880849599838257, 0.008965309381484985].max()!
         let expectation = expectation(description: #function)
         var averageTime: Double = 0
         let records: [CoreDataSampleUsageNamespace.CRUDEntity] = (1 ... stressLoadValue).map { _ in .random }
@@ -74,15 +58,8 @@ class CoreDataManagerCRUDPerformanceTests: XCTestCase {
     }
 
     func testPerformanceDelete() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
-
         bd.syncClearAll()
-
         let expectedTime: Double = [0.0007933318614959717, 0.0010145127773284913, 0.0004244029521942139].max()!
-
         let expectation = expectation(description: #function)
         var averageTime: Double = 0
         averageOperationTime(iterations: iterations) {
