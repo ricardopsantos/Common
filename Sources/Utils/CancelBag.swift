@@ -35,13 +35,13 @@ public final class AutoReleasedCancelBag {
     }
 
     public func cancelAll() {
-        synced(autoReleased) {
+        Common.synced(autoReleased) {
             let arr = autoReleased
             arr.forEach { $0.0.cancel() }
             autoReleased = []
         }
 
-        synced(retained) {
+        Common.synced(retained) {
             let set = retained
             set.forEach { $0.cancel() }
             retained = []
@@ -51,7 +51,7 @@ public final class AutoReleasedCancelBag {
     // MARK: - Cancel First
 
     public func cancelFirst() {
-        synced(autoReleased) {
+        Common.synced(autoReleased) {
             if let first = autoReleased.first {
                 first.0.cancel()
                 autoReleased.removeFirst()
@@ -59,7 +59,7 @@ public final class AutoReleasedCancelBag {
             }
         }
 
-        synced(retained) {
+        Common.synced(retained) {
             guard let first = retained.first else { return }
             first.cancel()
 
@@ -76,7 +76,7 @@ public final class AutoReleasedCancelBag {
         let trimmed = id.trim
         guard !trimmed.isEmpty else { return false }
 
-        return synced(autoReleased) {
+        return Common.synced(autoReleased) {
             let before = autoReleased.count
 
             var copy = autoReleased
@@ -98,7 +98,7 @@ public final class AutoReleasedCancelBag {
         let trimmed = prefix.trim
         guard !trimmed.isEmpty else { return }
 
-        synced(autoReleased) {
+        Common.synced(autoReleased) {
             let idsToRemove = autoReleased.map(\.1).filter { $0.hasPrefix(trimmed) }
             for id in idsToRemove {
                 _ = remove(id: id)
@@ -125,7 +125,7 @@ public extension AnyCancellable {
 
         // Manual, non-auto-release storage
         if !autoRelease {
-            synced(bag.retained) {
+            Common.synced(bag.retained) {
                 var copy = bag.retained
                 copy.insert(self)
                 bag.retained = copy
@@ -134,7 +134,7 @@ public extension AnyCancellable {
         }
 
         // Auto-release storage (unique per computedId)
-        synced(bag.autoReleased) {
+        Common.synced(bag.autoReleased) {
             _ = bag.remove(id: computedID)
 
             var copy = bag.autoReleased

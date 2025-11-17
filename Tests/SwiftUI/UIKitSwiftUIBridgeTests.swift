@@ -20,6 +20,7 @@ struct UIKitSwiftUIBridgeTests {
     // MARK: - asViewController
 
     @Test
+    @MainActor
     func testAsViewController() {
         let vc = TestView().asViewController
 
@@ -34,6 +35,7 @@ struct UIKitSwiftUIBridgeTests {
     // MARK: - uiView
 
     @Test
+    @MainActor
     func testUIViewConversion() {
         let view = TestView().uiView
 
@@ -47,6 +49,7 @@ struct UIKitSwiftUIBridgeTests {
     // MARK: - UIView embedSwiftUIView
 
     @Test
+    @MainActor
     func testEmbedSwiftUIView() {
         let container = UIView()
         let view = TestView()
@@ -64,6 +67,7 @@ struct UIKitSwiftUIBridgeTests {
     // MARK: - setNeedsUpdateSize
 
     @Test
+    @MainActor
     func testSetNeedsUpdateSize() {
         let view = UIView()
         let superview = UIView()
@@ -99,6 +103,7 @@ struct UIKitSwiftUIBridgeTests {
     // MARK: - addChildSwiftUIView into VC root view
 
     @Test
+    @MainActor
     func testAddChildSwiftUIViewToRootView() {
         let vc = UIViewController()
         _ = vc.view // force load

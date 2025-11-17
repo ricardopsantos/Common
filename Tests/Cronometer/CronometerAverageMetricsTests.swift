@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 
-@Suite
+@Suite(.serialized)
 struct CronometerAverageMetricsTests {
     // MARK: - Setup helper (replaces setUp/tearDown)
 

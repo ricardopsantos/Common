@@ -9,7 +9,7 @@ import Combine
 @testable import Common
 import Testing
 
-@Suite
+@Suite(.serialized)
 struct JustWithErrorTypeTests {
     // MARK: - Tests
 

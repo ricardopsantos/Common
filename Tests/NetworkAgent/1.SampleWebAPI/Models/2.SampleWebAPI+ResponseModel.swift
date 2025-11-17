@@ -41,7 +41,7 @@ extension SampleWebAPI {
                 case profileImage = "profile_image"
             }
         }
-        
+
         struct HttpBinJSONResponse: Decodable {
             let slideshow: Slideshow?
 

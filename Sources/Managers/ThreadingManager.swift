@@ -6,6 +6,94 @@
 import Foundation
 import os
 
+public extension Common {
+    static func synced<T>(_ lock: Any, closure: () -> T) -> T {
+        if let nsLock = lock as? NSLock {
+            return syncedNSLock(nsLock, closure: closure)
+        } else {
+            return syncObjc(lock, closure: closure)
+        }
+    }
+
+    // MARK: - Objective-C sync implementation
+
+    // ----------------------------------------------------------
+
+    /// Synchronizes access to a critical section using Objective-C runtime
+    /// (`objc_sync_enter` / `objc_sync_exit`).
+    ///
+    /// ### When to use this
+    /// Use **only when you must lock on an arbitrary class instance**, especially legacy
+    /// Objective-C code or APIs expecting `AnyObject`.
+    ///
+    /// ### When *not* to use this
+    /// - Do NOT use with value types (structs / enums) — it will crash at runtime.
+    /// - Do NOT use this for new Swift code — prefer `NSLock`.
+    ///
+    /// It works by using the *identity* of the reference type as a lock token.
+    ///
+    /// - Parameters:
+    ///   - lock: A reference-type object. Must NOT be a value type.
+    ///   - closure: Critical section.
+    /// - Returns: Result of the closure.
+    static func syncObjc<T>(_ lock: Any, closure: () -> T) -> T {
+        guard lock is AnyObject else {
+            assertionFailure(
+                "objc_sync_enter requires a reference type (class). Value type provided: \(type(of: lock))"
+            )
+            return closure()
+        }
+
+        objc_sync_enter(lock)
+        let result = closure()
+        objc_sync_exit(lock)
+        return result
+    }
+
+    // MARK: - NSLock implementation
+
+    // ----------------------------------------------------------
+
+    /// Synchronizes access to a critical section using a Swift-native `NSLock`.
+    ///
+    /// ### When to use this (recommended)
+    /// - **Preferred for Swift code.**
+    /// - Best choice for high-performance locking.
+    /// - Suitable for frequently accessed shared state.
+    /// - Safe, predictable, and works well under contention.
+    ///
+    /// ### When *not* to use this
+    /// - Do not use when you need reentrant locking (the same thread locking twice),
+    ///   use `NSRecursiveLock` instead.
+    /// - Do not use when locking on arbitrary objects (use `syncedV1` then).
+    ///
+    /// This implementation is straightforward and avoids heuristics or warnings.
+    ///
+    /// - Parameters:
+    ///   - lock: An `NSLock` instance.
+    ///   - closure: Critical section.
+    /// - Returns: Result of the closure.
+    static func syncedNSLock<T>(_ lock: NSLock, closure: () -> T) -> T {
+        lock.lock()
+        defer { lock.unlock() }
+        return closure()
+    }
+
+    /// NSLock cannot be locked again by the same thread.
+    /// NSRecursiveLock can
+    static func syncedReEntrantNSLock<T>(_ lock: NSRecursiveLock, closure: () -> T) -> T {
+        lock.lock()
+        defer { lock.unlock() }
+        return closure()
+    }
+}
+
+//
+
+// MARK: - Lock Manager : os_unfair_lock_lock
+
+//
+
 /**
  Mastering thread safety in Swift using os_unfair_lock.
 
@@ -20,15 +108,9 @@ public typealias ThreadingManager = Common.UnfairLockThreadingManager
 public typealias ThreadingManagerWithKey = Common.UnfairLockThreadingManagerWithKey
 
 public extension Common {
-    // MARK: - Single Lock Manager
-
     /// A class that provides thread synchronization using `os_unfair_lock`.
     final class UnfairLockThreadingManager {
-        // MARK: Private storage
-
         private let pointer: os_unfair_lock_t
-
-        // MARK: Init / Deinit
 
         public init() {
             pointer = .allocate(capacity: 1)
@@ -39,8 +121,6 @@ public extension Common {
             self.pointer.deinitialize(count: 1)
             self.pointer.deallocate()
         }
-
-        // MARK: Locking API
 
         /// Locks the unfair lock (blocking).
         public func lock() {
@@ -84,21 +164,17 @@ public extension Common {
     }
 }
 
-public extension Common {
-    // MARK: - Multi-key Lock Manager
+// MARK: - Multi-key Lock Manager
 
+public extension Common {
     /// A wrapper for managing multiple unfair locks identified by string keys.
     /// Thread-safe and high-performance.
     final class UnfairLockThreadingManagerWithKey {
-        // MARK: Private Storage
-
         /// Protects access to the internal dictionary.
         private var dictionaryLock = os_unfair_lock_s()
 
         /// The map of locks for each unique key.
         private var locks: [String: UnsafeMutablePointer<os_unfair_lock>] = [:]
-
-        // MARK: Init / Deinit
 
         public init() {}
 

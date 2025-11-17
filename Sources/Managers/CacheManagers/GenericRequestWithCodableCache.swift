@@ -131,10 +131,6 @@ public extension Common {
                     return cacheDontLoad()
                 }
                 return noCacheDoLoadOrWait()
-            // case .cacheAndLoad:
-            //    let cacheDontLoad = cacheDontLoad().onErrorCompleteV2()
-            //        .setFailureType(to: E1.self).eraseToAnyPublisher()
-            //    return Publishers.Merge(cacheDontLoad, noCacheDoLoadOrWait()).eraseToAnyPublisher()
             case .cacheAndLoad:
                 let cachePublisher = cacheDontLoad()
                     .onErrorCompleteV2()

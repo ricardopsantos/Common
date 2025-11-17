@@ -13,7 +13,7 @@ extension SampleWebAPI {
         case updateEmployee(_ request: SampleWebAPI.RequestModel.Employee)
         case httpbin
         case httpBinWith(status: Int)
-        
+
         var urlRequest: URLRequest? {
             let requestWrapper: CommonNetworking.URLRequestWrapper = .init(
                 path: data.path,
@@ -76,7 +76,7 @@ extension SampleWebAPI.Methods {
                 "https://httpbin.org",
                 "json"
             )
-        case .httpBinWith(status: let status):
+        case let .httpBinWith(status: status):
             (
                 .get,
                 "https://httpbin.org",

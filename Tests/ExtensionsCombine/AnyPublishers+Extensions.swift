@@ -14,9 +14,7 @@ import Testing
 struct AnyPublisherExtensionsTests {
     // MARK: - Cancellable Store (for Testing framework)
 
-    private enum Store {
-        static var bag = Set<AnyCancellable>()
-    }
+    let cancelBag: CancelBag = .init()
 
     // MARK: - Helper: collect all values from a publisher
 
@@ -34,7 +32,7 @@ struct AnyPublisherExtensionsTests {
                 },
                 receiveValue: { v in values.append(v) }
             )
-            .store(in: &Store.bag)
+            .store(in: cancelBag)
         }
     }
 
@@ -75,7 +73,7 @@ struct AnyPublisherExtensionsTests {
         var received = false
 
         pub.sink(receiveCompletion: { _ in }, receiveValue: { _ in received = true })
-            .store(in: &Store.bag)
+            .store(in: cancelBag)
 
         try? await Task.sleep(nanoseconds: 50_000_000) // 50ms
         #expect(!received)
@@ -115,7 +113,7 @@ struct AnyPublisherExtensionsTests {
     func testTrackError() async {
         let tracker = PassthroughSubject<Error, Never>()
         var tracked: Error?
-        tracker.sink { tracked = $0 }.store(in: &Store.bag)
+        tracker.sink { tracked = $0 }.store(in: cancelBag)
 
         let pub = AnyPublisher<Int, TestError>.error(TestError()).trackError(tracker)
         let result = await collect(pub)

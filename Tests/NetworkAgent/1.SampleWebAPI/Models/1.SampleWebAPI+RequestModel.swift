@@ -21,7 +21,5 @@ extension SampleWebAPI {
                 self.url = url
             }
         }
-
-
     }
 }

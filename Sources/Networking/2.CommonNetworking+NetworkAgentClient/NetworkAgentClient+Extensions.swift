@@ -44,7 +44,9 @@ public extension CommonNetworking.NetworkAgentClient {
                 }
 
                 // -----------------------------
+
                 // MARK: - Status / Metadata
+
                 // -----------------------------
                 let data = result.data
                 let statusCode = (result.response as? HTTPURLResponse)?.statusCode ?? -1
@@ -65,7 +67,9 @@ public extension CommonNetworking.NetworkAgentClient {
                 }
 
                 // ------------------------------------------
+
                 // MARK: - Non-success status → FAIL
+
                 // ------------------------------------------
                 guard httpStatus.isSuccess else {
                     throw CommonNetworking.APIError.finishWithStatusCodeAndJSONData(
@@ -77,7 +81,9 @@ public extension CommonNetworking.NetworkAgentClient {
                 }
 
                 // ------------------------------------------
+
                 // MARK: - EMPTY BODY HANDLING (DELETE/204/205)
+
                 // ------------------------------------------
                 if isEmpty || is204 || is205 {
                     // Case 1: Caller expects `Void` → OK
@@ -101,7 +107,9 @@ public extension CommonNetworking.NetworkAgentClient {
                 }
 
                 // ------------------------------------------
+
                 // MARK: - Decode JSON / CSV
+
                 // ------------------------------------------
                 do {
                     let decoded: T

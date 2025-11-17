@@ -8,7 +8,7 @@ import Combine
 import Foundation
 import Testing
 
-@Suite
+@Suite(.serialized)
 struct FutureAsyncTests {
     /// Async function that succeeds after a short delay
     func asyncSuccess(_ value: Int) async throws -> Int {

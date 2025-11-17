@@ -7,95 +7,92 @@ import Combine
 @testable import Common
 import Foundation
 
-/*
- public class SampleWebAPIUseCase {
-     private let webAPI: SampleWebAPIProtocol = SampleWebAPI(session: .defaultForNetworkAgent)
-     private let codableCacheManager: CodableCacheManagerProtocol?
-     public init(codableCacheManager: CodableCacheManagerProtocol?) {
-         self.codableCacheManager = codableCacheManager
-     }
+class SampleWebAPIUseCase {
+    let webAPI: SampleWebAPI = .init(session: .defaultForNetworkAgent)
+    let codableCacheManager: CodableCacheManagerProtocol?
+    public init(codableCacheManager: CodableCacheManagerProtocol?) {
+        self.codableCacheManager = codableCacheManager
+    }
 
-     public typealias EmployeesAvailabilityResponse = AnyPublisher<
-         ResponseDto.EmployeeServiceAvailability,
-         CommonNetworking.APIError
-     >
+    //
 
-     //
+    // MARK: - Simple API Requests
 
-     // MARK: - Simple API Requests
+    //
+    func fetchEmployeesPublisher() -> AnyPublisher<
+        SampleWebAPI.ResponseModel.EmployeeServiceAvailability,
+        CommonNetworking.APIError
+    > {
+        let requestDto = SampleWebAPI.RequestModel.Employee(id: "id")
+        return webAPI.performRequest(SampleWebAPI.Methods.fetchEmployees(requestDto))
+    }
 
-     //
-     func fetchEmployeesAvailabilityCustom() -> EmployeesAvailabilityResponse {
-         let requestDto = RequestDto.Employee(id: UUID().uuidString)
-         return webAPI.fetchEmployeesAvailability(requestDto)
-     }
+    func fetchEmployeesAsync() async throws -> SampleWebAPI.ResponseModel.EmployeeServiceAvailability {
+        let requestDto = SampleWebAPI.RequestModel.Employee(id: "id")
+        return try await webAPI.performRequest(SampleWebAPI.Methods.fetchEmployees(requestDto)).async()
+    }
 
-     func fetchEmployeesPublisher() -> EmployeesAvailabilityResponse {
-         let requestDto = RequestDto.Employee(id: UUID().uuidString)
-         return webAPI.requestPublisher(.fetchEmployees(requestDto))
-     }
+    //
 
-     func fetchEmployeesAsync() async throws -> ResponseDto.EmployeeServiceAvailability {
-         let requestDto = RequestDto.Employee(id: UUID().uuidString)
-         return try await webAPI.requestAsync(.fetchEmployees(requestDto))
-     }
+    // MARK: - API Request + Cache
 
-     //
+    //
+    func fetchEmployees(cachePolicy: Common.CachePolicy) -> AnyPublisher<
+        SampleWebAPI.ResponseModel.EmployeeServiceAvailability,
+        CommonNetworking.APIError
+    > {
+        let serviceKey = #function
+        let requestDto = SampleWebAPI.RequestModel.Employee(id: "id")
+        let apiRequest: AnyPublisher<
+            SampleWebAPI.ResponseModel.EmployeeServiceAvailability,
+            CommonNetworking.APIError
+        > = webAPI.performRequest(SampleWebAPI.Methods.fetchEmployees(requestDto))
+        let serviceParams: [any Hashable] = [requestDto.id]
+        let apiResponseType = SampleWebAPI.ResponseModel.EmployeeServiceAvailability.self
+        return Common.GenericRequestWithCodableCache.perform(
+            apiRequest,
+            apiResponseType,
+            cachePolicy,
+            serviceKey,
+            serviceParams,
+            60 * 24 * 30, // 1 month
+            codableCacheManager
+        ).eraseToAnyPublisher()
+    }
 
-     // MARK: - API Request + Cache
+    //
 
-     //
-     func fetchEmployees(cachePolicy: Common.CachePolicy) -> EmployeesAvailabilityResponse {
-         //
-         let serviceKey = #function
-         let requestDto = RequestDto.Employee(id: "UUID().uuidString")
-         let apiRequest: AnyPublisher<
-             ResponseDto.EmployeeServiceAvailability,
-             CommonNetworking.APIError
-         > = webAPI.requestPublisher(.fetchEmployees(requestDto))
-         let serviceParams: [any Hashable] = [requestDto.id]
-         let apiResponseType = ResponseDto.EmployeeServiceAvailability.self
-         return Common.GenericRequestWithCodableCache.perform(
-             apiRequest,
-             apiResponseType,
-             cachePolicy,
-             serviceKey,
-             serviceParams,
-             60 * 24 * 30, // 1 month
-             codableCacheManager
-         ).eraseToAnyPublisher()
-     }
+    // MARK: - API Request + SSL Pinning (with Certificate)
 
-     //
+    //
+    func fetchEmployeesAvailabilitySLLCertificate(server: CommonNetworking.AuthenticationHandler
+        .Server) -> AnyPublisher<
+        SampleWebAPI.ResponseModel.EmployeeServiceAvailability,
+        CommonNetworking.APIError
+    > {
+        let webAPISSLPinningWithCertificates = SampleWebAPI(
+            session: .defaultForNetworkAgent,
+            pathToCertificates: server.pathToCertificates ?? []
+        )
+        let requestDto = SampleWebAPI.RequestModel.Employee(id: "id")
+        return webAPISSLPinningWithCertificates.performRequest(SampleWebAPI.Methods.fetchEmployees(requestDto))
+    }
 
-     // MARK: - API Request + SSL Pinning (with Certificate)
+    //
 
-     //
-     func fetchEmployeesAvailabilitySLLCertificate(server: CommonNetworking.AuthenticationHandler
-         .Server) -> EmployeesAvailabilityResponse
-     {
-         let webAPISSLPinningWithCertificates = SampleWebAPI(
-             session: .defaultForNetworkAgent,
-             pathToCertificates: server.pathToCertificates ?? []
-         )
-         let requestDto = RequestDto.Employee(id: "aaa")
-         return webAPISSLPinningWithCertificates.fetchEmployeesAvailability(requestDto)
-     }
+    // MARK: - API Request + SSL Pinning (with Certificate)
 
-     //
-
-     // MARK: - API Request + SSL Pinning (with Certificate)
-
-     //
-     func fetchEmployeesAvailabilitySLLHashKeys(server: CommonNetworking.AuthenticationHandler
-         .Server) -> EmployeesAvailabilityResponse
-     {
-         let webAPISSLPinningWithCertificates = SampleWebAPI(
-             session: .defaultForNetworkAgent,
-             pathToCertificates: server.publicHashKeys
-         )
-         let requestDto = RequestDto.Employee(id: UUID().uuidString)
-         return webAPISSLPinningWithCertificates.fetchEmployeesAvailability(requestDto)
-     }
- }
- */
+    //
+    func fetchEmployeesAvailabilitySLLHashKeys(server: CommonNetworking.AuthenticationHandler
+        .Server) -> AnyPublisher<
+        SampleWebAPI.ResponseModel.EmployeeServiceAvailability,
+        CommonNetworking.APIError
+    > {
+        let webAPISSLPinningWithCertificates = SampleWebAPI(
+            session: .defaultForNetworkAgent,
+            pathToCertificates: server.publicHashKeys
+        )
+        let requestDto = SampleWebAPI.RequestModel.Employee(id: "id")
+        return webAPISSLPinningWithCertificates.performRequest(SampleWebAPI.Methods.fetchEmployees(requestDto))
+    }
+}

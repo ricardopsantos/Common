@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 
-@Suite
+@Suite(.serialized)
 struct CronometerTests {
     let maxDeviation: Double = 1.01 // 1% error
 

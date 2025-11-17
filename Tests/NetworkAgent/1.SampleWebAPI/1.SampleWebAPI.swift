@@ -24,16 +24,14 @@ extension SampleWebAPI {
         -> AnyPublisher<T, CommonNetworking.APIError>
     {
         let urlRequest = api.urlRequest
-        //let cronometerId: String = #function + "." + urlRequest!.cronometerId
-        //CronometerAverageMetrics.shared.start(key: cronometerId)
+        let cronometerId: String = #function + "." + urlRequest!.cronometerId
+        CronometerAverageMetrics.shared.start(key: cronometerId)
         return requestPublisher(request: urlRequest!,
                                 decoder: .defaultForWebAPI,
-                                logger: .allOn,
+                                logger: defaultLogger,
                                 responseType: .json,
                                 onCompleted: {
-                                //    CronometerAverageMetrics.shared.start(key: cronometerId)
+                                    CronometerAverageMetrics.shared.start(key: cronometerId)
                                 })
     }
-
-
 }
