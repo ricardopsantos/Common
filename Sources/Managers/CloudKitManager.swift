@@ -229,7 +229,8 @@ public extension CloudKitManager {
             guard available else { completion(false); return }
             guard let zoneID else { completion(false); return }
             guard details.count + assets.count > 0 else { completion(false); return }
-            let record = CKRecord(recordType: recordType, zoneID: zoneID)
+            let recordID = CKRecord.ID(recordName: UUID().uuidString, zoneID: zoneID)
+            let record = CKRecord(recordType: recordType, recordID: recordID)
             record.bindWith(details: details, assets: assets)
             database.save(record) { [weak self] _, error in
                 guard let self else { return }

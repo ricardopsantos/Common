@@ -13,7 +13,7 @@ import Foundation
 //
 
 public extension Common {
-    class ExpiringKeyValueEntity: Codable {
+    struct ExpiringKeyValueEntity: Codable {
         public private(set) var key: String! // Cache key (built using api request name and parameters)
         public private(set) var object: Data? // Value to be stored
         public private(set) var expireDate: Date! // The limit date in witch we can retried the object
@@ -21,20 +21,19 @@ public extension Common {
         public private(set) var encoding: Int!
         public private(set) var objectType: String! // Value type to be stored (not needed for now)
 
-        public convenience init(
+        public init(
             key: String,
             expireDate: Date,
             object: Data?,
             objectType: String,
             encoding: ValueEncoding = .dataPlain
         ) {
-            self.init()
             self.key = key
-            recordDate = Self.referenceDate
+            self.recordDate = Self.referenceDate
             self.expireDate = expireDate
             self.encoding = encoding.rawValue
             self.objectType = objectType
-            self.object = Data()
+
             switch encoding {
             case .dataPlain:
                 self.object = object
@@ -43,7 +42,7 @@ public extension Common {
             }
         }
 
-        public convenience init(
+        public init(
             key: String,
             params: [String],
             object: Data?,
@@ -59,7 +58,7 @@ public extension Common {
             )
         }
 
-        public convenience init(
+        public init(
             _ codable: some Codable,
             key: String,
             params: [any Hashable] = [],

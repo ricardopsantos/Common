@@ -8,9 +8,7 @@ import CoreData
 import Foundation
 
 //
-
 // MARK: - CommonBaseCoreDataManager
-
 //
 
 open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol {
@@ -33,9 +31,7 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
     }
 
     //
-
     // MARK: - Config
-
     //
     open func viewContextIsShared() -> Bool {
         false // Can be overridden
@@ -106,9 +102,7 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
     }
 
     //
-
     // MARK: - Private
-
     //
 
     private var newViewContextInstance: NSManagedObjectContext {
@@ -139,9 +133,7 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
 }
 
 //
-
 // MARK: - iCould utils - Load/Unload/Replace database
-
 //
 
 public extension CommonBaseCoreDataManager {

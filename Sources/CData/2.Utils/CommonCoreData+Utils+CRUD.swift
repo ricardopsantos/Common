@@ -6,11 +6,7 @@
 import CoreData
 import Foundation
 
-//
-
 // MARK: - Utils CRUD operations
-
-//
 
 public extension CommonCoreData.Utils {
     // MARK: - Batch Delete
@@ -54,13 +50,6 @@ public extension CommonCoreData.Utils {
 
     // MARK: - Synchronous Save Wrapper
 
-    // MARK: - Exclusive Save Lock
-
-    // private static let syncSaveLockQueue = DispatchQueue(
-    //    label: "CommonCoreData.Utils.syncSave.lock.queue",
-    //    qos: .userInitiated
-    // )
-
     private static let syncSaveGroup = DispatchGroup()
 
     // MARK: - Public Synchronous Save Wrapper (Safe)
@@ -73,9 +62,6 @@ public extension CommonCoreData.Utils {
         guard let viewContext else { return false }
 
         var finalResult = false
-
-        // Ensure only one save operation at a time
-        // syncSaveLockQueue.sync {
         syncSaveGroup.enter()
 
         aSyncSave(viewContext: viewContext, canEmitChanges: canEmitChanges) { changed in
@@ -83,10 +69,7 @@ public extension CommonCoreData.Utils {
             syncSaveGroup.leave()
         }
 
-        // Wait for aSyncSave to complete
         syncSaveGroup.wait()
-        //  }
-
         return finalResult
     }
 
@@ -114,7 +97,6 @@ public extension CommonCoreData.Utils {
         var changes: [(model: String, id: String?, op: DBOperation)] = []
 
         // MARK: - Snapshot Core Data change sets (❗required to avoid crashes)
-
         let insertedSnapshot = viewContext.insertedObjects
         let deletedSnapshot = viewContext.deletedObjects
         let updatedSnapshot = viewContext.updatedObjects
@@ -125,7 +107,6 @@ public extension CommonCoreData.Utils {
             return (name, id)
         }
 
-        // Capturing snapshots is safe
         for obj in insertedSnapshot {
             let info = buildInfo(obj)
             changes.append((info.0, info.1, .insert))
@@ -140,7 +121,6 @@ public extension CommonCoreData.Utils {
         }
 
         // MARK: - Emit change notifications
-
         func emitChanges() {
             guard canEmitChanges, saveSuccess else { return }
 
@@ -153,59 +133,46 @@ public extension CommonCoreData.Utils {
             }
 
             #if DEBUG
-                guard !ProcessInfo.isRunningUnitTests else { return }
-                for (model, _, op) in changes {
-                    Common.LogsManager.debug("💾 \(op.rawValue) @ [\(model)] on [\(threadInfo)]", "\(Self.self)")
-                }
+            guard !ProcessInfo.isRunningUnitTests else { return }
+            for (model, _, op) in changes {
+                Common.LogsManager.debug("💾 \(op.rawValue) @ [\(model)] on [\(threadInfo)]", "\(Self.self)")
+            }
             #endif
         }
 
-        // MARK: - Private Queue Context Save
-
-        if viewContext.concurrencyType == .privateQueueConcurrencyType ||
-            viewContext.concurrencyType == .confinementConcurrencyType
-        {
+        // MARK: - Save based on concurrency type
+        switch viewContext.concurrencyType {
+        case .privateQueueConcurrencyType:
             viewContext.perform {
                 do {
                     try viewContext.save()
-
                     if let parent = viewContext.parent, parent.hasChanges {
                         try parent.save()
                     }
-
                     saveSuccess = true
                     emitChanges()
-
                 } catch {
                     viewContext.rollback()
                     let nserror = error as NSError
                     Common.LogsManager.error("Unresolved error \(nserror), \(nserror.userInfo)", "\(Self.self)")
                 }
-
                 completion(saveSuccess ? changes.count : 0)
             }
-        }
 
-        // MARK: - Main Queue Save
-
-        if viewContext.concurrencyType == .mainQueueConcurrencyType {
+        case .mainQueueConcurrencyType:
             do {
                 try viewContext.save()
-
                 if let parent = viewContext.parent, parent.hasChanges {
                     try parent.save()
                 }
-
                 saveSuccess = true
                 emitChanges()
-
             } catch {
                 viewContext.rollback()
                 let nserror = error as NSError
                 Common.LogsManager.error("Unresolved error \(nserror), \(nserror.userInfo)", "\(Self.self)")
             }
 
-            // Call completion safely
             if Thread.isMainThread {
                 completion(saveSuccess ? changes.count : 0)
             } else {
@@ -213,6 +180,11 @@ public extension CommonCoreData.Utils {
                     completion(saveSuccess ? changes.count : 0)
                 }
             }
+
+        case .confinementConcurrencyType:
+            fatalError("Unsupported concurrency type: \(viewContext.concurrencyType)")
+        @unknown default:
+            fatalError("Unsupported concurrency type: \(viewContext.concurrencyType)")
         }
     }
 }

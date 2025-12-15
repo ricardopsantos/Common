@@ -36,7 +36,6 @@ public extension CombineCompatibleProtocol where Self: UIControl {
             control: self,
             events: .touchDownRepeat
         )
-        .map { $0 as! Self }
         .eraseToAnyPublisher()
     }
 }

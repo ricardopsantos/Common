@@ -37,13 +37,6 @@ public extension Common {
     ///   - closure: Critical section.
     /// - Returns: Result of the closure.
     static func syncObjc<T>(_ lock: Any, closure: () -> T) -> T {
-        guard lock is AnyObject else {
-            assertionFailure(
-                "objc_sync_enter requires a reference type (class). Value type provided: \(type(of: lock))"
-            )
-            return closure()
-        }
-
         objc_sync_enter(lock)
         let result = closure()
         objc_sync_exit(lock)

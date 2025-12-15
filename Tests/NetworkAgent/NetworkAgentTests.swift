@@ -31,7 +31,7 @@ struct NetworkAgentTests {
         networkAgent.requestPublisher(
             request: SampleWebAPI.Methods.httpbin.urlRequest!,
             decoder: .defaultForWebAPI,
-            logger: .none,
+            logger: .allOn,
             responseFormat: .json
         )
         .sink(
@@ -42,6 +42,7 @@ struct NetworkAgentTests {
             },
             receiveValue: { value in
                 model = value.model
+                print(model)
             }
         )
         .store(in: cancelBag)
@@ -73,7 +74,6 @@ struct NetworkAgentTests {
         let ok = await eventuallyAsync {
             await flag.finished
         }
-        #expect(ok)
         #expect(ok)
         #expect(model != nil)
     }
