@@ -33,11 +33,11 @@ public extension Common {
             -> Common_GenericRequestWithCacheResponse<T1, E1>
         {
             let lock = {
-                Common_AvailabilityState.lockForServiceKey(serviceKey)
+             //   Common_AvailabilityState.lockForServiceKey(serviceKey)
             }
 
             let unlock = {
-                Common_AvailabilityState.unLockForServiceKey(serviceKey)
+             //   Common_AvailabilityState.unLockForServiceKey(serviceKey)
             }
 
             var existsCachedRecord: Bool {

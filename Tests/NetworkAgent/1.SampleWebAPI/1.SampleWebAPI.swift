@@ -7,9 +7,9 @@ import Combine
 @testable import Common
 import Foundation
 
-final class SampleWebAPI: CommonNetworking.NetworkAgentClient, NetworkAgentProtocol {
-    public var client: CommonNetworking.NetworkAgentClient {
-        CommonNetworking.NetworkAgentClient(session: urlSession)
+final class SampleWebAPI: CommonNetworking.NetworkAgent, NetworkAgentProtocol {
+    public var client: CommonNetworking.NetworkAgent {
+        CommonNetworking.NetworkAgent(session: urlSession)
     }
 
     #if targetEnvironment(simulator)

@@ -7,7 +7,7 @@ import Combine
 import Foundation
 
 public protocol NetworkAgentProtocol {
-    var client: CommonNetworking.NetworkAgentClient { get }
+    var client: CommonNetworking.NetworkAgent { get }
     var defaultLogger: CommonNetworking.NetworkLogger { get }
 
     /// Combine: Executes a request and returns decoded model + raw response.

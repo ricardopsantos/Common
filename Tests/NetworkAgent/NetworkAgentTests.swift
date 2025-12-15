@@ -11,18 +11,24 @@ import Foundation
 import Testing
 
 @Suite(.serialized)
-struct NetworkAgentProtocolTests {
+struct NetworkAgentTests {
+
+    actor Flag {
+        var finished = false
+        func setFinished() { finished = true }
+    }
+    
     let cancelBag: CancelBag = .init()
     let sampleWebAPI: SampleWebAPI = .init()
-    var client: CommonNetworking.NetworkAgentClient {
+    var networkAgent: CommonNetworking.NetworkAgent {
         sampleWebAPI.client
     }
 
     @Test
     func clientRequestPublisher() async {
         var model: SampleWebAPI.ResponseModel.HttpBinJSONResponse?
-        var finished = false
-        client.requestPublisher(
+        let flag = Flag()
+        networkAgent.requestPublisher(
             request: SampleWebAPI.Methods.httpbin.urlRequest!,
             decoder: .defaultForWebAPI,
             logger: .none,
@@ -30,7 +36,9 @@ struct NetworkAgentProtocolTests {
         )
         .sink(
             receiveCompletion: { _ in
-                finished = true
+                Task {
+                    await flag.setFinished()
+                }
             },
             receiveValue: { value in
                 model = value.model
@@ -38,7 +46,9 @@ struct NetworkAgentProtocolTests {
         )
         .store(in: cancelBag)
 
-        let ok = await eventually { finished }
+        let ok = await eventuallyAsync {
+            await flag.finished
+        }
         #expect(ok)
         #expect(model != nil)
     }
@@ -46,11 +56,13 @@ struct NetworkAgentProtocolTests {
     @Test
     func sampleWebAPIRequestPublisher() async {
         var model: SampleWebAPI.ResponseModel.HttpBinJSONResponse?
-        var finished = false
+        let flag = Flag()
         sampleWebAPI.performRequest(.httpbin)
             .sink(
                 receiveCompletion: { _ in
-                    finished = true
+                    Task {
+                        await flag.setFinished()
+                    }
                 },
                 receiveValue: { value in
                     model = value
@@ -58,7 +70,10 @@ struct NetworkAgentProtocolTests {
             )
             .store(in: cancelBag)
 
-        let ok = await eventually { finished }
+        let ok = await eventuallyAsync {
+            await flag.finished
+        }
+        #expect(ok)
         #expect(ok)
         #expect(model != nil)
     }
@@ -90,8 +105,7 @@ struct NetworkAgentProtocolTests {
     @Test
     func test_404() async {
         var apiError: CommonNetworking.APIError?
-        var finished = false
-
+        let flag = Flag()
         do {
             let _: SampleWebAPI.ResponseModel.HttpBinJSONResponse = try await sampleWebAPI
                 .performRequest(SampleWebAPI.Methods.httpBinWith(status: 404)).async()
@@ -99,9 +113,11 @@ struct NetworkAgentProtocolTests {
             if let error = error as? CommonNetworking.APIError {
                 apiError = error
             }
-            finished = true
+            await flag.setFinished()
         }
-        let ok = await eventually { finished }
+        let ok = await eventuallyAsync {
+            await flag.finished
+        }
         #expect(ok)
         #expect(apiError?.isNotFoundHTTPStatusCode ?? false)
     }

@@ -7,7 +7,7 @@ import Combine
 import Foundation
 import Security
 
-public extension CommonNetworking.NetworkAgentClient {
+public extension CommonNetworking.NetworkAgent {
     func requestPublisher<T: Decodable>(
         request: URLRequest,
         decoder: JSONDecoder,

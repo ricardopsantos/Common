@@ -17,7 +17,7 @@ public extension CommonNetworking {
     ///
     /// NOTE: This class does **not** enforce a specific session type (default/ephemeral/background),
     ///       it simply reuses the provided configuration.
-    class NetworkAgentClient: NSObject, URLSessionDelegate {
+    class NetworkAgent: NSObject, URLSessionDelegate {
         // MARK: - Stored Properties
 
         /// The underlying URLSession used for all networking.
@@ -31,7 +31,7 @@ public extension CommonNetworking {
             let queue = OperationQueue()
             queue.maxConcurrentOperationCount = 1
             queue.qualityOfService = .userInitiated
-            queue.name = "\(CommonNetworking.self).\(NetworkAgentClient.self).queue"
+            queue.name = "\(CommonNetworking.self).\(NetworkAgent.self).queue"
             return queue
         }()
 
@@ -113,7 +113,7 @@ public extension CommonNetworking {
             credential: URLCredential? = nil,
             publicKeyPins: [String]? = nil,
             certPaths: [String]? = nil
-        ) -> NetworkAgentClient {
+        ) -> NetworkAgent {
             let session = URLSession(configuration: .ephemeral)
 
             if let credential {
@@ -133,7 +133,7 @@ public extension CommonNetworking {
             credential: URLCredential? = nil,
             publicKeyPins: [String]? = nil,
             certPaths: [String]? = nil
-        ) -> NetworkAgentClient {
+        ) -> NetworkAgent {
             let config = URLSessionConfiguration.background(withIdentifier: identifier)
             let session = URLSession(configuration: config)
 
