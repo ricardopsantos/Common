@@ -4,6 +4,7 @@
 //
 
 import Foundation
+
 //
 // https://betterprogramming.pub/mastering-thread-safety-in-swift-with-one-runtime-trick-260c358a7515
 //
@@ -18,7 +19,7 @@ public extension Common_PropertyWrappers {
         private var value: T
 
         public init(wrappedValue: T) {
-            self.value = wrappedValue
+            value = wrappedValue
         }
 
         public var projectedValue: ThreadSafeUnfairLock<T> { self }
@@ -30,8 +31,8 @@ public extension Common_PropertyWrappers {
                 return value
             }
             _modify {
-                self.lock.lock(); defer { self.lock.unlock() }
-                yield &self.value
+                lock.lock(); defer { self.lock.unlock() }
+                yield &value
             }
         }
 
@@ -60,15 +61,17 @@ public extension Common_PropertyWrappers {
      */
     @propertyWrapper
     struct ThreadSafeDispatchQueue<T> {
-        private let synchronizedQueue = DispatchQueue.synchronizedQueue(label: "\(Common.self)_\(T.self)_\(UUID().uuidString)")
+        private let synchronizedQueue = DispatchQueue
+            .synchronizedQueue(label: "\(Common.self)_\(T.self)_\(UUID().uuidString)")
         private var objectValue: T!
 
         public init(wrappedValue value: T) {
-            self.objectValue = value
+            objectValue = value
         }
 
         /// The underlying value wrapped by the bindable state.
-        /// The property that stores the wrapped value of the property. It is the value that is accessed when the property is read or written.
+        /// The property that stores the wrapped value of the property. It is the value that is accessed when the
+        /// property is read or written.
         public var wrappedValue: T {
             get { synchronizedQueue.sync { objectValue } }
             set { synchronizedQueue.sync(flags: .barrier) { objectValue = newValue } }

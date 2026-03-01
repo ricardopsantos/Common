@@ -16,28 +16,50 @@ import UIKit
 //
 
 public extension NSMutableAttributedString {
+    /// Replaces all font faces in the attributed string with the given font family,
+    /// preserving symbolic traits (bold, italic, etc.) and optionally recoloring.
     func setFontFace(font: UIFont, color: UIColor? = nil) {
         beginEditing()
+
         enumerateAttribute(.font, in: NSRange(location: 0, length: length)) { value, range, _ in
-            if let f = value as? UIFont,
-               let newFontDescriptor = f.fontDescriptor.withFamily(font.familyName).withSymbolicTraits(f.fontDescriptor.symbolicTraits) {
-                let newFont = UIFont(descriptor: newFontDescriptor, size: font.pointSize)
-                removeAttribute(.font, range: range)
-                addAttribute(.font, value: newFont, range: range)
-                if let color {
-                    removeAttribute(.foregroundColor, range: range)
-                    addAttribute(.foregroundColor, value: color, range: range)
-                }
+            guard
+                let existingFont = value as? UIFont,
+                let newDescriptor = existingFont.fontDescriptor
+                .withFamily(font.familyName)
+                .withSymbolicTraits(existingFont.fontDescriptor.symbolicTraits)
+            else {
+                return
+            }
+
+            let newFont = UIFont(descriptor: newDescriptor, size: font.pointSize)
+
+            removeAttribute(.font, range: range)
+            addAttribute(.font, value: newFont, range: range)
+
+            if let color {
+                removeAttribute(.foregroundColor, range: range)
+                addAttribute(.foregroundColor, value: color, range: range)
             }
         }
+
         endEditing()
     }
 }
 
 public extension NSAttributedString {
+    /// Returns a copy of the attributed string with a specific substring recolored.
+    /// If the substring doesn't exist, returns the original string unchanged.
     func setColor(_ color: UIColor, on substring: String) -> NSAttributedString {
         let attributedString = NSMutableAttributedString(attributedString: self)
-        attributedString.addAttribute(.foregroundColor, value: color, range: (string as NSString).range(of: substring))
+
+        let nsString = string as NSString
+        let range = nsString.range(of: substring)
+
+        guard range.location != NSNotFound else {
+            return self // substring not found → return original
+        }
+
+        attributedString.addAttribute(.foregroundColor, value: color, range: range)
         return attributedString
     }
 }

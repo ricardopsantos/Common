@@ -3,11 +3,13 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import CoreData
+import Foundation
 
 //
+
 // MARK: - NSPersistentContainer
+
 //
 
 public extension CommonCoreData.Utils {
@@ -27,7 +29,7 @@ public extension CommonCoreData.Utils {
     ) -> NSPersistentContainer? {
         var container: NSPersistentContainer!
         switch persistence {
-        case .default(iCloudEnabled: let iCloudEnabled):
+        case let .default(iCloudEnabled: iCloudEnabled):
             if iCloudEnabled {
                 container = NSPersistentCloudKitContainer(
                     name: dbName,
@@ -36,7 +38,7 @@ public extension CommonCoreData.Utils {
             } else {
                 container = NSPersistentContainer(name: dbName, managedObjectModel: managedObjectModel)
             }
-        case .memory(iCloudEnabled: let iCloudEnabled):
+        case let .memory(iCloudEnabled: iCloudEnabled):
             if iCloudEnabled {
                 container = NSPersistentCloudKitContainer(
                     name: dbName,
@@ -48,30 +50,35 @@ public extension CommonCoreData.Utils {
             let description = NSPersistentStoreDescription()
             description.url = URL(fileURLWithPath: "/dev/null")
             container.persistentStoreDescriptions = [description]
-        case .directory(value: let value):
+        case let .directory(value: value):
             container = NSPersistentContainer(name: dbName, managedObjectModel: managedObjectModel)
             if let defaultStoreURL = FileManager.default.urls(for: value, in: .userDomainMask).first {
                 let storeURL = defaultStoreURL.appendingPathComponent("\(dbName).sqlite")
                 let description = NSPersistentStoreDescription(url: storeURL)
                 container.persistentStoreDescriptions = [description]
             }
-        case .appGroup(identifier: let identifier):
+        case let .appGroup(identifier: identifier):
             container = NSPersistentContainer(
                 name: dbName,
                 managedObjectModel: managedObjectModel
             )
-            if let sharedContainerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: identifier) {
+            if let sharedContainerURL = FileManager.default
+                .containerURL(forSecurityApplicationGroupIdentifier: identifier)
+            {
                 let storeURL = sharedContainerURL.appendingPathComponent("\(dbName).sqlite")
                 let description = NSPersistentStoreDescription(url: storeURL)
                 container.persistentStoreDescriptions = [description]
             } else {
-                Common_Logs.error("Fail to access appGroupIdentifier: \(String(describing: identifier))")
+                Common_Logs.error(
+                    "Fail to access appGroupIdentifier: \(String(describing: identifier))",
+                    "\(Self.self)"
+                )
             }
         }
 
         container.loadPersistentStores { _, error in
             if let error {
-                Common_Logs.error("Unresolved error \(error), \(error.localizedDescription)")
+                Common_Logs.error("Unresolved error \(error), \(error.localizedDescription)", "\(Self.self)")
             } else {
                 CommonCoreData.Utils.printDBReport(
                     dbName: dbName,
@@ -85,11 +92,17 @@ public extension CommonCoreData.Utils {
 }
 
 //
+
 // MARK: - NSPersistentContainer
+
 //
 
 public extension CommonCoreData.Utils {
-    static func printDBReport(dbName: String, container: NSPersistentContainer, managedObjectModel: NSManagedObjectModel) {
+    static func printDBReport(
+        dbName: String,
+        container: NSPersistentContainer,
+        managedObjectModel: NSManagedObjectModel
+    ) {
         let tables = container.managedObjectModel.entitiesByName.keys.description
         let version = managedObjectModel.versionIdentifiers.description.replace("AnyHashable", with: "")
         if let persistentStoreURL = container.persistentStoreCoordinator.persistentStores.first?.url {
@@ -104,10 +117,10 @@ public extension CommonCoreData.Utils {
                       • tables: \(tables)
                       • size: \(fileSizeInMB) MB
                     """
-                    Common_Logs.debug("\(report)")
+                    Common_Logs.debug("\(report)", "\(Self.self)")
                 }
             } catch {
-                Common_Logs.error("\(error.localizedDescription)")
+                Common_Logs.error("\(error.localizedDescription)", "\(Self.self)")
             }
         }
     }

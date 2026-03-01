@@ -5,26 +5,28 @@
 
 import Foundation
 
-/// Encapsulate all Data Transaction Objects (API Request and responses)
+/// Encapsulate all Data Transfer Objects (API request/response models)
 public struct ModelDto {
     private init() {}
 }
 
-// By inheriting the CustomStringConvertible protocol, we need to provide a value to the description property.
-// Every time, we want to use the object as a String, the program will refer to the description property.
-// Now we can manage our message in one place :)
-
+/// Common protocol for all DTO models
 public protocol ModelDtoProtocol: Codable, Equatable, Hashable, Sendable, CustomStringConvertible {}
 
-extension String: ModelDtoProtocol {}
+/// Allow simple String to be used as a DTO
+extension String: ModelDtoProtocol {
+    public var description: String { self }
+}
 
-extension Array<String>: ModelDtoProtocol {
+/// Allow Arrays of Strings to act as a DTO type
+extension [String]: ModelDtoProtocol {
+    /// Custom string formatting
     public var description: String {
-        // Customize the description of your array here
         "[" + joined(separator: ", ") + "]"
     }
 
-    // Implement Codable
+    // MARK: - Codable
+
     public init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         var elements: [Element] = []
@@ -44,25 +46,17 @@ extension Array<String>: ModelDtoProtocol {
         }
     }
 
-    // Implement Equatable
+    // MARK: - Equatable
 
-    // swiftlint:disable syntactic_sugar
-    public static func == (lhs: Array<Element>, rhs: Array<Element>) -> Bool {
+    public static func == (lhs: [Element], rhs: [Element]) -> Bool {
         lhs.elementsEqual(rhs)
     }
 
-    // swiftlint:enable syntactic_sugar
+    // MARK: - Hashable
 
-    // Implement Hashable
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(self)
-    }
-
-    // Implement Sendable (assuming Sendable has no additional requirements)
-    // If Sendable has specific requirements, implement them accordingly
-
-    // Implement CustomStringConvertible
-    public var customDescription: String {
-        description
+        for element in self {
+            hasher.combine(element)
+        }
     }
 }

@@ -2,9 +2,9 @@
 //  Created by Ricardo Santos on 14/08/2024.
 //
 
-import Foundation
-import CoreData
 @testable import Common
+import CoreData
+import Foundation
 
 /**
 
@@ -21,91 +21,113 @@ import CoreData
  */
 
 //
+
 // MARK: - CRUDEntityDBRepository / Sync Methods
+
 //
 
 extension DatabaseRepository {
+    // MARK: - Insert or Update (Upsert)
+
     func syncStore(_ model: CoreDataSampleUsageNamespace.CRUDEntity) {
-        typealias DBEntity = CDataCRUDEntity
+        typealias DB = CDataCRUDEntity
         let context = viewContext
-        let newInstance: DBEntity = DBEntity(context: context)
-        newInstance.id = model.id
-        newInstance.name = model.name
-        newInstance.recordDate = model.recordDate
-        CommonCoreData.Utils.save(viewContext: context)
+
+        let request = DB.fetchRequestWith(id: model.id)
+        request.fetchLimit = 1
+
+        let entity = (try? context.fetch(request))?.first ?? DB(context: context)
+        entity.id = model.id
+        entity.name = model.name
+        entity.recordDate = model.recordDate
+
+        CommonCoreData.Utils.syncSave(viewContext: context)
     }
+
+    // MARK: - Batch Insert
 
     func syncStoreBatch(_ models: [CoreDataSampleUsageNamespace.CRUDEntity]) {
-        typealias DBEntity = CDataCRUDEntity
+        typealias DB = CDataCRUDEntity
         let context = viewContext
-        let batchRequest = NSBatchInsertRequest(entity: DBEntity.entity(), objects: models.map { model in
-            model.mapToDic
-        })
-        if context.hasChanges || Common_Utils.true { // Dont check for changes on Batch, they don't appear
-            _ = try? context.execute(batchRequest)
-        }
+
+        let objects = models.map(\.mapToDic)
+        let request = NSBatchInsertRequest(entity: DB.entity(), objects: objects)
+
+        _ = try? context.execute(request)
     }
+
+    // MARK: - Update
 
     func syncUpdate(_ model: CoreDataSampleUsageNamespace.CRUDEntity) {
-        typealias DBEntity = CDataCRUDEntity
+        typealias DB = CDataCRUDEntity
         let context = viewContext
-        let instances = try? context.fetch(DBEntity.fetchRequestWith(id: model.id))
-        if let existingEntity = instances?.first {
-            existingEntity.name = model.name
-            existingEntity.recordDate = model.recordDate
-            CommonCoreData.Utils.save(viewContext: context)
+
+        let request = DB.fetchRequestWith(id: model.id)
+        request.fetchLimit = 1
+
+        if let entity = try? context.fetch(request).first {
+            entity.name = model.name
+            entity.recordDate = model.recordDate
+            CommonCoreData.Utils.syncSave(viewContext: context)
         }
     }
+
+    // MARK: - Delete
 
     func syncDelete(_ model: CoreDataSampleUsageNamespace.CRUDEntity) {
-        typealias DBEntity = CDataCRUDEntity
+        typealias DB = CDataCRUDEntity
         let context = viewContext
-        let instances = try? context.fetch(DBEntity.fetchRequestWith(id: model.id))
-        if let existingEntity = instances?.first {
-            context.delete(existingEntity)
-            CommonCoreData.Utils.save(viewContext: context)
+
+        let request = DB.fetchRequestWith(id: model.id)
+        request.fetchLimit = 1
+
+        if let entity = try? context.fetch(request).first {
+            context.delete(entity)
+            CommonCoreData.Utils.syncSave(viewContext: context)
         }
     }
+
+    // MARK: - Count
 
     func syncRecordCount() -> Int {
-        typealias DBEntity = CDataCRUDEntity
-        let context = viewContext
-        return (try? context.count(for: DBEntity.fetchRequest())) ?? 0
+        typealias DB = CDataCRUDEntity
+        return (try? viewContext.count(for: DB.fetchRequest())) ?? 0
     }
+
+    // MARK: - Clear All
 
     func syncClearAll() {
-        typealias DBEntity = CDataCRUDEntity
-        let context = viewContext
-        guard syncRecordCount() > 0 else { return }
-        CommonCoreData.Utils.batchDelete(context: context, request: DBEntity.fetchRequest())
+        typealias DB = CDataCRUDEntity
+        CommonCoreData.Utils.batchDelete(context: viewContext, request: DB.fetchRequest())
     }
+
+    // MARK: - Retrieve (Optimized)
 
     func syncRetrieve(key: String) -> CoreDataSampleUsageNamespace.CRUDEntity? {
-        typealias DBEntity = CDataCRUDEntity
+        typealias DB = CDataCRUDEntity
         let context = viewContext
-        do {
-            let record = try? context
-                .fetch(DBEntity.fetchRequestWith(id: key))
-                .compactMap(\.mapToModel)
-                .sorted(by: { a, b in
-                    a.recordDate > b.recordDate
-                })
-                .first
-            if let record = record {
-                return record
-            }
-        }
-        return nil
+
+        let request = DB.fetchRequestWith(id: key)
+        request.fetchLimit = 1
+        request.sortDescriptors = [
+            NSSortDescriptor(key: #keyPath(CDataCRUDEntity.recordDate), ascending: false),
+        ]
+
+        guard let result = try? context.fetch(request).first else { return nil }
+        return result.mapToModel
     }
 
+    // MARK: - All IDs (Efficient)
+
     func syncAllIds() -> [String] {
-        typealias DBEntity = CDataCRUDEntity
+        typealias DB = CDataCRUDEntity
         let context = viewContext
-        do {
-            let records = try context.fetch(DBEntity.fetchRequest())
-            return records.compactMap { $0.id! }
-        } catch {
-            return []
-        }
+
+        let request = NSFetchRequest<NSDictionary>(entityName: DB.entity().name!)
+        request.resultType = .dictionaryResultType
+        request.propertiesToFetch = ["id"]
+
+        let results = (try? context.fetch(request)) ?? []
+        return results.compactMap { $0["id"] as? String }
     }
 }

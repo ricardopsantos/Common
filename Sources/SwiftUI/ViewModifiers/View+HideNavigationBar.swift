@@ -20,7 +20,7 @@ public extension View {
 
 #if canImport(SwiftUI) && DEBUG
 
-#Preview {
-    Common_Preview.ViewsModifiersTestView()
-}
+    #Preview {
+        Common_Preview.ViewsModifiersTestView()
+    }
 #endif

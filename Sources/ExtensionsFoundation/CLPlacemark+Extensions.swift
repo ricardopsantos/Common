@@ -3,10 +3,12 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import CoreLocation
+import Foundation
 
 public extension CLPlacemark {
+    // MARK: - DTOs
+
     struct CoreLocationManagerAddressResponse: ModelProtocol {
         public let addressMin: String
         public let addressMax: String
@@ -22,11 +24,7 @@ public extension CLPlacemark {
             .init(
                 addressMin: "...",
                 addressMax: "...",
-                jsonFormat: .init(
-                    jsonString: "",
-                    jsonAsData: .init(),
-                    jsonAsDic: [:]
-                )
+                jsonFormat: .init(jsonString: "", jsonAsData: Data(), jsonAsDic: [:])
             )
         }
     }
@@ -44,82 +42,106 @@ public extension CLPlacemark {
 }
 
 public extension CLPlacemark {
+    // MARK: - Public Conversions
+
     var asCoreLocationManagerAddressResponse: CoreLocationManagerAddressResponse {
-        guard let asCLPlacemarkJSONFormat = asCLPlacemarkJSONFormat else {
+        guard let format = asCLPlacemarkJSONFormat else {
             return .noData
         }
+
+        let (min, full) = parsedLocation
+
         return .init(
-            addressMin: parsedLocation.addressMin,
-            addressMax: parsedLocation.addressFull,
-            jsonFormat: asCLPlacemarkJSONFormat
+            addressMin: min,
+            addressMax: full,
+            jsonFormat: format
         )
     }
 
+    /// Converts available CLPlacemark fields into JSON-friendly dictionary,
+    /// plus JSON String + Data.
     var asCLPlacemarkJSONFormat: CLPlacemarkJSONFormat? {
-        var jsonAsDic: [String: String] = [:]
-        if let some = name { jsonAsDic["name"] = some }
-        if let some = thoroughfare { jsonAsDic["thoroughfare"] = some }
-        if let some = subThoroughfare { jsonAsDic["subThoroughfare"] = some }
-        if let some = locality { jsonAsDic["locality"] = some }
-        if let some = subLocality { jsonAsDic["subLocality"] = some }
-        if let some = administrativeArea { jsonAsDic["administrativeArea"] = some }
-        if let some = subAdministrativeArea { jsonAsDic["subAdministrativeArea"] = some }
-        if let some = postalCode { jsonAsDic["postalCode"] = some }
-        if let some = isoCountryCode { jsonAsDic["isoCountryCode"] = some }
-        if let some = country { jsonAsDic["country"] = some }
-        if let some = inlandWater { jsonAsDic["inlandWater"] = some }
-        if let some = ocean { jsonAsDic["ocean"] = some }
-        if let some = ocean { jsonAsDic["ocean"] = some }
+        // Build dictionary in a clean and scalable way
+        var map: [String: String] = [:]
 
-        // Convert the JSON dictionary to Data
+        let fields: [(String, String?)] = [
+            ("name", name),
+            ("thoroughfare", thoroughfare),
+            ("subThoroughfare", subThoroughfare),
+            ("locality", locality),
+            ("subLocality", subLocality),
+            ("administrativeArea", administrativeArea),
+            ("subAdministrativeArea", subAdministrativeArea),
+            ("postalCode", postalCode),
+            ("isoCountryCode", isoCountryCode),
+            ("country", country),
+            ("inlandWater", inlandWater),
+            ("ocean", ocean),
+        ]
+
+        for (key, value) in fields {
+            if let v = value { map[key] = v }
+        }
+
         do {
-            let jsonData = try JSONSerialization.data(withJSONObject: jsonAsDic, options: .prettyPrinted)
-            if let jsonString = String(data: jsonData, encoding: .utf8) {
-                return .init(
-                    jsonString: jsonString,
-                    jsonAsData: jsonData,
-                    jsonAsDic: jsonAsDic
-                )
-            }
+            let data = try JSONSerialization.data(withJSONObject: map, options: .prettyPrinted)
+            guard let json = String(data: data, encoding: .utf8) else { return nil }
+
+            return .init(
+                jsonString: json,
+                jsonAsData: data,
+                jsonAsDic: map
+            )
         } catch {
             return nil
         }
-        return nil
     }
 
-    /// Esslinger Str. 7 • 70771 Leinfelden-Echterdingen
+    // MARK: - Parsed Address
+
+    /// Produces:
+    /// - addressMin = "Street 12, 70771 City"
+    /// - addressFull = "District, Street 12, 70771 City, Germany"
     var parsedLocation: (addressMin: String, addressFull: String) {
-        var addressMin: String = ""
-        var addressFull: String = ""
-        if let value = subLocality {
-            addressFull += value + ", "
+        var componentsMin: [String] = []
+        var componentsFull: [String] = []
+
+        // Sub-locality / district (full only)
+        if let sub = subLocality { componentsFull.append(sub) }
+
+        // Street
+        if let street = thoroughfare {
+            if let nr = subThoroughfare {
+                let fullStreet = "\(street) \(nr)"
+                componentsFull.append(fullStreet)
+                componentsMin.append(fullStreet)
+            } else {
+                componentsFull.append(street)
+                componentsMin.append(street)
+            }
         }
-        if let street = thoroughfare, let streetNumber = subThoroughfare {
-            addressFull += street + " " + streetNumber + ", "
-            addressMin += street + " " + streetNumber + ", "
-        } else if let street = thoroughfare {
-            addressFull += street + ", "
-            addressMin += street + ", "
+
+        // ZIP
+        if let zip = postalCode {
+            componentsFull.append(zip)
+            componentsMin.append(zip)
         }
-        if let zipCode = postalCode {
-            addressFull += zipCode + " "
-            addressMin += zipCode + " "
-        }
+
+        // City
         if let city = locality {
-            addressFull += city + ", "
-            addressMin += city
+            componentsFull.append(city)
+            componentsMin.append(city)
         }
-        if let country {
-            addressFull += country
+
+        // Country (full only)
+        if let c = country {
+            componentsFull.append(c)
         }
-        if addressMin.hasSuffix(", ") {
-            addressMin = "\(addressMin.dropLast())"
-            addressMin = "\(addressMin.dropLast())"
-        }
-        if addressFull.hasSuffix(", ") {
-            addressFull = "\(addressFull.dropLast())"
-            addressFull = "\(addressFull.dropLast())"
-        }
+
+        // Final strings
+        let addressFull = componentsFull.joined(separator: ", ")
+        let addressMin = componentsMin.joined(separator: ", ")
+
         return (addressMin, addressFull)
     }
 }

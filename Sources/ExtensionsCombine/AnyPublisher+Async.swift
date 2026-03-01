@@ -1,138 +1,154 @@
 //
 //  Created by Ricardo Santos on 01/01/2023.
-//  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
+//  Copyright © 2024 - 2019 Ricardo Santos.
+//  Improved with safety, clarity, and documentation.
 //
 
 import Combine
 import Foundation
 
+// MARK: - Error Helpers
+
 public extension Error {
+    /// Returns true if the async publisher finished with no value.
+    /// Useful when converting Combine → async/await.
     var finishedWithoutValue: Bool {
-        if let asyncError = self as? AsyncError, asyncError == .finishedWithoutValue {
-            return true
-        }
-        return false
+        (self as? AsyncError) == .finishedWithoutValue
     }
 }
 
+/// Represents a Combine publisher that completed without emitting a value.
 public enum AsyncError: Error {
     case finishedWithoutValue
 }
 
+extension Publisher {
+    func asyncValue() async throws -> Output {
+        try await withCheckedThrowingContinuation { continuation in
+
+            var cancellable: AnyCancellable?
+
+            cancellable = self.sink(
+                receiveCompletion: { completion in
+                    switch completion {
+                    case let .failure(error):
+                        continuation.resume(throwing: error)
+                    case .finished:
+                        break
+                    }
+                    cancellable?.cancel()
+                    cancellable = nil
+                },
+                receiveValue: { value in
+                    continuation.resume(returning: value)
+                    cancellable?.cancel()
+                    cancellable = nil
+                }
+            )
+
+            // 🔥 Prevent “never read” warning by capturing it once.
+            _ = cancellable
+        }
+    }
+}
+
+// MARK: - AnyPublisher → async/await helper
+
 public extension AnyPublisher {
+    /// Convert publisher to a value using async/await.
     @discardableResult
     func async(sender: String = #function) async throws -> Output {
         try await asyncAttached(sender: sender)
     }
 
+    /// Same as `.async()` but:
+    ///
+    /// - Runs on the same async context (NOT detached)
+    /// - Parent tasks will *wait* for this publisher to finish
+    ///
+    /// This wraps Combine `sink` inside a checked continuation.
     @discardableResult
     func asyncAttached(sender: String) async throws -> Output {
-        // - Parent-Child Relationship: Non-detached tasks establish a parent-child relationship.
-        //   If a non-detached task is created within another task, the parent task will wait for the
-        //   child task to complete before continuing its execution.
-        // - Concurrency: Non-detached tasks run concurrently within their parent task.
-        //   They allow you to break down your asynchronous code into smaller, manageable tasks without losing the sequential execution flow.
         try await asyncJust(sender: sender, firstEmission: true)
     }
 
+    /// Runs the publisher in a detached child task (completely independent).
+    /// parent code does NOT wait for this to finish.
     @discardableResult
-    func asyncDetached(sender: String) async throws -> Output {
-        // - Parent-Child Relationship: Detached tasks do not establish a parent-child relationship with the code that spawns them.
-        //   This means that a detached task can outlive its parent task or the scope it was created in.
-        //   The parent task doesn't wait for the detached task to complete.
-        // - Concurrency: Detached tasks can run concurrently, and the program flow does not wait for their completion.
-        //   They operate independently and asynchronously from the code that spawned them.
+    func asyncDetached(sender: String = #function) async throws -> Output {
         try await Task.detached {
-            try await async()
+            try await self.asyncAttached(sender: sender)
         }.value
     }
 
+    /// Convert a publisher into a single async value.
+    ///
+    /// - firstEmission = true → take `.first()`
+    /// - firstEmission = false → take `.last()`
+    ///
+    /// This is where the actual Combine → async bridge happens.
     @discardableResult
     func asyncJust(sender: String, firstEmission: Bool = true) async throws -> Output {
         try await withCheckedThrowingContinuation { continuation in
+
             var cancellable: AnyCancellable?
             var finishedWithoutValue = true
-            cancellable = (firstEmission ? first().eraseToAnyPublisher() : last().eraseToAnyPublisher())
-                .sink { result in
-                    switch result {
-                    case .finished:
-                        if finishedWithoutValue {
-                            Common_Logs.error("\(sender) : Finish without value - \(continuation)")
-                            continuation.resume(throwing: AsyncError.finishedWithoutValue)
-                        }
-                    case let .failure(error):
-                        continuation.resume(throwing: error)
+
+            // Choose first or last value
+            let source = firstEmission
+                ? self.first().eraseToAnyPublisher()
+                : self.last().eraseToAnyPublisher()
+
+            cancellable = source.sink { completion in
+
+                switch completion {
+                case .finished:
+                    if finishedWithoutValue {
+                        Common_Logs.error("\(sender) : Finished without value.", "\(Self.self)")
+                        continuation.resume(throwing: AsyncError.finishedWithoutValue)
                     }
-                    cancellable?.cancel()
-                } receiveValue: { value in
-                    finishedWithoutValue = false
-                    continuation.resume(with: .success(value))
+                case let .failure(error):
+                    continuation.resume(throwing: error)
                 }
+
+                cancellable?.cancel()
+                cancellable = nil
+
+            } receiveValue: { value in
+                finishedWithoutValue = false
+                continuation.resume(returning: value)
+                cancellable?.cancel()
+                cancellable = nil
+            }
         }
     }
 }
 
-//
-// MARK: - AsyncStream
-//
-
-/**
- AsyncStream is a new feature introduced in Swift 5.5, which provides a simple and efficient way to work with streams of data asynchronously.
- It is a type that allows you to send and receive a sequence of values over time in an asynchronous and non-blocking manner.
-
- AsyncStream has a number of advantages over traditional streams, such as being able to handle asynchronous operations, avoiding
- blocking and waiting for data to be available, and reducing the amount of boilerplate code required to work with streams. It is also
- designed to work seamlessly with other Swift concurrency features such as async/await, actors, and structured concurrency.
-
- ```
- // Create an AsyncStream that produces integers
- func generateNumbers() -> AsyncStream<Int> {
-     return AsyncStream { continuation in
-         // Start a background task that generates numbers
-         Task {
-             for i in 0..<10 {
-                 // Yield the next number
-                 continuation.yield(i)
-             }
-             // Mark the end of the stream
-             continuation.finish()
-         }
-     }
- }
-
- // Consume the numbers
- Task {
-     for await number in generateNumbers() {
-         debugPrint(number)
-     }
- }
- ```
-
- In this example, we create an AsyncStream that generates the numbers 0 to 9, and then use a for await loop to consume those numbers and print them to the console.
- */
+// MARK: - AsyncStream for Never-Failure Publishers
 
 public extension AnyPublisher where Failure == Never {
+    /// Convert a Combine publisher into AsyncStream.
+    /// Works like an async `for await` loop.
     func stream(canFail: Bool = false) -> AsyncStream<Output> {
-        .init { continuation in
-            let cancellable = self
-                .eraseToAnyPublisher()
-                .sink { completion in
-                    switch completion {
-                    case .finished:
+        AsyncStream { continuation in
+
+            let cancellable = self.sink { completion in
+
+                switch completion {
+                case .finished:
+                    continuation.finish()
+                case .failure:
+                    if canFail {
+                        // This will never happen, but included for completeness
                         continuation.finish()
-                    case let .failure(never):
-                        if canFail {
-                            continuation.yield(with: .failure(never))
-                        } else {
-                            continuation.finish() // Treat the error as completion
-                            // In this modified version of the stream extension, if the AnyPublisher has a failure event,
-                            // it will be treated as a completion event (i.e., the stream will finish) rather than yielding
-                            // the error. This effectively ignores the error and allows your code to continue executing.
-                        }
+                    } else {
+                        continuation.finish()
                     }
-                } receiveValue: { output in
-                    continuation.yield(output)
                 }
+
+            } receiveValue: { value in
+                continuation.yield(value)
+            }
 
             continuation.onTermination = { _ in
                 cancellable.cancel()
@@ -141,21 +157,24 @@ public extension AnyPublisher where Failure == Never {
     }
 }
 
+// MARK: - AsyncThrowingStream
+
 public extension AnyPublisher where Failure == Error {
+    /// Convert Combine publisher into AsyncThrowingStream.
+    /// a stream that can produce values OR throw errors.
     var throwingStream: AsyncThrowingStream<Output, Failure> {
-        .init { continuation in
-            let cancellable = self
-                .eraseToAnyPublisher()
-                .sink { completion in
-                    switch completion {
-                    case .finished:
-                        continuation.finish()
-                    case let .failure(error):
-                        continuation.finish(throwing: error)
-                    }
-                } receiveValue: { output in
-                    continuation.yield(output)
+        AsyncThrowingStream { continuation in
+
+            let cancellable = self.sink { completion in
+                switch completion {
+                case .finished:
+                    continuation.finish()
+                case let .failure(error):
+                    continuation.finish(throwing: error)
                 }
+            } receiveValue: { value in
+                continuation.yield(value)
+            }
 
             continuation.onTermination = { _ in
                 cancellable.cancel()

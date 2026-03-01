@@ -2,8 +2,8 @@
 //  Created by Ricardo Santos on 14/08/2024.
 //
 
-import Foundation
 @testable import Common
+import Foundation
 
 //
 // Mappers
@@ -27,7 +27,7 @@ extension CoreDataSampleUsageNamespace.Song {
             "releaseDate": releaseDate,
             "title": title,
             "id": id,
-            "cascadeSinger": cascadeSinger ?? ""
+            "cascadeSinger": cascadeSinger ?? "",
         ]
     }
 }

@@ -7,7 +7,9 @@ import Foundation
 import SwiftUI
 
 //
+
 // MARK: - ShadowModifier
+
 //
 
 public struct ShadowModifier: ViewModifier {
@@ -20,7 +22,7 @@ public struct ShadowModifier: ViewModifier {
 
 #if canImport(SwiftUI) && DEBUG
 
-#Preview {
-    Common_Preview.ViewsModifiersTestView()
-}
+    #Preview {
+        Common_Preview.ViewsModifiersTestView()
+    }
 #endif

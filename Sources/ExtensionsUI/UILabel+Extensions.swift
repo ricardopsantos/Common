@@ -7,29 +7,49 @@ import Foundation
 import UIKit
 
 public extension UILabel {
+    /// Smoothly animates text changes using a fade animation
     var textAnimated: String? {
         get { text }
-        set { if text != newValue {
-            fadeTransition(); text = newValue ?? ""
-        } }
+        set {
+            if text != newValue {
+                fadeTransition()
+                text = newValue ?? ""
+            }
+        }
     }
 
+    /// Calculates label height using its current width, font, and text/attributedText
     var getHeight: CGFloat {
-        let label = UILabel(frame: CGRect(x: 0, y: 0, width: frame.width, height: .greatestFiniteMagnitude))
-        label.numberOfLines = 0
-        label.lineBreakMode = .byWordWrapping
+        // Use a label clone for correct calculation
+        let measuring = UILabel(frame: CGRect(
+            x: 0,
+            y: 0,
+            width: frame.width,
+            height: .greatestFiniteMagnitude
+        ))
+
+        measuring.numberOfLines = numberOfLines
+        measuring.lineBreakMode = lineBreakMode
         // swiftlint:disable random_rule_2
-        label.font = font
+        measuring.font = font
         // swiftlint:enable random_rule_2
-        label.text = text
-        label.attributedText = attributedText
-        label.sizeToFit()
-        return label.frame.height
+        measuring.textAlignment = textAlignment
+
+        // Prefer attributedText when available
+        if let attributedText {
+            measuring.attributedText = attributedText
+        } else {
+            measuring.text = text
+        }
+
+        measuring.sizeToFit()
+        return measuring.frame.height
     }
 }
 
-fileprivate extension UILabel {
-    func fadeTransition(_ duration: CFTimeInterval = 0.5) {
+private extension UILabel {
+    /// A simple fade animation to transition text changes
+    func fadeTransition(_ duration: CFTimeInterval = 0.35) {
         let animation = CATransition()
         animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
         animation.type = .fade

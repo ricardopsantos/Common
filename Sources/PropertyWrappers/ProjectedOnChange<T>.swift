@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 import SwiftUI
 
 public extension Common_PropertyWrappers {
@@ -18,7 +18,8 @@ public extension Common_PropertyWrappers {
         }
 
         /// The underlying value wrapped by the bindable state.
-        /// The property that stores the wrapped value of the property. It is the value that is accessed when the property is read or written.
+        /// The property that stores the wrapped value of the property. It is the value that is accessed when the
+        /// property is read or written.
         public var wrappedValue: T {
             get { value ?? defaultValue }
             set {
@@ -29,7 +30,8 @@ public extension Common_PropertyWrappers {
             }
         }
 
-        /// The projectedValue is an optional property that provides access to the wrapper's "projection" of the wrapped value.
+        /// The projectedValue is an optional property that provides access to the wrapper's "projection" of the wrapped
+        /// value.
         /// The projection is a separate value that can be used to perform additional operations on the wrapped value.
         /// It is accessed by appending a dollar sign ($) to the property name.
         public var projectedValue: AnyPublisher<T, Never> {
@@ -51,7 +53,8 @@ public extension Common_PropertyWrappers {
         }
 
         /// The underlying value wrapped by the bindable state.
-        /// The property that stores the wrapped value of the property. It is the value that is accessed when the property is read or written.
+        /// The property that stores the wrapped value of the property. It is the value that is accessed when the
+        /// property is read or written.
         public var wrappedValue: T {
             get {
                 guard let value else {
@@ -67,7 +70,8 @@ public extension Common_PropertyWrappers {
             }
         }
 
-        /// The projectedValue is an optional property that provides access to the wrapper's "projection" of the wrapped value.
+        /// The projectedValue is an optional property that provides access to the wrapper's "projection" of the wrapped
+        /// value.
         /// The projection is a separate value that can be used to perform additional operations on the wrapped value.
         /// It is accessed by appending a dollar sign ($) to the property name.
         private let publisher = PassthroughSubject<(key: T, value: Any), Never>()
@@ -78,7 +82,9 @@ public extension Common_PropertyWrappers {
 }
 
 //
+
 // MARK: - Sample usage
+
 //
 
 public extension Common_PropertyWrappers {
@@ -89,10 +95,10 @@ public extension Common_PropertyWrappers {
     static func projectedOnChange_sampleUsage() {
         let cancelBag = CancelBag()
         $myPropertyA.sink { value in
-            Common_Logs.debug("myPropertyA value changed to: \(value)")
+            Common_Logs.debug("myPropertyA value changed to: \(value)", "\(Self.self)")
         }.store(in: cancelBag)
         $myPropertyB.sink { some in
-            Common_Logs.debug("myPropertyB value changed to: \(some.key) | \(some.value)")
+            Common_Logs.debug("myPropertyB value changed to: \(some.key) | \(some.value)", "\(Self.self)")
         }.store(in: cancelBag)
         Self.myPropertyA = 1
         Self.myPropertyA = 2

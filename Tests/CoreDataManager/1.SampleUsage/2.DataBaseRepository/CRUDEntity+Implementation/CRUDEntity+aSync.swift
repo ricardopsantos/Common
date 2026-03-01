@@ -2,9 +2,9 @@
 //  Created by Ricardo Santos on 13/08/2024.
 //
 
-import Foundation
-import CoreData
 @testable import Common
+import CoreData
+import Foundation
 
 /**
 
@@ -21,7 +21,9 @@ import CoreData
  */
 
 //
+
 // MARK: - CRUDEntityDBRepository / Async Methods
+
 //
 extension DatabaseRepository {
     func aSyncStore(_ model: CoreDataSampleUsageNamespace.CRUDEntity) async {
@@ -29,21 +31,16 @@ extension DatabaseRepository {
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         await withCheckedContinuation { [weak context] continuation in
             context?.performAndWait { [weak context] in
-                guard let context = context else {
+                guard let context else {
                     return
                 }
-                let newInstance: DBEntity = DBEntity(context: context)
+                let newInstance = DBEntity(context: context)
                 newInstance.id = model.id
                 newInstance.name = model.name
                 newInstance.recordDate = model.recordDate
-                if Common_Utils.true {
-                    CommonCoreData.Utils.save(viewContext: context)
-                } else {
-                    if context.hasChanges {
-                        try? context.save()
-                    }
-                }
-                continuation.resume()
+                CommonCoreData.Utils.aSyncSave(viewContext: context, completion: { _ in
+                    continuation.resume()
+                })
             }
         }
     }
@@ -53,7 +50,7 @@ extension DatabaseRepository {
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         await withCheckedContinuation { [weak context] continuation in
             context?.performAndWait { [weak context] in
-                guard let context = context else {
+                guard let context else {
                     return
                 }
                 let batchRequest = NSBatchInsertRequest(entity: DBEntity.entity(), objects: models.map { model in
@@ -72,46 +69,38 @@ extension DatabaseRepository {
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         await withCheckedContinuation { [weak context] continuation in
             context?.performAndWait { [weak context] in
-                guard let context = context else {
+                guard let context else {
                     return
                 }
                 let instances = try? context.fetch(DBEntity.fetchRequestWith(id: model.id))
                 if let existingEntity = instances?.first {
                     existingEntity.name = model.name
                     existingEntity.recordDate = model.recordDate
-                    if Common_Utils.true {
-                        CommonCoreData.Utils.save(viewContext: context)
-                    } else {
-                        if context.hasChanges {
-                            try? context.save()
-                        }
-                    }
+                    CommonCoreData.Utils.aSyncSave(viewContext: context, completion: { _ in
+                        continuation.resume()
+                    })
                 }
-                continuation.resume()
             }
         }
     }
 
     func aSyncDelete(_ model: CoreDataSampleUsageNamespace.CRUDEntity) async {
-        typealias DBEntity = CDataCRUDEntity
-        let context = backgroundContext // Use a background context to perform the operation asynchronously
-        await withCheckedContinuation { [weak context] continuation in
-            context?.performAndWait { [weak context] in
-                guard let context = context else {
-                    return
-                }
-                let instances = try? context.fetch(DBEntity.fetchRequestWith(id: model.id))
-                if let existingEntity = instances?.first {
-                    context.delete(existingEntity)
-                    if Common_Utils.true {
-                        CommonCoreData.Utils.save(viewContext: context)
-                    } else {
-                        if context.hasChanges {
-                            try? context.save()
-                        }
+        typealias DB = CDataCRUDEntity
+        let context = backgroundContext
+
+        return await withCheckedContinuation { continuation in
+            context.perform {
+                let request = DB.fetchRequestWith(id: model.id)
+                if let existing = try? context.fetch(request).first {
+                    context.delete(existing)
+                    // Call async save, then resume
+                    CommonCoreData.Utils.aSyncSave(viewContext: context) { _ in
+                        continuation.resume()
                     }
+                } else {
+                    // Nothing to delete → resume immediately
+                    continuation.resume()
                 }
-                continuation.resume()
             }
         }
     }
@@ -121,7 +110,7 @@ extension DatabaseRepository {
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         return await withCheckedContinuation { [weak context] continuation in
             context?.performAndWait { [weak context] in
-                guard let context = context else {
+                guard let context else {
                     return
                 }
                 let count = (try? context.count(for: DBEntity.fetchRequest())) ?? 0
@@ -136,7 +125,7 @@ extension DatabaseRepository {
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         await withCheckedContinuation { [weak context] continuation in
             context?.performAndWait { [weak context] in
-                guard let context = context else {
+                guard let context else {
                     return
                 }
                 CommonCoreData.Utils.batchDelete(context: context, request: DBEntity.fetchRequest())
@@ -150,7 +139,7 @@ extension DatabaseRepository {
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         return await withCheckedContinuation { [weak context] continuation in
             context?.performAndWait { [weak context] in
-                guard let context = context else {
+                guard let context else {
                     return
                 }
                 let record = try? context
@@ -170,7 +159,7 @@ extension DatabaseRepository {
         let context = backgroundContext // Use a background context to perform the operation asynchronously
         return await withCheckedContinuation { [weak context] continuation in
             context?.performAndWait { [weak context] in
-                guard let context = context else {
+                guard let context else {
                     return
                 }
                 var result: [String] = []

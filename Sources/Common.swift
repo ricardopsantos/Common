@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 import UIKit
 import WebKit
 
@@ -17,8 +17,8 @@ public struct Common {
 
     static var coreDataPersistence: CommonCoreData.Utils.Persistence = .default(iCloudEnabled: false)
 
-    public static func cleanAllData() {
-        WKWebView.cleanAllCookies()
+    public static func cleanAllData() async {
+        await WKWebView.cleanAllCookies()
         CommonNetworking.ImageUtils.reset()
         CronometerAverageMetrics.shared.reset()
         Common.LocationUtils.reset()
@@ -35,14 +35,18 @@ public struct Common {
 }
 
 //
+
 // MARK: - Namespaces
+
 //
 
-internal class CommonBundleFinder {}
+class CommonBundleFinder {}
 public struct Common_Preview {}
 
 //
+
 // MARK: - Alias: Main
+
 //
 
 public typealias Common_Utils = Common.Utils
@@ -51,8 +55,9 @@ public typealias Common_Logs = Common.LogsManager
 // MARK: - Alias: SwiftUI
 
 public typealias Common_ViewControllerRepresentable = Common.ViewControllerRepresentable
-public typealias Common_ViewRepresentable = Common.ViewRepresentable2
+public typealias Common_ViewRepresentable = Common.ViewRepresentable
 
 // MARK: - Others
+
 public typealias Common_CronometerManager = Common.CronometerManager
 public typealias Common_PropertyWrappers = Common.PropertyWrappers

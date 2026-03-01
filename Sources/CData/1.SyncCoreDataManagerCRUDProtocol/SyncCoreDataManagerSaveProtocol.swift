@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import CoreData
+import Foundation
 
 public protocol SyncCoreDataManagerSaveProtocol {
     var viewContext: NSManagedObjectContext { get }
@@ -13,6 +13,6 @@ public protocol SyncCoreDataManagerSaveProtocol {
 
 public extension SyncCoreDataManagerSaveProtocol {
     func saveContext() {
-        CommonCoreData.Utils.save(viewContext: viewContext)
+        CommonCoreData.Utils.syncSave(viewContext: viewContext)
     }
 }

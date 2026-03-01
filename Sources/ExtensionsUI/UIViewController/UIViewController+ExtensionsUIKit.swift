@@ -24,39 +24,57 @@ public extension UIViewController {
     }
 
     func embeddedInNavigationController() -> UINavigationController {
-        assert(parent == nil, "Cannot embebed in a Navigation Controller. \(String(describing: self)) already has a parent controller.")
-        let navController = UINavigationController(rootViewController: self)
-        return navController
+        assert(
+            parent == nil,
+            "Cannot embed in a Navigation Controller. \(String(describing: self)) already has a parent controller."
+        )
+        return UINavigationController(rootViewController: self)
     }
 
     func dismissMe() { dismiss(options: 2) }
     func dismissAll() { dismiss(options: 1) }
 
     func destroy() {
-        children.forEach { some in
+        // Destroy children recursively
+        for some in children {
             some.destroy()
         }
+
+        // Proper removal sequence
         willMove(toParent: nil)
-        view.removeFromSuperview()
+
+        if isViewLoaded {
+            view.removeFromSuperview()
+        }
+
         removeFromParent()
-        NotificationCenter.default.removeObserver(self) // Remove from all notifications being observed
+
+        // Remove from all notifications being observed
+        NotificationCenter.default.removeObserver(self)
     }
 
     /// Param options = 1 : all view controllers
     /// Param options = 2 : self view controller
     func dismiss(options: Int, animated: Bool = true, completion: (() -> Void)? = nil) {
-        if options == 1 {
-            var presentingVC = presentingViewController
-            while presentingVC?.presentingViewController != nil {
-                presentingVC = presentingVC?.presentingViewController
-            }
-            presentingVC?.dismiss(animated: animated, completion: completion)
-        } else {
-            let navigationController = navigationController != nil
-            if !navigationController {
-                dismiss(animated: animated, completion: nil)
+        DispatchQueue.main.async {
+            if options == 1 {
+                // Dismiss from the root presenting controller
+                var presentingVC = self.presentingViewController
+                while presentingVC?.presentingViewController != nil {
+                    presentingVC = presentingVC?.presentingViewController
+                }
+                presentingVC?.dismiss(animated: animated, completion: completion)
             } else {
-                self.navigationController?.popViewController(animated: animated)
+                // Dismiss only this VC
+                if let nav = self.navigationController {
+                    if nav.viewControllers.first != self {
+                        nav.popViewController(animated: animated)
+                        completion?()
+                        return
+                    }
+                }
+
+                self.dismiss(animated: animated, completion: completion)
             }
         }
     }
@@ -80,10 +98,14 @@ public extension UIViewController {
         completion: @escaping RJS_PresentedController = { _, _ in }
     ) {
         controller.modalTransitionStyle = modalTransitionStyle
+
         loadedController(controller, nil)
-        sender.present(controller, animated: true, completion: {
-            completion(controller, nil)
-        })
+
+        DispatchQueue.main.async {
+            sender.present(controller, animated: true) {
+                completion(controller, nil)
+            }
+        }
     }
 
     static func loadViewControllerInContainedView(
@@ -94,13 +116,19 @@ public extension UIViewController {
         completion: RJS_PresentedController
     ) {
         senderContainedView.removeAllSubviewsRecursive()
+
         controller.willMove(toParent: sender)
-        senderContainedView.addSubview(controller.view)
         sender.addChild(controller)
-        controller.didMove(toParent: sender)
+
+        // Add view
+        senderContainedView.addSubview(controller.view)
+
         if adjustFrame {
             controller.view.frame = senderContainedView.bounds
+            controller.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         }
+
+        controller.didMove(toParent: sender)
         completion(controller, nil)
     }
 

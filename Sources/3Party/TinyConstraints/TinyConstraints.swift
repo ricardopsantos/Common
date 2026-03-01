@@ -39,7 +39,7 @@ extension TNConstrainable {
         prepareForLayout()
         let constraints = [
             centerX(to: view, offset: offset.x, priority: priority, isActive: isActive),
-            centerY(to: view, offset: offset.y, priority: priority, isActive: isActive)
+            centerY(to: view, offset: offset.y, priority: priority, isActive: isActive),
         ]
         return constraints
     }
@@ -56,16 +56,40 @@ extension TNConstrainable {
         prepareForLayout()
         var constraints: [NSLayoutConstraint] = []
         if !excludedEdge.contains(.top) {
-            constraints.append(top(to: view, offset: insets.top, relation: relation, priority: priority, isActive: isActive))
+            constraints.append(top(
+                to: view,
+                offset: insets.top,
+                relation: relation,
+                priority: priority,
+                isActive: isActive
+            ))
         }
         if !excludedEdge.contains(.left) {
-            constraints.append(left(to: view, offset: insets.left, relation: relation, priority: priority, isActive: isActive))
+            constraints.append(left(
+                to: view,
+                offset: insets.left,
+                relation: relation,
+                priority: priority,
+                isActive: isActive
+            ))
         }
         if !excludedEdge.contains(.bottom) {
-            constraints.append(bottom(to: view, offset: -insets.bottom, relation: relation, priority: priority, isActive: isActive))
+            constraints.append(bottom(
+                to: view,
+                offset: -insets.bottom,
+                relation: relation,
+                priority: priority,
+                isActive: isActive
+            ))
         }
         if !excludedEdge.contains(.right) {
-            constraints.append(right(to: view, offset: -insets.right, relation: relation, priority: priority, isActive: isActive))
+            constraints.append(right(
+                to: view,
+                offset: -insets.right,
+                relation: relation,
+                priority: priority,
+                isActive: isActive
+            ))
         }
         return constraints
     }
@@ -95,8 +119,22 @@ extension TNConstrainable {
     ) -> [NSLayoutConstraint] {
         prepareForLayout()
         let constraints = [
-            width(to: view, multiplier: multiplier, offset: insets.width, relation: relation, priority: priority, isActive: isActive),
-            height(to: view, multiplier: multiplier, offset: insets.height, relation: relation, priority: priority, isActive: isActive)
+            width(
+                to: view,
+                multiplier: multiplier,
+                offset: insets.width,
+                relation: relation,
+                priority: priority,
+                isActive: isActive
+            ),
+            height(
+                to: view,
+                multiplier: multiplier,
+                offset: insets.height,
+                relation: relation,
+                priority: priority,
+                isActive: isActive
+            ),
         ]
         return constraints
     }
@@ -112,7 +150,7 @@ extension TNConstrainable {
         prepareForLayout()
         let constraints = [
             left(to: view, offset: insets.left, relation: relation, priority: priority, isActive: isActive),
-            top(to: view, offset: insets.top, relation: relation, priority: priority, isActive: isActive)
+            top(to: view, offset: insets.top, relation: relation, priority: priority, isActive: isActive),
         ]
         return constraints
     }
@@ -160,17 +198,29 @@ extension TNConstrainable {
         let constraintId = "id__\(#function)_[\(relation)]_[\(dimension.hashValue)]_[\(viewId)]->[\(view2Id)]"
         switch relation {
         case .equal:
-            return widthAnchor.constraint(equalTo: dimension ?? view.widthAnchor, multiplier: multiplier, constant: offset)
-                .with(priority)
-                .set(isActive, constraintId)
+            return widthAnchor.constraint(
+                equalTo: dimension ?? view.widthAnchor,
+                multiplier: multiplier,
+                constant: offset
+            )
+            .with(priority)
+            .set(isActive, constraintId)
         case .equalOrLess:
-            return widthAnchor.constraint(lessThanOrEqualTo: dimension ?? view.widthAnchor, multiplier: multiplier, constant: offset)
-                .with(priority)
-                .set(isActive, constraintId)
+            return widthAnchor.constraint(
+                lessThanOrEqualTo: dimension ?? view.widthAnchor,
+                multiplier: multiplier,
+                constant: offset
+            )
+            .with(priority)
+            .set(isActive, constraintId)
         case .equalOrGreater:
-            return widthAnchor.constraint(greaterThanOrEqualTo: dimension ?? view.widthAnchor, multiplier: multiplier, constant: offset)
-                .with(priority)
-                .set(isActive, constraintId)
+            return widthAnchor.constraint(
+                greaterThanOrEqualTo: dimension ?? view.widthAnchor,
+                multiplier: multiplier,
+                constant: offset
+            )
+            .with(priority)
+            .set(isActive, constraintId)
         }
     }
 
@@ -184,7 +234,15 @@ extension TNConstrainable {
         priority: UILayoutPriority = defaultUILayoutPriority,
         isActive: Bool = true
     ) -> NSLayoutConstraint {
-        width(to: view, view.heightAnchor, multiplier: multiplier, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        width(
+            to: view,
+            view.heightAnchor,
+            multiplier: multiplier,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -249,20 +307,33 @@ extension TNConstrainable {
     ) -> NSLayoutConstraint {
         prepareForLayout()
         let viewId = constrainableId
-        let constraintId = "id__\(#function)_[\(relation)]_[\(dimension.hashValue)]_[\(viewId)]->[\(view.constrainableId)]"
+        let constraintId =
+            "id__\(#function)_[\(relation)]_[\(dimension.hashValue)]_[\(viewId)]->[\(view.constrainableId)]"
         switch relation {
         case .equal:
-            return heightAnchor.constraint(equalTo: dimension ?? view.heightAnchor, multiplier: multiplier, constant: offset)
-                .with(priority)
-                .set(isActive, constraintId)
+            return heightAnchor.constraint(
+                equalTo: dimension ?? view.heightAnchor,
+                multiplier: multiplier,
+                constant: offset
+            )
+            .with(priority)
+            .set(isActive, constraintId)
         case .equalOrLess:
-            return heightAnchor.constraint(lessThanOrEqualTo: dimension ?? view.heightAnchor, multiplier: multiplier, constant: offset)
-                .with(priority)
-                .set(isActive, constraintId)
+            return heightAnchor.constraint(
+                lessThanOrEqualTo: dimension ?? view.heightAnchor,
+                multiplier: multiplier,
+                constant: offset
+            )
+            .with(priority)
+            .set(isActive, constraintId)
         case .equalOrGreater:
-            return heightAnchor.constraint(greaterThanOrEqualTo: dimension ?? view.heightAnchor, multiplier: multiplier, constant: offset)
-                .with(priority)
-                .set(isActive, constraintId)
+            return heightAnchor.constraint(
+                greaterThanOrEqualTo: dimension ?? view.heightAnchor,
+                multiplier: multiplier,
+                constant: offset
+            )
+            .with(priority)
+            .set(isActive, constraintId)
         }
     }
 
@@ -275,7 +346,15 @@ extension TNConstrainable {
         priority: UILayoutPriority = defaultUILayoutPriority,
         isActive: Bool = true
     ) -> NSLayoutConstraint {
-        height(to: view, view.widthAnchor, multiplier: multiplier, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        height(
+            to: view,
+            view.widthAnchor,
+            multiplier: multiplier,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -309,7 +388,14 @@ extension TNConstrainable {
         priority: UILayoutPriority = defaultUILayoutPriority,
         isActive: Bool = true
     ) -> NSLayoutConstraint {
-        widthToHeight(of: self, multiplier: ratio, offset: 0, relation: relation, priority: priority, isActive: isActive)
+        widthToHeight(
+            of: self,
+            multiplier: ratio,
+            offset: 0,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -321,7 +407,14 @@ extension TNConstrainable {
         isActive: Bool = true
     ) -> NSLayoutConstraint {
         prepareForLayout()
-        return leading(to: view, view.trailingAnchor, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        return leading(
+            to: view,
+            view.trailingAnchor,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -362,7 +455,14 @@ extension TNConstrainable {
         isActive: Bool = true
     ) -> NSLayoutConstraint {
         prepareForLayout()
-        return left(to: view, view.rightAnchor, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        return left(
+            to: view,
+            view.rightAnchor,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -404,7 +504,14 @@ extension TNConstrainable {
         isActive: Bool = true
     ) -> NSLayoutConstraint {
         prepareForLayout()
-        return trailing(to: view, view.leadingAnchor, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        return trailing(
+            to: view,
+            view.leadingAnchor,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -445,7 +552,14 @@ extension TNConstrainable {
         isActive: Bool = true
     ) -> NSLayoutConstraint {
         prepareForLayout()
-        return right(to: view, view.leftAnchor, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        return right(
+            to: view,
+            view.leftAnchor,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -486,7 +600,14 @@ extension TNConstrainable {
         isActive: Bool = true
     ) -> NSLayoutConstraint {
         prepareForLayout()
-        return top(to: view, view.bottomAnchor, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        return top(
+            to: view,
+            view.bottomAnchor,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -527,7 +648,14 @@ extension TNConstrainable {
         isActive: Bool = true
     ) -> NSLayoutConstraint {
         prepareForLayout()
-        return bottom(to: view, view.topAnchor, offset: offset, relation: relation, priority: priority, isActive: isActive)
+        return bottom(
+            to: view,
+            view.topAnchor,
+            offset: offset,
+            relation: relation,
+            priority: priority,
+            isActive: isActive
+        )
     }
 
     @discardableResult
@@ -572,7 +700,15 @@ extension TNConstrainable {
         let constraint: NSLayoutConstraint = if let anchor {
             centerXAnchor.constraint(equalTo: anchor, constant: offset).with(priority)
         } else {
-            NSLayoutConstraint(item: self, attribute: .centerX, relatedBy: .equal, toItem: view, attribute: .centerX, multiplier: multiplier, constant: offset).with(priority)
+            NSLayoutConstraint(
+                item: self,
+                attribute: .centerX,
+                relatedBy: .equal,
+                toItem: view,
+                attribute: .centerX,
+                multiplier: multiplier,
+                constant: offset
+            ).with(priority)
         }
         let viewId = constrainableId
         let view2Id = view.constrainableId
@@ -594,7 +730,15 @@ extension TNConstrainable {
         let constraint: NSLayoutConstraint = if let anchor {
             centerYAnchor.constraint(equalTo: anchor, constant: offset).with(priority)
         } else {
-            NSLayoutConstraint(item: self, attribute: .centerY, relatedBy: .equal, toItem: view, attribute: .centerY, multiplier: multiplier, constant: offset).with(priority)
+            NSLayoutConstraint(
+                item: self,
+                attribute: .centerY,
+                relatedBy: .equal,
+                toItem: view,
+                attribute: .centerY,
+                multiplier: multiplier,
+                constant: offset
+            ).with(priority)
         }
         let viewId = constrainableId
         let view2Id = view.constrainableId

@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 public extension Common {
     enum RepositoryAvailabilityState {
@@ -13,7 +13,7 @@ public extension Common {
         case refreshing // API call queue is performing
 
         // Dictionary to store the availability states for each service key
-        internal static var serviceStates: [String: CurrentValueSubject<RepositoryAvailabilityState, Never>] = [:]
+        static var serviceStates: [String: CurrentValueSubject<RepositoryAvailabilityState, Never>] = [:]
 
         // Lock to synchronize access to the serviceStates dictionary
         private static let lock = NSLock()

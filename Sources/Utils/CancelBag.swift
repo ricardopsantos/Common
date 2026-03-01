@@ -1,137 +1,179 @@
 //
-//  Created by Ricardo Santos on 01/01/2023.
-//  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
+//  CancelBag.swift
+//  Common
+//
+//  Created by Ricardo Santos on 01/01/2025.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 public typealias CancelBag = AutoReleasedCancelBag
 
-/// CancelBag as Set
+// MARK: - AutoReleasedCancelBag
+
+/// Stores AnyCancellable subscriptions with optional auto-release.
+/// Auto-released subscriptions are replaced when a new subscription arrives with the same ID.
 public final class AutoReleasedCancelBag {
-    @PWThreadSafe public var autoReleasedSubscriptions = [(AnyCancellable, String)]()
-    @PWThreadSafe public var nonAutoReleasedSubscriptions = Set<AnyCancellable>()
+    // Auto-release subscriptions: (subscription, id)
+    @PWThreadSafe public fileprivate(set) var autoReleased = [(AnyCancellable, String)]()
 
-    public var subscriptionsCount: Int {
-        autoReleasedSubscriptions.count + nonAutoReleasedSubscriptions.count
-    }
+    // Manual-retained subscriptions
+    @PWThreadSafe public fileprivate(set) var retained = Set<AnyCancellable>()
 
-    public var hasSubscriptions: Bool {
-        subscriptionsCount > 0
-    }
+    public var count: Int { autoReleased.count + retained.count }
+    public var isEmpty: Bool { count == 0 }
 
-    deinit {
-        cancel()
-    }
+    public init() {}
 
-    public init() {
-        self.autoReleasedSubscriptions = []
-        self.nonAutoReleasedSubscriptions = Set<AnyCancellable>()
-    }
+    deinit { cancelAll() }
 
-    public func cancelFirst() {
-        synced(autoReleasedSubscriptions) {
-            autoReleasedSubscriptions.first?.0.cancel()
-            autoReleasedSubscriptions.removeFirst()
-        }
-        synced(nonAutoReleasedSubscriptions) {
-            nonAutoReleasedSubscriptions.first?.cancel()
-            nonAutoReleasedSubscriptions.removeFirst()
-        }
-    }
+    // MARK: - Cancel All
 
     public func cancel() {
-        synced(autoReleasedSubscriptions) {
-            autoReleasedSubscriptions.forEach { $0.0.cancel() }
-            autoReleasedSubscriptions.removeAll()
+        cancelAll()
+    }
+
+    public func cancelAll() {
+        Common.synced(autoReleased) {
+            let arr = autoReleased
+            arr.forEach { $0.0.cancel() }
+            autoReleased = []
         }
-        synced(nonAutoReleasedSubscriptions) {
-            nonAutoReleasedSubscriptions.forEach { $0.cancel() }
-            nonAutoReleasedSubscriptions.removeAll()
+
+        Common.synced(retained) {
+            let set = retained
+            set.forEach { $0.cancel() }
+            retained = []
         }
     }
 
-    public func cancelWith(prefix: String) {
-        guard !prefix.trim.isEmpty else {
-            return
-        }
-        autoReleasedSubscriptions
-            .filter { $0.1.hasPrefix(prefix) }
-            .forEach { item in
-                removeWith(id: item.1)
+    // MARK: - Cancel First
+
+    public func cancelFirst() {
+        Common.synced(autoReleased) {
+            if let first = autoReleased.first {
+                first.0.cancel()
+                autoReleased.removeFirst()
+                return
             }
+        }
+
+        Common.synced(retained) {
+            guard let first = retained.first else { return }
+            first.cancel()
+
+            var copy = retained
+            copy.remove(first)
+            retained = copy
+        }
     }
+
+    // MARK: - Removal by ID
 
     @discardableResult
-    public func removeWith(id: String) -> Bool {
-        guard !id.trim.isEmpty else {
-            return false
+    public func remove(id: String) -> Bool {
+        let trimmed = id.trim
+        guard !trimmed.isEmpty else { return false }
+
+        return Common.synced(autoReleased) {
+            let before = autoReleased.count
+
+            var copy = autoReleased
+            copy.removeAll { pair in
+                if pair.1 == trimmed {
+                    pair.0.cancel()
+                    return true
+                }
+                return false
+            }
+
+            autoReleased = copy
+            return before > copy.count
         }
-        let exists = autoReleasedSubscriptions.map(\.1).contains(id)
-        guard exists else {
-            return false
+    }
+
+    /// Cancels and removes all subscriptions whose ID starts with the given prefix.
+    public func cancel(withPrefix prefix: String) {
+        let trimmed = prefix.trim
+        guard !trimmed.isEmpty else { return }
+
+        Common.synced(autoReleased) {
+            let idsToRemove = autoReleased.map(\.1).filter { $0.hasPrefix(trimmed) }
+            for id in idsToRemove {
+                _ = remove(id: id)
+            }
         }
-        let before = autoReleasedSubscriptions.count
-        autoReleasedSubscriptions.filter { $0.1 == id }.forEach {
-            $0.0.cancel()
-        }
-        autoReleasedSubscriptions = autoReleasedSubscriptions.filter { $0.1 != id }
-        let after = autoReleasedSubscriptions.count
-        return before > after
     }
 }
+
+// MARK: - AnyCancellable Store Extension
 
 public extension AnyCancellable {
     func store(
-        in cancelBag: CancelBag,
-        autoRelease: Bool = true, /// Will cancel automatically a previous subscription if there's already a subscription with same id
-        subscriptionId: String = "", /// subscription Id. If empty, the file, function and line will be used to calculate the subscription id
-        file: String = #file,
+        in bag: CancelBag,
+        autoRelease: Bool = true,
+        subscriptionId: String = "",
+        file: String = #fileID,
         function: String = #function,
         line: Int = #line
     ) {
-        let fileName = "\(file.split(by: "/").last ?? "")"
-        let computedID = !subscriptionId.trim.isEmpty ? subscriptionId.trim : "[\(fileName)|\(function)|\(line)]"
+        let computedID =
+            !subscriptionId.trim.isEmpty
+                ? subscriptionId.trim
+                : "[\(file)|\(function)|\(line)]"
+
+        // Manual, non-auto-release storage
         if !autoRelease {
-            cancelBag.nonAutoReleasedSubscriptions.insert(self)
-        } else {
-            synced(cancelBag.autoReleasedSubscriptions) {
-                cancelBag.removeWith(id: computedID)
-                cancelBag.autoReleasedSubscriptions.append((self, computedID))
+            Common.synced(bag.retained) {
+                var copy = bag.retained
+                copy.insert(self)
+                bag.retained = copy
             }
+            return
+        }
+
+        // Auto-release storage (unique per computedId)
+        Common.synced(bag.autoReleased) {
+            _ = bag.remove(id: computedID)
+
+            var copy = bag.autoReleased
+            copy.append((self, computedID))
+            bag.autoReleased = copy
         }
     }
 }
 
+// MARK: - DebounceCancelBag
+
+/// A cancel bag that keeps at most 2 subscriptions.
+/// Ideal for debounce-style publisher management.
 public final class DebounceCancelBag {
-    public var subscriptions: [AnyCancellable] = []
-    deinit {
-        cancel()
-    }
+    public fileprivate(set) var subscriptions: [AnyCancellable] = []
 
-    public init() {
-        self.subscriptions = []
-    }
+    public init() {}
 
-    public func cancel() {
+    deinit { cancelAll() }
+
+    public func cancelAll() {
         subscriptions.forEach { $0.cancel() }
         subscriptions.removeAll()
     }
 
     public func cancelFirst() {
+        guard !subscriptions.isEmpty else { return }
         subscriptions.first?.cancel()
         subscriptions.removeFirst()
     }
 }
 
 public extension AnyCancellable {
-    func store(in cancelBag: DebounceCancelBag, id: String = "") {
-        cancelBag.subscriptions.append(self)
-        // Keep only 2 subcriptions:
-        // 1 - One for the redraw button, 2 - and the debounce for the previous button (before redraw view)
-        if cancelBag.subscriptions.count >= 3 {
-            cancelBag.cancelFirst()
+    func store(in bag: DebounceCancelBag) {
+        bag.subscriptions.append(self)
+
+        // Keep 2 most recent
+        if bag.subscriptions.count > 2 {
+            bag.cancelFirst()
         }
     }
 }

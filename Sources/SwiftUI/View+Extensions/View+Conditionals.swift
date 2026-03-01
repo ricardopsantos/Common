@@ -7,7 +7,9 @@ import Foundation
 import SwiftUI
 
 //
+
 // MARK: - Conditionals and Builder
+
 // https://medium.com/better-programming/swiftui-tips-and-tricks-c7840d8eb01b
 // https://matteo-puccinelli.medium.com/conditionally-apply-modifiers-in-swiftui-51c1cf7f61d1
 //
@@ -30,9 +32,7 @@ public extension View {
     // Executes a closure if the condition is true, then returns an empty view.
     // Useful when you want to conditionally trigger side effects without rendering content.
     func performAndReturnEmpty(if condition: Bool, _ block: () -> Void) -> some View {
-        if condition {
-            block()
-        }
+        if condition { block() }
         return EmptyView()
     }
 
@@ -44,8 +44,13 @@ public extension View {
 
     // Applies a transformation to the view if running on a simulator, otherwise returns the original view.
     // Useful for applying simulator-specific modifications to views.
+    @ViewBuilder
     func ifOnSimulator(then transform: (Self) -> some View) -> some View {
-        Common_Utils.onSimulator ? transform(self).erasedToAnyView : erasedToAnyView
+        if Common_Utils.onSimulator {
+            transform(self)
+        } else {
+            self
+        }
     }
 
     // Conditionally applies one of two transformations to the view based on a condition.
@@ -70,7 +75,11 @@ public extension View {
         _ condition: Bool,
         then trueContent: (Self) -> some View
     ) -> some View {
-        ifElseCondition(condition, then: trueContent, else: { _ in self })
+        if condition {
+            trueContent(self)
+        } else {
+            self
+        }
     }
 
     // Applies a transformation to the view based on a condition.
@@ -81,65 +90,75 @@ public extension View {
         _ condition: @autoclosure () -> Bool,
         transform: (Self) -> some View
     ) -> some View {
-        ifCondition(condition(), then: transform).erased
+        if condition() {
+            transform(self)
+        } else {
+            self
+        }
     }
 
     // A backwards-compatible wrapper around the `onChange` modifier.
     // Triggers a callback whenever the specified value changes.
     @ViewBuilder
-    func onChangeBackwardsCompatible<T: Equatable>(of value: T, perform completion: @escaping (T) -> Void) -> some View {
+    func onChangeBackwardsCompatible<T: Equatable>(
+        of value: T,
+        perform completion: @escaping (T) -> Void
+    ) -> some View {
         onChange(of: value, perform: completion)
     }
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-fileprivate extension Common_Preview {
-    struct SampleViewsConditionals: View {
-        @State private var condition = true
-        public init() {}
-        public var body: some View {
-            VStack {
+    fileprivate extension Common_Preview {
+        struct SampleViewsConditionals: View {
+            @State private var condition = true
+            public init() {}
+            public var body: some View {
                 VStack {
-                    Text(".doIf(condition)")
-                    Image.systemHeart
-                        .doIf(condition) { $0.rotate(degrees: 90) }
+                    VStack {
+                        Text(".doIf(condition)")
+                        Image.systemHeart
+                            .doIf(condition) { $0.rotate(degrees: 90) }
+                    }
+                    VStack {
+                        Text(".ifOnSimulator")
+                        Image.systemHeart
+                            .ifOnSimulator { $0.foregroundColor(Color(.red)) }
+                    }
+                    VStack {
+                        Text(".ifCondition(condition)")
+                        Image.systemHeart
+                            .ifCondition(condition) { $0.foregroundColor(Color(.blue)) }
+                    }
+                    VStack {
+                        Text(".ifElseCondition(condition)")
+                        Image.systemHeart
+                            .ifElseCondition(condition) { $0.foregroundColor(Color(.blue)) } else: {
+                                $0.foregroundColor(Color(.green))
+                            }
+                    }
+                    VStack {
+                        // swiftlint:disable logs_rule_1
+                        performAndReturnEmptyIfSimulator { Common_Logs.debug("perfomed_1", "\(Self.self)") }
+                        performAndReturnEmpty { Common_Logs.debug("perfomed_2", "\(Self.self)") }
+                        performAndReturnEmpty(if: condition) { Common_Logs.debug("perfomed_3", "\(Self.self)") }
+                        // swiftlint:enable logs_rule_1
+                    }
+                    Divider()
+                    Button("Tap me") { condition.toggle() }
+                    Spacer()
                 }
-                VStack {
-                    Text(".ifOnSimulator")
-                    Image.systemHeart
-                        .ifOnSimulator { $0.foregroundColor(Color(.red)) }
-                }
-                VStack {
-                    Text(".ifCondition(condition)")
-                    Image.systemHeart
-                        .ifCondition(condition) { $0.foregroundColor(Color(.blue)) }
-                }
-                VStack {
-                    Text(".ifElseCondition(condition)")
-                    Image.systemHeart
-                        .ifElseCondition(condition) { $0.foregroundColor(Color(.blue)) } else: { $0.foregroundColor(Color(.green)) }
-                }
-                VStack {
-                    // swiftlint:disable logs_rule_1
-                    performAndReturnEmptyIfSimulator { Common_Logs.debug("perfomed_1") }
-                    performAndReturnEmpty { Common_Logs.debug("perfomed_2") }
-                    performAndReturnEmpty(if: condition) { Common_Logs.debug("perfomed_3") }
-                    // swiftlint:enable logs_rule_1
-                }
-                Divider()
-                Button("Tap me") { condition.toggle() }
-                Spacer()
             }
         }
     }
-}
 
-#Preview {
-    Common_Preview.SampleViewsConditionals()
-}
-
+    #Preview {
+        Common_Preview.SampleViewsConditionals()
+    }
 #endif

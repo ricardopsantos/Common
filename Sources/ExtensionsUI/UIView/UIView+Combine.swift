@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 import UIKit
 
 public extension UIView {
@@ -13,9 +13,14 @@ public extension UIView {
         animations: @escaping () -> Void
     ) -> Future<Bool, Never> {
         Future { promise in
-            UIView.animate(withDuration: duration, animations: animations) {
-                promise(.success($0))
-            }
+            UIView.animate(
+                withDuration: duration,
+                animations: animations,
+                completion: { finished in
+                    // `finished == false` happens if interrupted
+                    promise(.success(finished))
+                }
+            )
         }
     }
 }

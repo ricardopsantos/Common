@@ -4,12 +4,14 @@
 //
 
 import Foundation
-import UIKit
 import SwiftUI
+import UIKit
 
 public extension UIView {
+    // MARK: - Border Animations
+
     func animateBorderWidth(toValue: CGFloat, duration: Double) {
-        let animation: CABasicAnimation = CABasicAnimation(keyPath: "borderWidth")
+        let animation = CABasicAnimation(keyPath: "borderWidth")
         animation.fromValue = layer.borderWidth
         animation.toValue = toValue
         animation.duration = duration
@@ -18,7 +20,7 @@ public extension UIView {
     }
 
     func animateBorderColor(toValue: UIColor, duration: Double) {
-        let animation: CABasicAnimation = CABasicAnimation(keyPath: "borderColor")
+        let animation = CABasicAnimation(keyPath: "borderColor")
         animation.fromValue = layer.borderColor
         animation.toValue = toValue.cgColor
         animation.duration = duration
@@ -37,6 +39,8 @@ public extension UIView {
         }
     }
 
+    // MARK: - Corner Styling
+
     func addCornerShape(corners: UIRectCorner = [.topLeft, .topRight], radius: CGFloat = 34) {
         let path = UIBezierPath(
             roundedRect: bounds,
@@ -50,7 +54,7 @@ public extension UIView {
     }
 
     func addCornerCurve(method: CALayerCornerCurve = .circular, radius: CGFloat = 34) {
-        layer.cornerCurve = method // .continuous | .circular
+        layer.cornerCurve = method
         layer.cornerRadius = radius
         layer.masksToBounds = true
     }
@@ -59,14 +63,23 @@ public extension UIView {
         addCornerCurve(method: .circular, radius: radius)
     }
 
-    // this functions is duplicated
+    // MARK: - Blur
+
+    // this function is duplicated
     func addBlur(style: UIBlurEffect.Style = .dark) -> UIVisualEffectView {
-        let blurEffectView: UIVisualEffectView = UIVisualEffectView(effect: UIBlurEffect(style: style))
+        _addBlurCommon(style: style)
+    }
+
+    /// Internal helper to ensure all addBlur variants remain consistent.
+    private func _addBlurCommon(style: UIBlurEffect.Style) -> UIVisualEffectView {
+        let blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: style))
         blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         blurEffectView.alpha = 0.5
         addSubview(blurEffectView)
         return blurEffectView
     }
+
+    // MARK: - Fade Animation
 
     func fadeTo(
         _ value: CGFloat,
@@ -76,8 +89,8 @@ public extension UIView {
     ) {
         if recursive {
             fadeTo(value, duration: duration, recursive: false, onCompletion: onCompletion)
-            allSubviewsRecursive().forEach {
-                $0.fadeTo(value, duration: duration, recursive: false, onCompletion: {})
+            for item in allSubviewsRecursive() {
+                item.fadeTo(value, duration: duration, recursive: false, onCompletion: {})
             }
         } else {
             guard alpha != value else {

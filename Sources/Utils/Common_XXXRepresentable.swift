@@ -13,85 +13,79 @@ import UIKit
 //
 
 public extension Common {
+    // MARK: - UIKit → SwiftUI: UIViewController
+
+    @MainActor
     struct ViewControllerRepresentable: UIViewControllerRepresentable {
-        let viewControllerBuilder: () -> UIViewController
+        private let builder: () -> UIViewController
 
-        public init(_ viewControllerBuilder: @escaping () -> UIViewController) {
-            self.viewControllerBuilder = viewControllerBuilder
+        public init(_ builder: @escaping () -> UIViewController) {
+            self.builder = builder
         }
 
-        public func makeUIViewController(context: Context) -> some UIViewController {
-            let vc = viewControllerBuilder()
-            // vc.modalPresentationStyle = .overCurrentContext
-            return vc
+        public func makeUIViewController(context _: Context) -> UIViewController {
+            builder()
         }
 
-        public func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
-            // Not needed
+        public func updateUIViewController(_: UIViewController, context _: Context) {
+            // No-op
         }
     }
 
-    struct ViewRepresentable1: UIViewRepresentable {
-        let view: UIView
+    // MARK: - UIKit → SwiftUI: UIView
+
+    @MainActor
+    struct ViewRepresentable: UIViewRepresentable {
+        private let builder: () -> UIView
+
+        public init(_ builder: @escaping () -> UIView) {
+            self.builder = builder
+        }
+
         public init(view: UIView) {
-            self.view = view
+            builder = { view }
         }
 
-        public init(closure: () -> (UIView)) {
-            self.view = closure()
+        public func makeUIView(context _: Context) -> UIView {
+            builder()
         }
 
-        public func makeUIView(context: Context) -> UIView {
-            view
-        }
-
-        public func updateUIView(_ uiView: UIView, context: Context) {}
-    }
-
-    struct ViewRepresentable2: UIViewRepresentable {
-        let viewBuilder: () -> UIView
-        public init(_ viewBuilder: @escaping () -> UIView) {
-            self.viewBuilder = viewBuilder
-        }
-
-        public func makeUIView(context: Context) -> some UIView {
-            viewBuilder()
-        }
-
-        public func updateUIView(_ uiView: UIViewType, context: Context) {
-            // Not needed
+        public func updateUIView(_: UIView, context _: Context) {
+            // No-op
         }
     }
 }
 
-//
 // MARK: - Preview
-//
 
-enum Commom_Previews_ViewControllerRepresentable {
-    class SampleVC: UIViewController {
+#if DEBUG && canImport(SwiftUI)
+
+    fileprivate class SampleVC: UIViewController {
         override func viewDidLoad() {
             super.viewDidLoad()
+            view.backgroundColor = .systemYellow
             let imageView = UIImageView()
+            imageView.image = UIImage(systemName: "star.fill")
+            imageView.tintColor = .orange
             view.addSubview(imageView)
             imageView.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
                 imageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
                 imageView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-                imageView.widthAnchor.constraint(equalTo: view.widthAnchor),
-                imageView.heightAnchor.constraint(equalTo: view.widthAnchor)
+                imageView.widthAnchor.constraint(equalToConstant: 100),
+                imageView.heightAnchor.constraint(equalToConstant: 100),
             ])
         }
     }
 
-    #if canImport(SwiftUI) && DEBUG
-    // ViewController Preview
-    #Preview("Common_ViewControllerRepresentable") {
-        Common_ViewControllerRepresentable { SampleVC() }
+    @available(iOS 17.0, *)
+    #Preview("Controller Preview") {
+        Common.ViewControllerRepresentable { SampleVC() }
     }
 
-    #Preview("Common_ViewRepresentable") {
-        Common_ViewRepresentable { SampleVC().view }
+    @available(iOS 17.0, *)
+    #Preview("View Preview") {
+        Common.ViewRepresentable { SampleVC().view }
     }
-    #endif
-}
+
+#endif

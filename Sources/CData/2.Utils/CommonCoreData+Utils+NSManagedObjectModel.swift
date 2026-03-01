@@ -3,11 +3,13 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import CoreData
+import Foundation
 
 //
+
 // MARK: - NSManagedObjectModel
+
 //
 
 extension Bundle {
@@ -21,7 +23,8 @@ public extension CommonCoreData.Utils {
     ) -> (managedObjectModel: NSManagedObjectModel, url: URL)? {
         guard let bundle = Bundle(identifier: dbBundle),
               let modelURL = bundle.url(forResource: dbName, withExtension: "momd"),
-              let managedObjectModel = NSManagedObjectModel(contentsOf: modelURL) else {
+              let managedObjectModel = NSManagedObjectModel(contentsOf: modelURL)
+        else {
             return nil
         }
         return (managedObjectModel, modelURL)
@@ -33,13 +36,14 @@ public extension CommonCoreData.Utils {
         dbName: String
     ) -> (managedObjectModel: NSManagedObjectModel, url: URL)? {
         #if IN_PACKAGE_CODE
-        guard let modelURL = Bundle.module.url(forResource: dbName, withExtension: "momd"),
-              let managedObjectModel = NSManagedObjectModel(contentsOf: modelURL) else {
-            return nil
-        }
-        return (managedObjectModel, modelURL)
+            guard let modelURL = Bundle.module.url(forResource: dbName, withExtension: "momd"),
+                  let managedObjectModel = NSManagedObjectModel(contentsOf: modelURL)
+            else {
+                return nil
+            }
+            return (managedObjectModel, modelURL)
         #else
-        return nil
+            return nil
         #endif
     }
 }

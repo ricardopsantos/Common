@@ -5,13 +5,20 @@
 
 import Foundation
 
-// To encapsulate all RequestDto's (used on web api requests)
+/// Namespace for all Web API Request DTOs
 public struct RequestDto {
     private init() {}
 }
 
-// By inheriting the CustomStringConvertible protocol, we need to provide a value to the description property.
-// Every time, we want to use the object as a String, the program will refer to the description property.
-// Now we can manage our message in one place :)
-
+/// Shared protocol for all request DTO types.
+/// - Codable: for JSON encode/decode
+/// - Hashable: stored in sets/dictionaries, ensures value semantics
+/// - CustomStringConvertible: for logging/debugging
 public protocol RequestDtoProtocol: Codable, Hashable, CustomStringConvertible {}
+
+/// Default description = type name
+public extension RequestDtoProtocol {
+    var description: String {
+        String(describing: Self.self)
+    }
+}

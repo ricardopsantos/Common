@@ -9,9 +9,9 @@ import SwiftUI
 public extension View {
     func debugBackground() -> some View {
         #if DEBUG
-        background(Color.random)
+            background(Color.random)
         #else
-        self
+            self
         #endif
     }
 
@@ -28,9 +28,9 @@ public extension View {
         _ color2: Color = .blue
     ) -> some View {
         #if DEBUG
-        modifier(AnimatedBackground(color1: color1, color2: color2))
+            modifier(AnimatedBackground(color1: color1, color2: color2))
         #else
-        self
+            self
         #endif
     }
 }
@@ -75,27 +75,29 @@ public struct AnimatedBackground: ViewModifier {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-fileprivate extension Common_Preview {
-    struct DebugBackgroundTestView: View {
-        public init() {}
-        public var body: some View {
-            VStack {
-                Text("testAnimatedBackground").padding().debugBackground()
-                SwiftUIUtils.FixedVerticalSpacer(height: 5)
-                Text("testAnimatedBackground").padding().debugBordersDefault()
-                SwiftUIUtils.FixedVerticalSpacer(height: 5)
-                Text("testAnimatedBackground").padding().debugBordersRandom()
+    fileprivate extension Common_Preview {
+        struct DebugBackgroundTestView: View {
+            public init() {}
+            public var body: some View {
+                VStack {
+                    Text("testAnimatedBackground").padding().debugBackground()
+                    SwiftUIUtils.FixedVerticalSpacer(height: 5)
+                    Text("testAnimatedBackground").padding().debugBordersDefault()
+                    SwiftUIUtils.FixedVerticalSpacer(height: 5)
+                    Text("testAnimatedBackground").padding().debugBordersRandom()
+                }
             }
         }
     }
-}
 
-#Preview {
-    Common_Preview.DebugBackgroundTestView()
-}
+    #Preview {
+        Common_Preview.DebugBackgroundTestView()
+    }
 
 #endif

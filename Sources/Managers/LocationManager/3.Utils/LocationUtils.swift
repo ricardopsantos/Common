@@ -3,25 +3,29 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
-import CoreLocation
 import Combine
+import CoreLocation
+import Foundation
 
 //
+
 // MARK: - Utils (AddressFromCoordinates)
+
 //
 
 public extension Common {
     enum LocationUtils {
         //
+
         // MARK: - Coordinate
+
         //
         public struct Coordinate: Hashable, Equatable {
             public let latitude: Double
             public let longitude: Double
             public init(location: CLLocation) {
-                self.latitude = location.coordinate.latitude
-                self.longitude = location.coordinate.longitude
+                latitude = location.coordinate.latitude
+                longitude = location.coordinate.longitude
             }
 
             public init(latitude: Double, longitude: Double) {
@@ -31,7 +35,9 @@ public extension Common {
         }
 
         //
+
         // MARK: - LocationForAddress
+
         //
 
         public struct LocationForAddress: Codable {
@@ -52,14 +58,22 @@ public extension Common {
         }
 
         //
+
         // MARK: - Address from...
+
         //
 
-        static func getAddressFromAsync(latitude: Double, longitude: Double) async throws -> CLPlacemark.CoreLocationManagerAddressResponse {
+        static func getAddressFromAsync(latitude: Double, longitude: Double) async throws -> CLPlacemark
+            .CoreLocationManagerAddressResponse
+        {
             try await getAddressFrom(latitude: latitude, longitude: longitude).async()
         }
 
-        static func getAddressFrom(latitude: Double, longitude: Double) -> AnyPublisher<CLPlacemark.CoreLocationManagerAddressResponse, Never> {
+        static func getAddressFrom(latitude: Double,
+                                   longitude: Double) -> AnyPublisher<
+            CLPlacemark.CoreLocationManagerAddressResponse,
+            Never
+        > {
             Future { promise in
                 getAddressFrom(latitude: latitude, longitude: longitude) { some in
                     promise(.success(some))
@@ -67,10 +81,18 @@ public extension Common {
             }.eraseToAnyPublisher()
         }
 
-        public static func getAddressFrom(latitude: Double, longitude: Double, completion: @escaping (CLPlacemark.CoreLocationManagerAddressResponse) -> Void) {
+        public static func getAddressFrom(
+            latitude: Double,
+            longitude: Double,
+            completion: @escaping (CLPlacemark.CoreLocationManagerAddressResponse) -> Void
+        ) {
             let cacheKey = buildCacheKey(location: "\(latitude)|\(longitude)")
             if let data = Common.UserDefaultsManager.defaults?.data(forKey: cacheKey),
-               let locationForAddress = try? JSONDecoder().decodeFriendly(CLPlacemark.CoreLocationManagerAddressResponse.self, from: data) {
+               let locationForAddress = try? JSONDecoder().decodeFriendly(
+                   CLPlacemark.CoreLocationManagerAddressResponse.self,
+                   from: data
+               )
+            {
                 completion(locationForAddress)
                 return
             }
@@ -79,11 +101,11 @@ public extension Common {
                 completion(.noData)
                 return
             }
-            var center: CLLocationCoordinate2D = CLLocationCoordinate2D()
-            let geocoder: CLGeocoder = CLGeocoder()
+            var center = CLLocationCoordinate2D()
+            let geocoder = CLGeocoder()
             center.latitude = latitude
             center.longitude = longitude
-            let loc: CLLocation = CLLocation(latitude: center.latitude, longitude: center.longitude)
+            let loc = CLLocation(latitude: center.latitude, longitude: center.longitude)
             geocoder.reverseGeocodeLocation(loc, completionHandler: { placemarks, error in
                 if error != nil {
                     completion(.noData)
@@ -104,7 +126,9 @@ public extension Common {
         }
 
         //
+
         // MARK: - Location from...
+
         //
 
         public static func locationFromAddress(_ address: String) async throws -> LocationForAddress? {
@@ -128,7 +152,9 @@ public extension Common {
             "\(UserDefaultsManager.Keys.locationUtils.defaultsKey)_cacheFor:\(location)"
         }
 
-        private static func locationFromAddress(_ address: String, completion: @escaping (LocationForAddress?) -> Void) {
+        private static func locationFromAddress(_ address: String,
+                                                completion: @escaping (LocationForAddress?) -> Void)
+        {
             let addressEscaped = address.trim.lowercased()
             guard !addressEscaped.isEmpty else {
                 completion(nil)
@@ -136,7 +162,8 @@ public extension Common {
             }
             let cacheKey = buildCacheKey(location: addressEscaped)
             if let data = Common.UserDefaultsManager.defaults?.data(forKey: cacheKey),
-               let locationForAddress = try? JSONDecoder().decodeFriendly(LocationForAddress.self, from: data) {
+               let locationForAddress = try? JSONDecoder().decodeFriendly(LocationForAddress.self, from: data)
+            {
                 completion(locationForAddress)
                 return
             }
@@ -145,10 +172,11 @@ public extension Common {
                 completion(nil)
                 return
             }
-            let ceo: CLGeocoder = CLGeocoder()
+            let ceo = CLGeocoder()
             ceo.geocodeAddressString(addressEscaped, completionHandler: { placemarks, _ in
                 guard let placemark = placemarks?.first,
-                      let coordinate = placemark.location?.coordinate else {
+                      let coordinate = placemark.location?.coordinate
+                else {
                     completion(nil)
                     return
                 }

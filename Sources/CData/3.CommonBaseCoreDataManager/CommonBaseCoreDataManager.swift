@@ -3,9 +3,9 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
-import CoreData
 import Combine
+import CoreData
+import Foundation
 
 //
 // MARK: - CommonBaseCoreDataManager
@@ -13,7 +13,9 @@ import Combine
 
 open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol {
     //
+
     // MARK: - Usage Propertyes
+
     //
     fileprivate let dbName: String
     fileprivate let managedObjectModelURL: URL?
@@ -24,7 +26,8 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
 
     public var databaseURL: URL {
         let storeDescription = persistentContainer.persistentStoreDescriptions.first
-        return storeDescription?.url ?? NSPersistentContainer.defaultDirectoryURL().appendingPathComponent("\(dbName).sqlite")
+        return storeDescription?.url ?? NSPersistentContainer.defaultDirectoryURL()
+            .appendingPathComponent("\(dbName).sqlite")
     }
 
     //
@@ -38,10 +41,14 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
         // Should be overridden to start "listening" db changes
     }
 
-    public init(dbName: String, managedObjectModel: NSManagedObjectModel, persistence: CommonCoreData.Utils.Persistence) {
+    public init(
+        dbName: String,
+        managedObjectModel: NSManagedObjectModel,
+        persistence: CommonCoreData.Utils.Persistence
+    ) {
         self.dbName = dbName
         self.managedObjectModel = managedObjectModel
-        self.managedObjectModelURL = nil
+        managedObjectModelURL = nil
         if let persistentContainer = CommonCoreData.Utils.buildPersistentContainer(
             dbName: dbName,
             managedObjectModel: managedObjectModel,
@@ -58,11 +65,11 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
     public init(dbName: String, dbBundle: String, persistence: CommonCoreData.Utils.Persistence) {
         self.dbName = dbName
         if let nsManagedObjectModel = CommonCoreData.Utils.managedObjectModel(dbName: dbName, dbBundle: dbBundle) {
-            self.managedObjectModel = nsManagedObjectModel.managedObjectModel
-            self.managedObjectModelURL = nsManagedObjectModel.url
+            managedObjectModel = nsManagedObjectModel.managedObjectModel
+            managedObjectModelURL = nsManagedObjectModel.url
         } else if let nsManagedObjectModel = CommonCoreData.Utils.managedObjectModelForSPM(dbName: dbName) {
-            self.managedObjectModel = nsManagedObjectModel.managedObjectModel
-            self.managedObjectModelURL = nsManagedObjectModel.url
+            managedObjectModel = nsManagedObjectModel.managedObjectModel
+            managedObjectModelURL = nsManagedObjectModel.url
         } else {
             fatalError("fail to load managedObjectModel")
         }
@@ -79,7 +86,7 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
         startFetchedResultsController()
     }
 
-    public func save() {
+    public func syncSave() {
         saveContext()
     }
 
@@ -100,7 +107,10 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
 
     private var newViewContextInstance: NSManagedObjectContext {
         if Common_Utils.false {
-            return CommonCoreData.Utils.mainViewContext(storeContainer: persistentContainer, automaticallyMergesChangesFromParent: true)
+            return CommonCoreData.Utils.mainViewContext(
+                storeContainer: persistentContainer,
+                automaticallyMergesChangesFromParent: true
+            )
         } else {
             let context = persistentContainer.viewContext
             context.automaticallyMergesChangesFromParent = true
@@ -110,7 +120,10 @@ open class CommonBaseCoreDataManager: NSObject, SyncCoreDataManagerCRUDProtocol 
 
     private lazy var lazyViewContext: NSManagedObjectContext = {
         if Common_Utils.false {
-            return CommonCoreData.Utils.mainViewContext(storeContainer: persistentContainer, automaticallyMergesChangesFromParent: true)
+            return CommonCoreData.Utils.mainViewContext(
+                storeContainer: persistentContainer,
+                automaticallyMergesChangesFromParent: true
+            )
         } else {
             let context = persistentContainer.viewContext
             context.automaticallyMergesChangesFromParent = true
@@ -132,17 +145,17 @@ public extension CommonBaseCoreDataManager {
 
     func unloadDatabase() {
         guard let storeURL = persistentContainer.persistentStoreDescriptions.first?.url else {
-            Common_Logs.error("Persistent store URL not found")
+            Common_Logs.error("Persistent store URL not found", "\(Self.self)")
             return
         }
         let persistentStoreCoordinator = persistentContainer.persistentStoreCoordinator
         do {
             if let store = persistentStoreCoordinator.persistentStore(for: storeURL) {
                 try persistentStoreCoordinator.remove(store)
-                Common_Logs.debug("Successfully unloaded the database at \(storeURL)")
+                Common_Logs.debug("Successfully unloaded the database at \(storeURL)", "\(Self.self)")
             }
         } catch {
-            Common_Logs.error("Failed to unload database: \(error)")
+            Common_Logs.error("Failed to unload database: \(error)", "\(Self.self)")
         }
     }
 
@@ -153,20 +166,20 @@ public extension CommonBaseCoreDataManager {
             let oldDatabaseURL = databaseURL
             if fileManager.fileExists(atPath: oldDatabaseURL.path) {
                 try fileManager.removeItem(at: oldDatabaseURL)
-                Common_Logs.debug("Old database at \(oldDatabaseURL) deleted.")
+                Common_Logs.debug("Old database at \(oldDatabaseURL) deleted.", "\(Self.self)")
             }
 
             // Copy the new database to the same location
             try fileManager.copyItem(at: newDatabaseURL, to: oldDatabaseURL)
-            Common_Logs.debug("New database copied to \(oldDatabaseURL).")
+            Common_Logs.debug("New database copied to \(oldDatabaseURL).", "\(Self.self)")
         } catch {
-            Common_Logs.error("Error replacing database: \(error)")
+            Common_Logs.error("Error replacing database: \(error)", "\(Self.self)")
         }
     }
 
     func reloadDatabase() {
         guard let persistentStoreDescription = persistentContainer.persistentStoreDescriptions.first else {
-            Common_Logs.error("Persistent store description not found")
+            Common_Logs.error("Persistent store description not found", "\(Self.self)")
             return
         }
         let persistentStoreCoordinator = persistentContainer.persistentStoreCoordinator
@@ -178,9 +191,9 @@ public extension CommonBaseCoreDataManager {
                 at: persistentStoreDescription.url,
                 options: persistentStoreDescription.options
             )
-            Common_Logs.debug("Successfully reloaded the new database.")
+            Common_Logs.debug("Successfully reloaded the new database.", "\(Self.self)")
         } catch {
-            Common_Logs.error("Failed to unload database: \(error)")
+            Common_Logs.error("Failed to unload database: \(error)", "\(Self.self)")
         }
     }
 }

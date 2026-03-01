@@ -18,7 +18,9 @@ import SwiftUI
  */
 
 //
+
 // MARK: - Strokes
+
 //
 
 public extension SwiftUI.Shape {
@@ -35,7 +37,9 @@ public extension SwiftUI.RoundedRectangle {
 }
 
 //
+
 // MARK: - Custom shapes
+
 //
 
 public struct Arc: Shape {
@@ -53,7 +57,13 @@ public struct Arc: Shape {
         let modifiedStart = startAngle - rotationAdjustment
         let modifiedEnd = endAngle - rotationAdjustment
         var path = Path()
-        path.addArc(center: CGPoint(x: rect.midX, y: rect.midY), radius: rect.width / 2, startAngle: modifiedStart, endAngle: modifiedEnd, clockwise: !clockwise)
+        path.addArc(
+            center: CGPoint(x: rect.midX, y: rect.midY),
+            radius: rect.width / 2,
+            startAngle: modifiedStart,
+            endAngle: modifiedEnd,
+            clockwise: !clockwise
+        )
         return path
     }
 }
@@ -145,121 +155,123 @@ public struct Hexagon: Shape {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-fileprivate extension Common_Preview {
-    struct SwiftUIShapes: View {
-        public init() {}
-        @State var viewFrame: (CGRect, CGRect) = (.zero, .zero)
-        let size: CGFloat = 100
+    fileprivate extension Common_Preview {
+        struct SwiftUIShapes: View {
+            public init() {}
+            @State var viewFrame: (CGRect, CGRect) = (.zero, .zero)
+            let size: CGFloat = 100
 
-        var systemShapes: some View {
-            VStack {
-                ZStack {
-                    Rectangle()
-                        .fill(.blue)
-                        .frame(width: size, height: size / 2)
-                    Text("Rectangle").font(.caption2)
-                }
-
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(.blue)
-                        .frame(width: size, height: size / 2)
-                    Text("RoundedRectangle").font(.caption2)
-                }
-                ZStack {
-                    Capsule()
-                        .fill(.blue)
-                        .frame(width: size * 1, height: size * 0.5)
-                    Text("Capsule").font(.caption2)
-                }
-                ZStack {
-                    Ellipse()
-                        .fill(.blue)
-                        .frame(width: size, height: size * 0.5)
-                    Text("Ellipse").font(.caption2)
-                }
-                ZStack {
-                    Circle()
-                        .fill(.blue)
-                        .frame(width: size, height: size)
-                    Text("Circle").font(.caption2)
-                }
-            }
-        }
-
-        var customShapes: some View {
-            VStack {
-                ZStack {
-                    HStack {
-                        Arc(startAngle: .degrees(0), endAngle: .degrees(90), clockwise: true)
-                            .fill(.green)
-                            .frame(width: size, height: size)
-                        Arc(startAngle: .degrees(0), endAngle: .degrees(180), clockwise: true)
-                            .fill(.green)
-                            .frame(width: size, height: size)
-                        Arc(startAngle: .degrees(0), endAngle: .degrees(270), clockwise: true)
-                            .fill(.green)
-                            .frame(width: size, height: size)
-                    }
-                    Text("Arc").font(.caption2)
-                }
-                ZStack {
-                    Triangle()
-                        .fill(.green)
-                        .frame(width: size, height: size)
-                    Text("Triangle").font(.caption2)
-                }
-                ZStack {
-                    Hexagon()
-                        .fill(.green)
-                        .frame(width: size, height: size)
-                    Text("Hexagon").font(.caption2)
-                }
-                HStack {
-                    ZStack {
-                        VStack {
-                            RoundedCorner()
-                                .fill(.green)
-                                .frame(width: size * 0.5, height: size)
-                            RoundedCorner()
-                                .fill(.green)
-                                .frame(width: size, height: size * 0.5)
-                        }
-                        Text("RoundedCorner").font(.caption2)
-                    }
-                    ZStack {
-                        VStack {
-                            RoundedCornerWithBorder()
-                                .fill(.green)
-                                .frame(width: size * 0.5, height: size)
-                            RoundedCornerWithBorder()
-                                .fill(.green)
-                                .frame(width: size, height: size * 0.5)
-                        }
-                        Text("RoundedCornerWithBorder").font(.caption2)
-                    }
-                }
-            }
-        }
-
-        public var body: some View {
-            ScrollView {
+            var systemShapes: some View {
                 VStack {
-                    customShapes
-                    Divider()
-                    systemShapes
+                    ZStack {
+                        Rectangle()
+                            .fill(.blue)
+                            .frame(width: size, height: size / 2)
+                        Text("Rectangle").font(.caption2)
+                    }
+
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(.blue)
+                            .frame(width: size, height: size / 2)
+                        Text("RoundedRectangle").font(.caption2)
+                    }
+                    ZStack {
+                        Capsule()
+                            .fill(.blue)
+                            .frame(width: size * 1, height: size * 0.5)
+                        Text("Capsule").font(.caption2)
+                    }
+                    ZStack {
+                        Ellipse()
+                            .fill(.blue)
+                            .frame(width: size, height: size * 0.5)
+                        Text("Ellipse").font(.caption2)
+                    }
+                    ZStack {
+                        Circle()
+                            .fill(.blue)
+                            .frame(width: size, height: size)
+                        Text("Circle").font(.caption2)
+                    }
+                }
+            }
+
+            var customShapes: some View {
+                VStack {
+                    ZStack {
+                        HStack {
+                            Arc(startAngle: .degrees(0), endAngle: .degrees(90), clockwise: true)
+                                .fill(.green)
+                                .frame(width: size, height: size)
+                            Arc(startAngle: .degrees(0), endAngle: .degrees(180), clockwise: true)
+                                .fill(.green)
+                                .frame(width: size, height: size)
+                            Arc(startAngle: .degrees(0), endAngle: .degrees(270), clockwise: true)
+                                .fill(.green)
+                                .frame(width: size, height: size)
+                        }
+                        Text("Arc").font(.caption2)
+                    }
+                    ZStack {
+                        Triangle()
+                            .fill(.green)
+                            .frame(width: size, height: size)
+                        Text("Triangle").font(.caption2)
+                    }
+                    ZStack {
+                        Hexagon()
+                            .fill(.green)
+                            .frame(width: size, height: size)
+                        Text("Hexagon").font(.caption2)
+                    }
+                    HStack {
+                        ZStack {
+                            VStack {
+                                RoundedCorner()
+                                    .fill(.green)
+                                    .frame(width: size * 0.5, height: size)
+                                RoundedCorner()
+                                    .fill(.green)
+                                    .frame(width: size, height: size * 0.5)
+                            }
+                            Text("RoundedCorner").font(.caption2)
+                        }
+                        ZStack {
+                            VStack {
+                                RoundedCornerWithBorder()
+                                    .fill(.green)
+                                    .frame(width: size * 0.5, height: size)
+                                RoundedCornerWithBorder()
+                                    .fill(.green)
+                                    .frame(width: size, height: size * 0.5)
+                            }
+                            Text("RoundedCornerWithBorder").font(.caption2)
+                        }
+                    }
+                }
+            }
+
+            public var body: some View {
+                ScrollView {
+                    VStack {
+                        customShapes
+                        Divider()
+                        systemShapes
+                    }
                 }
             }
         }
     }
-}
 
-#Preview {
-    Common_Preview.SwiftUIShapes()
-}
+    #Preview {
+        Common_Preview.SwiftUIShapes()
+    }
 
 #endif

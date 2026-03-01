@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import CoreData
+import Foundation
 
 public protocol SyncCoreDataManagerCRUDProtocol: SyncCoreDataManagerCreatingProtocol,
     SyncCoreDataManagerDeleteProtocol,

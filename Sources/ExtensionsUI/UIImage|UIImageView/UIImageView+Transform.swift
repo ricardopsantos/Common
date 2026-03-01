@@ -8,7 +8,7 @@ import UIKit
 
 public extension UIImageView {
     /// Syntax sugar for [func changeImageColor(to color: UIColor)]
-    func paintImageWith(color: UIColor) {
+    func paintImageWith(color _: UIColor) {
         changeImageColor(to: tintColor)
     }
 

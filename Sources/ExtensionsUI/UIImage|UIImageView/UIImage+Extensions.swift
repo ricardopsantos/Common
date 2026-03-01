@@ -7,7 +7,9 @@ import Foundation
 import UIKit
 
 //
+
 // MARK: - Convenience init
+
 //
 
 public extension UIImage {
@@ -21,14 +23,14 @@ public extension UIImage {
         let dataSize = width * height * bytesPerPixel
         var imageData = [UInt8](repeating: 0, count: dataSize)
 
-        for i in 0..<width * height {
+        for i in 0 ..< width * height {
             let baseIndex = i * bytesPerPixel
 
             // Generate random color components
-            let red = UInt8.random(in: 0...255)
-            let green = UInt8.random(in: 0...255)
-            let blue = UInt8.random(in: 0...255)
-            let alpha = UInt8.random(in: 0...255)
+            let red = UInt8.random(in: 0 ... 255)
+            let green = UInt8.random(in: 0 ... 255)
+            let blue = UInt8.random(in: 0 ... 255)
+            let alpha = UInt8.random(in: 0 ... 255)
 
             // Set the pixel values in the buffer
             imageData[baseIndex] = red
@@ -103,7 +105,7 @@ public extension UIImage {
         let attributes = [
             NSAttributedString.Key.font: UIFont.systemFont(ofSize: 24),
             NSAttributedString.Key.paragraphStyle: paragraphStyle,
-            NSAttributedString.Key.foregroundColor: textColor
+            NSAttributedString.Key.foregroundColor: textColor,
         ]
 
         // Draw the text
@@ -120,7 +122,9 @@ public extension UIImage {
 }
 
 //
+
 // MARK: - Geometry
+
 //
 
 public extension UIImage {
@@ -138,7 +142,10 @@ public extension UIImage {
         }
         context.translateBy(x: rotatedSize.width / 2, y: rotatedSize.height / 2)
         context.rotate(by: CGFloat(radians))
-        context.draw(cgImage, in: CGRect(origin: CGPoint(x: -imageSize.width / 2, y: -imageSize.height / 2), size: imageSize))
+        context.draw(
+            cgImage,
+            in: CGRect(origin: CGPoint(x: -imageSize.width / 2, y: -imageSize.height / 2), size: imageSize)
+        )
         let rotatedImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         return rotatedImage
@@ -191,7 +198,9 @@ public extension UIImage {
 }
 
 //
+
 // MARK: - Misc
+
 //
 
 public extension UIImage {

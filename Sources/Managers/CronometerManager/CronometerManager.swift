@@ -19,14 +19,16 @@ public extension Common {
             operation()
             let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
             if printResult {
-                LogsManager.debug("Time elapsed: \(timeElapsed)s")
+                LogsManager.debug("Time elapsed: \(timeElapsed)s", "\(Self.self)")
             }
             return timeElapsed
         }
 
-        public static func measureAverage(iterations: Int, operation: () -> Void, printResult: Bool = false) -> Double {
+        public static func measureAverage(iterations: Int, operation: () -> Void,
+                                          printResult _: Bool = false) -> Double
+        {
             let startTime = CFAbsoluteTimeGetCurrent()
-            for _ in 1...iterations {
+            for _ in 1 ... iterations {
                 operation()
             }
             let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
@@ -41,7 +43,9 @@ public extension Common {
         }
 
         @discardableResult
-        public static func timeElapsed(_ identifier: String? = "\(Common_CronometerManager.self)", print: Bool = false) -> Double? {
+        public static func timeElapsed(_ identifier: String? = "\(Common_CronometerManager.self)",
+                                       print: Bool = false) -> Double?
+        {
             var result: Double?
             let identifier = identifier ?? ""
             if let time = times[identifier] {
@@ -58,10 +62,17 @@ public extension Common {
                         timeElapsedString = String(format: "%.4f", timeElapsed)
                     }
                     // Ignore extra zeros
-                    timeElapsedString = timeElapsedString.replacingOccurrences(of: "\\.?0*$", with: "", options: .regularExpression)
+                    timeElapsedString = timeElapsedString.replacingOccurrences(
+                        of: "\\.?0*$",
+                        with: "",
+                        options: .regularExpression
+                    )
                     // let prefix = "            "
                     let prefix = "      "
-                    LogsManager.debug("⏰ ⏰ Operation: \(identifier) ⏰ ⏰\n\(prefix)⏰ ⏰ Time: \(timeElapsedString) s ⏰ ⏰" as AnyObject)
+                    LogsManager.debug(
+                        "⏰ ⏰ Operation: \(identifier) ⏰ ⏰\n\(prefix)⏰ ⏰ Time: \(timeElapsedString) s ⏰ ⏰",
+                        "\(Self.self)"
+                    )
                 }
                 result = Double(timeElapsed)
             }

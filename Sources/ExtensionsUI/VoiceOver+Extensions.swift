@@ -16,14 +16,19 @@ public extension UIView {
 
     var voiceOver: String {
         get { accessibilityLabel ?? "" }
-        set { if !newValue.isEmpty {
-            accessibilityLabel = newValue
-        } }
+        set {
+            let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                accessibilityLabel = trimmed
+            }
+        }
     }
 
     var voiceOverHint: String {
         get { accessibilityHint ?? "" }
-        set { accessibilityHint = newValue }
+        set {
+            accessibilityHint = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
     }
 
     var voiceOverIsEnabled: Bool {
@@ -32,11 +37,21 @@ public extension UIView {
     }
 
     func setupAccessibilityWith(voiceOver: String, voiceOverHint: String = "") {
-        self.voiceOver = voiceOver
-        self.voiceOverHint = voiceOverHint
+        let trimmedLabel = voiceOver.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedHint = voiceOverHint.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        self.voiceOver = trimmedLabel
+        self.voiceOverHint = trimmedHint
+
+        // Mark the view as an accessibility element only if it should be interacted with
+        if self is UIControl || self is UILabel || self is UIImageView {
+            isAccessibilityElement = true
+        }
+
         if let btn = self as? UIButton {
             btn.accessibilityTraits = .button
         }
+
         if let lbl = self as? UILabel {
             lbl.accessibilityTraits = .staticText
         }
@@ -46,14 +61,19 @@ public extension UIView {
 public extension UIBarButtonItem {
     var voiceOver: String {
         get { accessibilityLabel ?? "" }
-        set { if !newValue.isEmpty {
-            accessibilityLabel = newValue
-        } }
+        set {
+            let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                accessibilityLabel = trimmed
+            }
+        }
     }
 
     var voiceOverHint: String {
         get { accessibilityHint ?? "" }
-        set { accessibilityHint = newValue }
+        set {
+            accessibilityHint = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
     }
 
     var voiceOverIsEnabled: Bool {

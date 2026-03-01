@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 import SwiftUI
 
 public extension NotificationCenter {
@@ -26,7 +26,7 @@ public extension Common {
 
         // Debounce because on appear it publishes 370 and next 336
         public init() {
-            self.cancellable = Publishers.Merge(keyboardWillShow, keyboardWillHide)
+            cancellable = Publishers.Merge(keyboardWillShow, keyboardWillHide)
                 .debounce(for: .milliseconds(250), scheduler: RunLoop.main).eraseToAnyPublisher()
                 .subscribe(on: DispatchQueue.main)
                 .assign(to: \.keyboardHeight, on: self)
@@ -68,69 +68,71 @@ public extension Common {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-fileprivate extension Common_Preview {
-    struct KeyboardManager: View {
-        @StateObject var keyboardManagerV1 = Common.KeyboardManagerV1()
-        @StateObject var keyboardManagerV2 = Common.KeyboardManagerV2()
-        @State var message: String = ""
-        @Namespace var topID
-        @Namespace var bottomID
-        @State var keyboardHeight: CGFloat = 0
-        var body: some View {
-            ScrollView(.vertical, showsIndicators: false) {
-                ScrollViewReader { scrollView in
-                    VStack {
-                        Spacer()
-                        SwiftUIUtils.FixedVerticalSpacer(height: 1).id(topID)
-                        Button("Scroll to Bottom") {
-                            withAnimation {
-                                scrollView.scrollTo(bottomID)
+    fileprivate extension Common_Preview {
+        struct KeyboardManager: View {
+            @StateObject var keyboardManagerV1 = Common.KeyboardManagerV1()
+            @StateObject var keyboardManagerV2 = Common.KeyboardManagerV2()
+            @State var message: String = ""
+            @Namespace var topID
+            @Namespace var bottomID
+            @State var keyboardHeight: CGFloat = 0
+            var body: some View {
+                ScrollView(.vertical, showsIndicators: false) {
+                    ScrollViewReader { scrollView in
+                        VStack {
+                            Spacer()
+                            SwiftUIUtils.FixedVerticalSpacer(height: 1).id(topID)
+                            Button("Scroll to Bottom") {
+                                withAnimation {
+                                    scrollView.scrollTo(bottomID)
+                                }
                             }
-                        }
-                        TextField("Message_A", text: $message)
-                            .background(Color.random.opacity(0.1))
-                            .padding()
-                            .customBorder()
-                        Rectangle()
-                            .fill(Color.clear)
-                            .background(Color.red)
-                            .frame(height: screenSize.height * 1.25)
-                        TextField("Message_B", text: $message)
-                            .background(Color.random.opacity(0.1))
-                            .padding()
-                            .customBorder()
-                        Button("Scroll to Top") {
-                            withAnimation {
-                                scrollView.scrollTo(topID)
+                            TextField("Message_A", text: $message)
+                                .background(Color.random.opacity(0.1))
+                                .padding()
+                                .customBorder()
+                            Rectangle()
+                                .fill(Color.clear)
+                                .background(Color.red)
+                                .frame(height: screenSize.height * 1.25)
+                            TextField("Message_B", text: $message)
+                                .background(Color.random.opacity(0.1))
+                                .padding()
+                                .customBorder()
+                            Button("Scroll to Top") {
+                                withAnimation {
+                                    scrollView.scrollTo(topID)
+                                }
                             }
+                            SwiftUIUtils.FixedVerticalSpacer(height: 1).id(bottomID)
                         }
-                        SwiftUIUtils.FixedVerticalSpacer(height: 1).id(bottomID)
+                        .padding(.bottom, keyboardHeight)
+                        .onDragDismissKeyboardV1()
+                        .onTapDismissKeyboard()
+                        .onChange(of: keyboardManagerV1.keyboardHeight, perform: { newValue in
+                            Common_Logs.debug("keyboardHeightV1: \(newValue)", "\(Self.self)")
+                            withAnimation {
+                                keyboardHeight = newValue
+                            }
+                        })
+                        .onChange(of: keyboardManagerV2.keyboardHeight, perform: { newValue in
+                            Common_Logs.debug("keyboardHeightV2: \(newValue)", "\(Self.self)")
+                        })
                     }
-                    .padding(.bottom, keyboardHeight)
-                    .onDragDismissKeyboardV1()
-                    .onTapDismissKeyboard()
-                    .onChange(of: keyboardManagerV1.keyboardHeight, perform: { newValue in
-                        Common_Logs.debug("keyboardHeightV1: \(newValue)")
-                        withAnimation {
-                            keyboardHeight = newValue
-                        }
-                    })
-                    .onChange(of: keyboardManagerV2.keyboardHeight, perform: { newValue in
-                        Common_Logs.debug("keyboardHeightV2: \(newValue)")
-                    })
                 }
             }
         }
     }
-}
 
-#Preview {
-    Common_Preview.KeyboardManager()
-}
+    #Preview {
+        Common_Preview.KeyboardManager()
+    }
 
 #endif
 
@@ -155,7 +157,9 @@ extension View {
 }
 
 //
+
 // MARK: - View
+
 //
 
 public extension View {

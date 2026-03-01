@@ -18,7 +18,7 @@ public extension Common.FileManager {
                 result = fileURLs.map(\.lastPathComponent)
                     .filter { $0.hasSuffix(".png") }
             } catch {
-                Common_Logs.error("\(error)")
+                Common_Logs.error("\(error)", "\(Self.self)")
             }
             return result
         }
@@ -64,14 +64,14 @@ public extension Common.FileManager {
             if let data = image.pngData() {
                 let operation: ()? = try? data.write(to: urlPath, options: [.atomic])
                 if operation == nil {
-                    Common_Logs.error("Fail saving \(image) using urlPath [\(urlPath)]")
+                    Common_Logs.error("Fail saving \(image) using urlPath [\(urlPath)]", "\(Self.self)")
                 }
                 result = (operation != nil, urlPath)
             }
             return result
         }
 
-        public static func reset(in folderPath: String = Common.FileManager.defaultFolder) {
+        public static func reset(in _: String = Common.FileManager.defaultFolder) {
             let fileManager = Common.FileManager.default
             if let directory = fileManager.urls(for: Common.FileManager.defaultSearchPath, in: .userDomainMask).first {
                 let urls = try? fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
@@ -88,7 +88,7 @@ public extension Common.FileManager {
         }
 
         /// Will delete all the images on the folder `folderPath`, if any part of the name contains `namePart`
-        public static func deleteAll(in folderPath: String = Common.FileManager.defaultFolder, namePart: String) {
+        public static func deleteAll(in _: String = Common.FileManager.defaultFolder, namePart: String) {
             guard !namePart.isEmpty else {
                 return
             }
@@ -108,7 +108,7 @@ public extension Common.FileManager {
             }
         }
 
-        public static func delete(name: String, in folderPath: String = Common.FileManager.defaultFolder) -> Bool {
+        public static func delete(name: String, in _: String = Common.FileManager.defaultFolder) -> Bool {
             guard !name.isEmpty else { return false }
             var result = false
             let urlPath = URL(fileURLWithPath: Common.FileManager.defaultFolder).appendingPathComponent(name)

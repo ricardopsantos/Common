@@ -3,12 +3,14 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import SwiftUI
 import Combine
 import Foundation
+import SwiftUI
 
 //
+
 // MARK: - Utils
+
 //
 
 // swiftlint:disable logs_rule_1
@@ -54,188 +56,239 @@ public extension AnyPublisher {
 }
 
 //
+
 // MARK: - Retry
+
 //
 
 public extension AnyPublisher {
+    // MARK: - Public retry APIs
+
     typealias RetryPublisherType = Driver<Bool>
+
     func retry(
-        withPublisher: @autoclosure @escaping () -> RetryPublisherType, // Publisher to run before retry. Ends with .asBoolDriver()
+        withPublisher: @autoclosure @escaping () -> RetryPublisherType,
         if condition: @escaping (Failure) -> Bool,
         delay: TimeInterval = 1,
         times: Int = 1
-    ) -> AnyPublisher.RetryWithPublisherIf<Self> {
-        AnyPublisher.RetryWithPublisherIf(
-            publisher: self,
+    ) -> AnyPublisher<Output, Failure> {
+        RetryWithPublisherIf(
+            upstream: self,
             condition: condition,
             withPublisher: withPublisher,
             times: times,
             delay: delay
         )
+        .eraseToAnyPublisher()
     }
 
     func retry(
-        withClosure: @escaping () -> Void, // Closure to run before retry.
+        withClosure: @escaping () -> Void,
         if condition: @escaping (Failure) -> Bool,
         delay: TimeInterval = 1,
         times: Int = 1
-    ) -> AnyPublisher.RetryWithClosureIf<Self> {
-        AnyPublisher.RetryWithClosureIf(
-            publisher: self,
+    ) -> AnyPublisher<Output, Failure> {
+        RetryWithClosureIf(
+            upstream: self,
             condition: condition,
             withClosure: withClosure,
             delay: delay,
             times: times
         )
+        .eraseToAnyPublisher()
     }
 
     func retry(
         times: Int = 1,
         if condition: @escaping (Failure) -> Bool,
         delay: TimeInterval = 1
-    ) -> AnyPublisher.RetryIf<Self> {
-        AnyPublisher.RetryIf(
-            publisher: self,
+    ) -> AnyPublisher<Output, Failure> {
+        RetryIf(
+            upstream: self,
             times: times,
             condition: condition,
             delay: delay
         )
+        .eraseToAnyPublisher()
     }
+
+    // MARK: - Internal Utility
+
+    private static func makeDelay(_ seconds: TimeInterval)
+        -> Publishers.Delay<Just<Void>, RunLoop>
+    {
+        Just(())
+            .delay(
+                for: .milliseconds(Int(seconds * 1000)),
+                scheduler: RunLoop.main
+            )
+    }
+
+    // MARK: - RetryWithPublisherIf
 
     struct RetryWithPublisherIf<P: Publisher>: Publisher {
         public typealias Output = P.Output
         public typealias Failure = P.Failure
-        let publisher: P
-        let condition: (P.Failure) -> Bool
+
+        let upstream: P
+        let condition: (Failure) -> Bool
         let withPublisher: () -> RetryPublisherType
         let times: Int
         let delay: TimeInterval
-        public func receive<S>(subscriber: S) where S: Subscriber, Failure == S.Failure, Output == S.Input {
-            guard times > 0 else {
-                return publisher.receive(subscriber: subscriber)
-            }
-            publisher.catch { (error: P.Failure) -> AnyPublisher<Output, Failure> in
-                let result = RetryWithPublisherIf(
-                    publisher: publisher,
-                    condition: condition,
-                    withPublisher: withPublisher,
-                    times: times - 1,
-                    delay: 0
-                ).eraseToAnyPublisher()
-                if condition(error) {
-                    return Just<Void>(())
-                        .delay(for: .seconds(Int(delay)), scheduler: RunLoop.main)
-                        .setFailureType(to: Failure.self)
-                        .eraseToAnyPublisher().flatMap {
-                            withPublisher().eraseToAnyPublisher().flatMap { _ in
-                                result
-                            }.eraseToAnyPublisher()
-                        }.eraseToAnyPublisher()
+
+        public func receive<S>(subscriber: S)
+            where S: Subscriber, Failure == S.Failure, Output == S.Input
+        {
+            attempt(times: times)
+                .receive(subscriber: subscriber)
+        }
+
+        private func attempt(times: Int) -> AnyPublisher<Output, Failure> {
+            upstream.catch { error -> AnyPublisher<Output, Failure> in
+
+                // No more retries → fail properly
+                guard times > 0, condition(error) else {
+                    return Fail(error: error).eraseToAnyPublisher()
                 }
-                return result
-            }.receive(subscriber: subscriber)
+
+                // Retry after delay + side publisher
+                return AnyPublisher.makeDelay(delay)
+                    .setFailureType(to: Failure.self)
+                    .flatMap { withPublisher() }
+                    .flatMap { _ in
+                        attempt(times: times - 1)
+                    }
+                    .eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
         }
     }
+
+    // MARK: - RetryWithClosureIf
 
     struct RetryWithClosureIf<P: Publisher>: Publisher {
         public typealias Output = P.Output
         public typealias Failure = P.Failure
-        let publisher: P
-        let condition: (P.Failure) -> Bool
+
+        let upstream: P
+        let condition: (Failure) -> Bool
         let withClosure: () -> Void
         let delay: TimeInterval
         let times: Int
-        public func receive<S>(subscriber: S) where S: Subscriber, Failure == S.Failure, Output == S.Input {
-            guard times > 0 else {
-                return publisher.receive(subscriber: subscriber)
-            }
-            publisher.catch { (error: P.Failure) -> AnyPublisher<Output, Failure> in
-                if condition(error) {
-                    withClosure()
+
+        public func receive<S>(subscriber: S)
+            where S: Subscriber, Failure == S.Failure, Output == S.Input
+        {
+            attempt(times: times)
+                .receive(subscriber: subscriber)
+        }
+
+        private func attempt(times: Int) -> AnyPublisher<Output, Failure> {
+            upstream.catch { error -> AnyPublisher<Output, Failure> in
+
+                guard times > 0, condition(error) else {
+                    return Fail(error: error).eraseToAnyPublisher()
                 }
-                return Just(1).eraseToAnyPublisher()
-                    .delay(seconds: delay)
-                    .eraseToAnyPublisher().flatMap { _ in
-                        RetryWithClosureIf(
-                            publisher: publisher,
-                            condition: condition,
-                            withClosure: withClosure,
-                            delay: delay,
-                            times: times - 1
-                        ).eraseToAnyPublisher()
-                    }.eraseToAnyPublisher()
+
+                // run the closure before retry
+                withClosure()
+
+                return AnyPublisher.makeDelay(delay)
+                    .setFailureType(to: Failure.self)
+                    .flatMap { attempt(times: times - 1) }
+                    .eraseToAnyPublisher()
             }
-            .receive(subscriber: subscriber)
+            .eraseToAnyPublisher()
         }
     }
+
+    // MARK: - RetryIf
 
     struct RetryIf<P: Publisher>: Publisher {
         public typealias Output = P.Output
         public typealias Failure = P.Failure
 
-        let publisher: P
+        let upstream: P
         let times: Int
-        let condition: (P.Failure) -> Bool
+        let condition: (Failure) -> Bool
         let delay: TimeInterval
-        public func receive<S>(subscriber: S) where S: Subscriber, Failure == S.Failure, Output == S.Input {
-            guard times > 0 else {
-                return publisher.receive(subscriber: subscriber)
-            }
-            publisher.catch { (error: P.Failure) -> AnyPublisher<Output, Failure> in
-                if condition(error) {
-                    return Just(1).eraseToAnyPublisher()
-                        .delay(seconds: delay)
-                        .eraseToAnyPublisher().flatMap { _ in
-                            RetryIf(
-                                publisher: publisher,
-                                times: times - 1,
-                                condition: condition,
-                                delay: delay
-                            ).eraseToAnyPublisher()
-                        }.eraseToAnyPublisher()
-                } else {
+
+        public func receive<S>(subscriber: S)
+            where S: Subscriber, Failure == S.Failure, Output == S.Input
+        {
+            attempt(times: times)
+                .receive(subscriber: subscriber)
+        }
+
+        private func attempt(times: Int) -> AnyPublisher<Output, Failure> {
+            upstream.catch { error -> AnyPublisher<Output, Failure> in
+
+                guard times > 0, condition(error) else {
                     return Fail(error: error).eraseToAnyPublisher()
                 }
-            }.receive(subscriber: subscriber)
+
+                return AnyPublisher.makeDelay(delay)
+                    .setFailureType(to: Failure.self)
+                    .flatMap { attempt(times: times - 1) }
+                    .eraseToAnyPublisher()
+            }
+            .eraseToAnyPublisher()
         }
     }
 }
 
-//
-// MARK: - SubscribeStrategie
-//
-
 public extension Publisher {
-    /// This method subscribes to the publisher on the main dispatch queue and receives events on the main dispatch queue.
-    /// It ensures that both the subscription and the event processing happen on the main thread, which is useful for updating UI elements since
+    /// This method subscribes to the publisher on the main dispatch queue and receives events on the main dispatch
+    /// queue.
+    /// It ensures that both the subscription and the event processing happen on the main thread, which is useful for
+    /// updating UI elements since
     /// UI updates should always occur on the main thread.
-    func subscribeStrategieMainToMain() -> Publishers.ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue> {
+    func subscribeStrategieMainToMain() -> Publishers
+        .ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue>
+    {
         subscribe(on: DispatchQueue.main).receive(on: DispatchQueue.main)
     }
 
-    /// This method subscribes to the publisher on a global (background) dispatch queue and receives events on the same global queue.
-    /// It's useful for offloading heavy or time-consuming tasks from the main thread to a background queue for processing.
-    func subscribeStrategieGlobalToGlobal() -> Publishers.ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue> {
+    /// This method subscribes to the publisher on a global (background) dispatch queue and receives events on the same
+    /// global queue.
+    /// It's useful for offloading heavy or time-consuming tasks from the main thread to a background queue for
+    /// processing.
+    func subscribeStrategieGlobalToGlobal() -> Publishers
+        .ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue>
+    {
         subscribe(on: DispatchQueue.global()).receive(on: DispatchQueue.global())
     }
 
-    /// This method subscribes to the publisher on a global (background) dispatch queue and receives events on the main dispatch queue.
-    /// This strategy is useful when you want to perform a task in the background but update the UI with the results on the main thread.
-    func subscribeStrategieGlobalToMain() -> Publishers.ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue> {
+    /// This method subscribes to the publisher on a global (background) dispatch queue and receives events on the main
+    /// dispatch queue.
+    /// This strategy is useful when you want to perform a task in the background but update the UI with the results on
+    /// the main thread.
+    func subscribeStrategieGlobalToMain() -> Publishers
+        .ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue>
+    {
         subscribe(on: DispatchQueue.global()).receive(on: DispatchQueue.main)
     }
 
-    /// This method subscribes to the publisher on a global (background) dispatch queue with a specified quality of service (QoS) of .background.
+    /// This method subscribes to the publisher on a global (background) dispatch queue with a specified quality of
+    /// service (QoS) of .background.
     /// It then receives events on the main dispatch queue.
-    /// It's similar to the previous strategy, but it explicitly specifies a lower QoS for the background queue, indicating that it's
+    /// It's similar to the previous strategy, but it explicitly specifies a lower QoS for the background queue,
+    /// indicating that it's
     /// suitable for less critical or less time-sensitive background tasks.
-    func subscribeStrategieGlobalBackgroundToMain() -> Publishers.ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue> {
+    func subscribeStrategieGlobalBackgroundToMain() -> Publishers
+        .ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue>
+    {
         subscribe(on: DispatchQueue.global(), options: .init(qos: .background)).receive(on: DispatchQueue.main)
     }
 
-    /// This method subscribes to the publisher on a global (background) dispatch queue with .background QoS and receives events on the same global queue.
-    /// This strategy is suitable for performing background tasks without the need to switch to the main thread afterward.
-    func subscribeStrategieGlobalBackgroundToGlobal() -> Publishers.ReceiveOn<Publishers.SubscribeOn<Self, DispatchQueue>, DispatchQueue> {
+    /// This method subscribes to the publisher on a global (background) dispatch queue with .background QoS and
+    /// receives events on the same global queue.
+    /// This strategy is suitable for performing background tasks without the need to switch to the main thread
+    /// afterward.
+    func subscribeStrategieGlobalBackgroundToGlobal() -> Publishers.ReceiveOn<Publishers.SubscribeOn<
+        Self,
+        DispatchQueue
+    >, DispatchQueue> {
         subscribe(on: DispatchQueue.global(), options: .init(qos: .background)).receive(on: DispatchQueue.global())
     }
 
@@ -256,7 +309,7 @@ public extension Publisher {
     func onErrorCompleteV1(_ onError: ((Error) -> Void)? = nil) -> AnyPublisher<Output, Never> {
         self
             .catch { error -> AnyPublisher<Output, Never> in
-                Common_Logs.error("\(error)")
+                Common_Logs.error("\(error)", "\(Self.self)")
                 onError?(error)
                 return .empty()
             }
@@ -266,7 +319,7 @@ public extension Publisher {
     func onErrorCompleteV2(withClosure: @escaping () -> Void = {}) -> AnyPublisher<Output, Never> {
         self
             .catch { error -> AnyPublisher<Output, Never> in
-                Common_Logs.error("\(error)")
+                Common_Logs.error("\(error)", "\(Self.self)")
                 withClosure()
                 return .empty()
             }.eraseToAnyPublisher()
@@ -274,11 +327,16 @@ public extension Publisher {
 }
 
 //
+
 // MARK: - Debug
+
 //
 
 public extension Publisher {
-    func sampleOperator<T>(source: T) -> AnyPublisher<Self.Output, Self.Failure> where T: Publisher, T.Output: Equatable, T.Failure == Self.Failure {
+    func sampleOperator<T>(source: T) -> AnyPublisher<Self.Output, Self.Failure> where T: Publisher,
+        T.Output: Equatable,
+        T.Failure == Self.Failure
+    {
         combineLatest(source)
             .removeDuplicates(by: { first, second -> Bool in first.1 == second.1 })
             .map { first in first.0 }
@@ -298,7 +356,9 @@ public extension Publisher {
 }
 
 //
+
 // MARK: - Driver
+
 //
 
 public typealias Driver<T> = AnyPublisher<T, Never>
@@ -306,7 +366,8 @@ public typealias BoolDriver = Driver<Bool>
 
 public extension Publishers {
     static func ZipMany<T, Output, Failure>(_ publishers: [T]) -> AnyPublisher<[Output], Failure>
-        where T: Publisher, T.Output == Output, T.Failure == Failure {
+        where T: Publisher, T.Output == Output, T.Failure == Failure
+    {
         if publishers.isEmpty {
             return Just([]).setFailureType(to: Failure.self).eraseToAnyPublisher()
         }
@@ -321,18 +382,6 @@ public extension Publishers {
 }
 
 public extension Publisher {
-    func asBoolDriver() -> BoolDriver {
-        asDriver().eraseToAnyPublisher().flatMap { _ in
-            Just(true).eraseToAnyPublisher()
-        }.eraseToAnyPublisher()
-    }
-
-    func asDriver() -> Driver<Output> {
-        self.catch { _ in Empty() }
-            .receive(on: RunLoop.current)
-            .eraseToAnyPublisher()
-    }
-
     static func just(_ output: Output) -> Driver<Output> {
         Just(output).eraseToAnyPublisher()
     }
@@ -343,7 +392,9 @@ public extension Publisher {
 }
 
 //
+
 // MARK: - ErrorTracker
+
 //
 
 public typealias ErrorTracker = PassthroughSubject<Error, Never>
@@ -360,7 +411,9 @@ public extension Publisher /* where Failure: Error */ {
 }
 
 //
+
 // MARK: - AnyPublisherSampleUsage
+
 //
 
 public enum AnyPublisherSampleUsageAux {
@@ -409,9 +462,12 @@ public enum AnyPublisherSampleUsage {
             AnyPublisherSampleUsageAux.sayHelloIfAuthenticated()
         }.eraseToAnyPublisher()
             .retry(
-                withPublisher: {
-                    AnyPublisherSampleUsageAux.authenticateUserV2().asBoolDriver()
-                }(), if: { $0 == .userIsNotAuthenticated },
+                withPublisher: AnyPublisherSampleUsageAux.authenticateUserV2()
+                    .flatMap { _ in
+                        Just(true).eraseToAnyPublisher()
+                    }.eraseToAnyPublisher(),
+
+                if: { $0 == .userIsNotAuthenticated },
                 delay: delay,
                 times: 5
             )

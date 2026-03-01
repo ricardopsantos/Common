@@ -7,7 +7,8 @@ import Foundation
 import UIKit
 
 public extension CALayer {
-    /// Usage: `view.layer.configureGradientBackground(UIColor.purple.cgColor, UIColor.blue.cgColor, UIColor.white.cgColor)`
+    /// Usage: `view.layer.configureGradientBackground(UIColor.purple.cgColor, UIColor.blue.cgColor,
+    /// UIColor.white.cgColor)`
     @discardableResult
     func addVerticalGradientBackground(_ colors: CGColor...) -> CAGradientLayer {
         let gradient = CAGradientLayer()

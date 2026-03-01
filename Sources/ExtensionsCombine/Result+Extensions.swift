@@ -4,35 +4,38 @@
 //
 
 import Foundation
-import Combine
 
-public extension Swift.Result {
+public extension Result {
+    /// Returns `true` if the result is `.success`.
     var isSuccess: Bool {
-        switch self {
-        case .success: true
-        case .failure: false
-        }
+        if case .success = self { return true }
+        return false
     }
 
-    var successUnWrappedValue: Any? {
+    /// Returns `true` if the result is `.failure`.
+    var isFailure: Bool {
+        if case .failure = self { return true }
+        return false
+    }
+
+    /// Strongly typed accessor for the success value (if present).
+    var value: Success? {
         switch self {
-        case .success(let unWrappedValue): return unWrappedValue
+        case let .success(value): return value
         case .failure: return nil
         }
     }
 
-    var failureUnWrappedValue: Error? {
+    /// Strongly typed accessor for the failure error (if present).
+    var error: Failure? {
         switch self {
+        case let .failure(error): return error
         case .success: return nil
-        case .failure(let error): return error
         }
     }
 
-    var failureUnWrappedStringValue: String {
-        if let failureUnWrappedValue {
-            "\(failureUnWrappedValue)"
-        } else {
-            ""
-        }
+    /// String representation of the error (or empty string).
+    var errorMessage: String {
+        error.map { "\($0)" } ?? ""
     }
 }

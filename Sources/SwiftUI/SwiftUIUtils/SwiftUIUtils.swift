@@ -10,7 +10,9 @@ private var renderedViewCounter: [String: Int] = [:]
 
 public enum SwiftUIUtils {
     //
+
     // MARK: - VisualEffectView
+
     //
 
     public struct VisualEffectView: UIViewRepresentable {
@@ -19,12 +21,17 @@ public enum SwiftUIUtils {
             self.effect = effect
         }
 
-        public func makeUIView(context: UIViewRepresentableContext<Self>) -> UIVisualEffectView { UIVisualEffectView() }
-        public func updateUIView(_ uiView: UIVisualEffectView, context: UIViewRepresentableContext<Self>) { uiView.effect = effect }
+        public func makeUIView(context _: UIViewRepresentableContext<Self>)
+            -> UIVisualEffectView { UIVisualEffectView() }
+        public func updateUIView(_ uiView: UIVisualEffectView, context _: UIViewRepresentableContext<Self>) {
+            uiView.effect = effect
+        }
     }
 
     //
+
     // MARK: - RenderedView
+
     //
 
     public struct RenderedView: View {
@@ -51,7 +58,7 @@ public enum SwiftUIUtils {
             id customId: String = "",
             visible: Bool
         ) {
-            self.id = customId
+            id = customId
             self.name = name
             self.date = date
             self.visible = visible
@@ -76,7 +83,9 @@ public enum SwiftUIUtils {
     }
 
     //
+
     // MARK: - View (Spacer utils)
+
     //
 
     public struct VerticalDivider: View {
@@ -127,30 +136,32 @@ public enum SwiftUIUtils {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-fileprivate extension Common_Preview {
-    struct SwiftUIUtilsTestView: View {
-        public init() {}
-        public var body: some View {
-            ZStack {
-                SwiftUIUtils.VisualEffectView(effect: UIBlurEffect(style: .extraLight))
-                VStack {
-                    SwiftUIUtils.RenderedView("\(Self.self)", visible: true)
-                    SwiftUIUtils.FixedHorizontalSpacer(width: 50).background(Color.red)
-                    SwiftUIUtils.FixedVerticalSpacer(height: 50).background(Color.green)
-                    Spacer()
-                    Spacer()
+    fileprivate extension Common_Preview {
+        struct SwiftUIUtilsTestView: View {
+            public init() {}
+            public var body: some View {
+                ZStack {
+                    SwiftUIUtils.VisualEffectView(effect: UIBlurEffect(style: .extraLight))
+                    VStack {
+                        SwiftUIUtils.RenderedView("\(Self.self)", visible: true)
+                        SwiftUIUtils.FixedHorizontalSpacer(width: 50).background(Color.red)
+                        SwiftUIUtils.FixedVerticalSpacer(height: 50).background(Color.green)
+                        Spacer()
+                        Spacer()
+                    }
                 }
             }
         }
     }
-}
 
-#Preview {
-    Common_Preview.SwiftUIUtilsTestView()
-}
+    #Preview {
+        Common_Preview.SwiftUIUtilsTestView()
+    }
 
 #endif

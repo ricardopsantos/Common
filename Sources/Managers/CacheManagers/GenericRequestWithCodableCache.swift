@@ -3,13 +3,13 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 
-internal typealias Common_AvailabilityState = Common.RepositoryAvailabilityState
+typealias Common_AvailabilityState = Common.RepositoryAvailabilityState
 public typealias Common_GenericRequestWithCacheResponse<T1: Codable, E1: Error> = AnyPublisher<T1, E1>
 
-extension String: Error {}
+extension String: @retroactive Error {}
 
 public extension Common {
     struct GenericRequestWithCodableCache {
@@ -27,26 +27,30 @@ public extension Common {
             _ serviceKey: String,
             _ serviceParams: [any Hashable],
             _ timeToLiveMinutes: Int? = nil,
-            _ cacheManager: CodableCacheManagerProtocol = Common.CacheManagerForCodableUserDefaultsRepository.shared,
-            _ onCachedRecordNotFound: OnCachedRecordNotFound = .returnEmpty) -> Common_GenericRequestWithCacheResponse<T1, E1> {
+            _ cacheManager: CodableCacheManagerProtocol? = Common.CacheManagerForCodableUserDefaultsRepository.shared,
+            _ onCachedRecordNotFound: OnCachedRecordNotFound = .returnEmpty
+        )
+            -> Common_GenericRequestWithCacheResponse<T1, E1>
+        {
             let lock = {
-                Common_AvailabilityState.lockForServiceKey(serviceKey)
+             //   Common_AvailabilityState.lockForServiceKey(serviceKey)
             }
 
             let unlock = {
-                Common_AvailabilityState.unLockForServiceKey(serviceKey)
+             //   Common_AvailabilityState.unLockForServiceKey(serviceKey)
             }
 
             var existsCachedRecord: Bool {
-                cacheManager.syncRetrieve(type, key: serviceKey, params: serviceParams)?.model != nil
+                cacheManager?.syncRetrieve(type, key: serviceKey, params: serviceParams)?.model != nil
             }
 
             // Fetch for CACHED data
             func cacheDontLoad() -> Common_GenericRequestWithCacheResponse<T1, E1> {
-                if let storedModel = cacheManager.syncRetrieve(
+                if let storedModel = cacheManager?.syncRetrieve(
                     type,
                     key: serviceKey,
-                    params: serviceParams) {
+                    params: serviceParams
+                ) {
                     // Found cache
                     return Just(storedModel.model).setFailureType(to: E1.self).eraseToAnyPublisher()
                 } else {
@@ -55,7 +59,11 @@ public extension Common {
                     case .returnEmpty:
                         return .empty()
                     case .returnError:
-                        let error = NSError(domain: "com.example.error", code: 0, userInfo: ["message": "No cached value"])
+                        let error = NSError(
+                            domain: "com.example.error",
+                            code: 0,
+                            userInfo: ["message": "No cached value"]
+                        )
                         return Fail(error: error as! E1).eraseToAnyPublisher()
                     }
                 }
@@ -69,20 +77,24 @@ public extension Common {
                         defer {
                             unlock()
                         }
-                        cacheManager.syncStore(
+                        cacheManager?.syncStore(
                             model,
                             key: serviceKey,
                             params: serviceParams,
-                            timeToLiveMinutes: timeToLiveMinutes)
+                            timeToLiveMinutes: timeToLiveMinutes
+                        )
                         if let model = model as? T1 {
                             return Just(model).setFailureType(to: E1.self).eraseToAnyPublisher()
                         } else {
-                            Common_Utils.assert(false, message: "Not predicted!")
                             switch onCachedRecordNotFound {
                             case .returnEmpty:
                                 return .empty()
                             case .returnError:
-                                let error = NSError(domain: "com.example.error", code: 0, userInfo: ["message": "No cached value"])
+                                let error = NSError(
+                                    domain: "com.example.error",
+                                    code: 0,
+                                    userInfo: ["message": "No cached value"]
+                                )
                                 return Fail(error: error as! E1).eraseToAnyPublisher()
                             }
                         }
@@ -120,9 +132,13 @@ public extension Common {
                 }
                 return noCacheDoLoadOrWait()
             case .cacheAndLoad:
-                let cacheDontLoad = cacheDontLoad().onErrorCompleteV2()
-                    .setFailureType(to: E1.self).eraseToAnyPublisher()
-                return Publishers.Merge(cacheDontLoad, noCacheDoLoadOrWait()).eraseToAnyPublisher()
+                let cachePublisher = cacheDontLoad()
+                    .onErrorCompleteV2()
+                    .setFailureType(to: E1.self)
+                    .eraseToAnyPublisher()
+                let networkPublisher = noCacheDoLoadOrWait()
+                return Publishers.Concatenate(prefix: cachePublisher, suffix: networkPublisher)
+                    .eraseToAnyPublisher()
             case .cacheDontLoad:
                 return cacheDontLoad()
             }

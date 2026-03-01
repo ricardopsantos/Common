@@ -16,7 +16,8 @@ public extension CGFloat {
     }
 }
 
-extension FloatingPoint {
+public extension FloatingPoint {
+    /// Converts degrees to radians.
     var degreesToRadians: Self {
         self * .pi / 180
     }

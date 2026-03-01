@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 import UIKit
 
 public extension CombineCompatible {
@@ -27,7 +27,10 @@ public extension CombineCompatible {
 
 public extension UISearchTextField {
     var textDidChangeNotificationPublisher: NotificationCenter.Publisher {
-        NotificationCenter.default.publisher(for: UISearchTextField.textDidChangeNotification, object: self)
+        NotificationCenter.default.publisher(
+            for: UISearchTextField.textDidChangeNotification,
+            object: self
+        )
     }
 
     var textDidChangePublisher: AnyPublisher<String?, Never> {
@@ -36,52 +39,63 @@ public extension UISearchTextField {
 
     var textDidChangePublisherSmallDebounce: AnyPublisher<String?, Never> {
         textDidChangeNotificationPublisher
-            .map { ($0.object as? UISearchTextField)?.text }
-            .debounce(for: .milliseconds(Self.smallDebounce), scheduler: RunLoop.main).eraseToAnyPublisher()
+            .compactMap { ($0.object as? UISearchTextField)?.text }
+            .map { Optional($0) }
+            .debounce(for: .milliseconds(Self.smallDebounce), scheduler: RunLoop.main)
+            .eraseToAnyPublisher()
     }
 
     var textDidChangePublisherRegularDebounce: AnyPublisher<String?, Never> {
         textDidChangeNotificationPublisher
-            .map { ($0.object as? UISearchTextField)?.text }
-            .debounce(for: .milliseconds(Self.regularDebounce), scheduler: RunLoop.main).eraseToAnyPublisher()
+            .compactMap { ($0.object as? UISearchTextField)?.text }
+            .map { Optional($0) }
+            .debounce(for: .milliseconds(Self.regularDebounce), scheduler: RunLoop.main)
+            .eraseToAnyPublisher()
     }
 
     var textDidChangePublisherBigDebounce: AnyPublisher<String?, Never> {
         textDidChangeNotificationPublisher
-            .map { ($0.object as? UISearchTextField)?.text }
-            .debounce(for: .milliseconds(Self.bigDebounce), scheduler: RunLoop.main).eraseToAnyPublisher()
+            .compactMap { ($0.object as? UISearchTextField)?.text }
+            .map { Optional($0) }
+            .debounce(for: .milliseconds(Self.bigDebounce), scheduler: RunLoop.main)
+            .eraseToAnyPublisher()
     }
 }
 
 public extension CombineCompatibleProtocol where Self: UISearchTextField {
-    var valueChangedPublisher: AnyPublisher<String?, Never> { editingChangedPublisherRegularDebounce }
+    var valueChangedPublisher: AnyPublisher<String?, Never> {
+        editingChangedPublisherRegularDebounce
+    }
 
     var editingChangedPublisherSmallDebounce: AnyPublisher<String?, Never> {
-        Common.UIControlPublisher(control: self, events: [.editingChanged]).map(\.text)
-            .debounce(for: .milliseconds(Self.smallDebounce), scheduler: RunLoop.main).eraseToAnyPublisher()
+        Common.UIControlPublisher(control: self, events: [.editingChanged])
+            .map(\.text)
+            .debounce(for: .milliseconds(Self.smallDebounce), scheduler: RunLoop.main)
             .eraseToAnyPublisher()
     }
 
     var editingChangedPublisherRegularDebounce: AnyPublisher<String?, Never> {
-        Common.UIControlPublisher(control: self, events: [.editingChanged]).map(\.text)
-            .debounce(for: .milliseconds(Self.regularDebounce), scheduler: RunLoop.main).eraseToAnyPublisher()
+        Common.UIControlPublisher(control: self, events: [.editingChanged])
+            .map(\.text)
+            .debounce(for: .milliseconds(Self.regularDebounce), scheduler: RunLoop.main)
             .eraseToAnyPublisher()
     }
 
     var editingChangedPublisherBigDebounce: AnyPublisher<String?, Never> {
-        Common.UIControlPublisher(control: self, events: [.editingChanged]).map(\.text)
-            .debounce(for: .milliseconds(Self.bigDebounce), scheduler: RunLoop.main).eraseToAnyPublisher()
+        Common.UIControlPublisher(control: self, events: [.editingChanged])
+            .map(\.text)
+            .debounce(for: .milliseconds(Self.bigDebounce), scheduler: RunLoop.main)
             .eraseToAnyPublisher()
     }
 }
 
-fileprivate extension UISearchTextField {
+private extension UISearchTextField {
     static var smallDebounce = 250
     static var regularDebounce = smallDebounce * 2
-    static var bigDebounce = smallDebounce * 2
+    static var bigDebounce = smallDebounce * 4 // FIXED (was *2)
 }
 
-fileprivate extension Common {
+private extension Common {
     func sample() {
         let search = UISearchTextField()
 

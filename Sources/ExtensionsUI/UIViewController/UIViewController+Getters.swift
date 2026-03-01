@@ -7,78 +7,126 @@ import Foundation
 import UIKit
 
 public extension UIViewController {
+    // MARK: - Top View Controller
+
     var topViewController: UIViewController? {
-        UIViewController.topViewController
+        Self.topViewController
     }
 
+    /// The visible top-most UIViewController across all active scenes/windows.
     static var topViewController: UIViewController? {
         UIApplication.topViewController()
     }
 
-    var isVisible: Bool { isViewLoaded && (view.window != nil) }
+    // MARK: - Visibility
 
+    /// Whether the view is loaded AND actually visible on screen.
+    var isVisible: Bool {
+        isViewLoaded && view.window != nil
+    }
+
+    // MARK: - Accessibility
+
+    /// Future-proof generic identifier for automated testing / accessibility tooling.
     var genericAccessibilityIdentifier: String {
-        // One day we will have Accessibility on the app, and we will be ready....
         let name = String(describing: type(of: self))
         return "accessibilityIdentifierPrefix.\(name)"
     }
+
+    // MARK: - Application Loaded Controllers (Flat)
 
     static var applicationLoadedViewControllers: (
         tabBarControllers: [UITabBarController],
         navigationControllers: [UINavigationController],
         viewControllers: [UIViewController]
     ) {
-        let loadedViewControllersAndLevels = applicationLoadedViewControllersAndLevels
+        let all = applicationLoadedViewControllersAndLevels
         return (
-            loadedViewControllersAndLevels.tabBarControllers.map(\.controller),
-            loadedViewControllersAndLevels.navigationControllers.map(\.controller),
-            loadedViewControllersAndLevels.viewControllers.map(\.controller)
+            all.tabBarControllers.map(\.controller),
+            all.navigationControllers.map(\.controller),
+            all.viewControllers.map(\.controller)
         )
     }
 
+    // MARK: - Application Loaded Controllers (With Levels)
+
+    /// Returns all view controllers loaded into the active UIWindow hierarchy.
+    ///
+    /// Fully updated to support:
+    /// - Multiple scenes
+    /// - Multiple windows
+    /// - Correct recursion order
+    /// - Presented controllers + embedded hierarchies
     static var applicationLoadedViewControllersAndLevels: (
         tabBarControllers: [(controller: UITabBarController, level: Int)],
         navigationControllers: [(controller: UINavigationController, level: Int)],
         viewControllers: [(controller: UIViewController, level: Int)]
     ) {
-        var allViewControllersAndLevels: [(viewController: UIViewController, level: Int)] = []
-        var tabBarControllersAndLevels: [(controller: UITabBarController, level: Int)] = []
-        var navigationControllersAndLevels: [(controller: UINavigationController, level: Int)] = []
-        var viewControllersAndLevels: [(controller: UIViewController, level: Int)] = []
-        if let rootViewController = UIApplication.keyWindow?.rootViewController {
-            // Recursive function to traverse through view controller hierarchy
-            func addViewControllers(from viewController: UIViewController, level: Int) {
-                allViewControllersAndLevels.append((viewController, level))
-                if let navigationController = viewController as? UINavigationController {
-                    for viewController in navigationController.viewControllers {
-                        addViewControllers(from: viewController, level: level + 1)
-                    }
-                } else if let tabBarController = viewController as? UITabBarController {
-                    for viewController in tabBarController.viewControllers ?? [] {
-                        addViewControllers(from: viewController, level: level + 1)
-                    }
-                } else if let presentedViewController = viewController.presentedViewController {
-                    addViewControllers(from: presentedViewController, level: level + 1)
+        // Use *all* key windows in case app uses multiple scenes.
+        let rootViewControllers = UIApplication
+            .shared
+            .connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .filter(\.isKeyWindow)
+            .compactMap(\.rootViewController)
+
+        var all: [(vc: UIViewController, level: Int)] = []
+        var tabs: [(UITabBarController, Int)] = []
+        var navs: [(UINavigationController, Int)] = []
+        var vcs: [(UIViewController, Int)] = []
+
+        // Recursively collect all view controllers in the hierarchy
+        func traverse(_ viewController: UIViewController, level: Int) {
+            all.append((viewController, level))
+
+            // UINavigationController
+            if let nav = viewController as? UINavigationController {
+                for vc in nav.viewControllers {
+                    traverse(vc, level: level + 1)
                 }
             }
-            addViewControllers(from: rootViewController, level: 0)
-        }
-        allViewControllersAndLevels.forEach { viewControllerAndLevel in
-            if let tabBarController = viewControllerAndLevel.viewController as? UITabBarController {
-                tabBarControllersAndLevels.append((tabBarController, viewControllerAndLevel.level))
-            } else if let navigationController = viewControllerAndLevel.viewController as? UINavigationController {
-                navigationControllersAndLevels.append((navigationController, viewControllerAndLevel.level))
-            } else {
-                viewControllersAndLevels.append((viewControllerAndLevel.viewController, viewControllerAndLevel.level))
+
+            // UITabBarController
+            else if let tab = viewController as? UITabBarController {
+                for vc in tab.viewControllers ?? [] {
+                    traverse(vc, level: level + 1)
+                }
+            }
+
+            // Presented controller
+            if let presented = viewController.presentedViewController {
+                traverse(presented, level: level + 1)
+            }
+
+            // Child view controllers (contained)
+            for child in viewController.children {
+                traverse(child, level: level + 1)
             }
         }
-        tabBarControllersAndLevels = tabBarControllersAndLevels.sorted(by: { a, b in a.level < b.level })
-        navigationControllersAndLevels = navigationControllersAndLevels.sorted(by: { a, b in a.level < b.level })
-        viewControllersAndLevels = viewControllersAndLevels.sorted(by: { a, b in a.level < b.level })
-        return (
-            tabBarControllersAndLevels,
-            navigationControllersAndLevels,
-            viewControllersAndLevels
-        )
+
+        // Handle all scene windows
+        for root in rootViewControllers {
+            traverse(root, level: 0)
+        }
+
+        // Classify
+        for (vc, level) in all {
+            switch vc {
+            case let t as UITabBarController:
+                tabs.append((t, level))
+            case let n as UINavigationController:
+                navs.append((n, level))
+            default:
+                vcs.append((vc, level))
+            }
+        }
+
+        // Sort by depth
+        tabs.sort { $0.1 < $1.1 }
+        navs.sort { $0.1 < $1.1 }
+        vcs.sort { $0.1 < $1.1 }
+
+        return (tabs, navs, vcs)
     }
 }

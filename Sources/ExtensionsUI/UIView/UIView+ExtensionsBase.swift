@@ -4,13 +4,17 @@
 //
 
 import Foundation
-import UIKit
 import SwiftUI
+import UIKit
 
 public extension UIView {
-    func bringToFront() { superview?.bringSubviewToFront(self) }
+    func bringToFront() {
+        superview?.bringSubviewToFront(self)
+    }
 
-    func sendToBack() { superview?.sendSubviewToBack(self) }
+    func sendToBack() {
+        superview?.sendSubviewToBack(self)
+    }
 
     var erased: AnyView {
         asAnyView
@@ -24,7 +28,7 @@ public extension UIView {
 
     // Find super views of type
     func superview<T>(of type: T.Type) -> T? {
-        superview as? T ?? superview.flatMap { $0.superview(of: type) }
+        superview as? T ?? superview?.superview(of: type)
     }
 
     var asAnyView: AnyView {
@@ -32,37 +36,42 @@ public extension UIView {
     }
 
     var asImage: UIImage {
-        let renderer = UIGraphicsImageRenderer(size: bounds.size)
-        let image = renderer.image { _ in
-            drawHierarchy(in: bounds, afterScreenUpdates: true)
-        }
+        // Prevent zero-size renderer crash
+        let safeSize = CGSize(width: max(bounds.width, 1), height: max(bounds.height, 1))
 
-        return image
+        let renderer = UIGraphicsImageRenderer(size: safeSize)
+        return renderer.image { _ in
+            // Safer than drawHierarchy for offscreen content
+            if layer.contents != nil {
+                layer.render(in: UIGraphicsGetCurrentContext()!)
+            } else {
+                drawHierarchy(in: CGRect(origin: .zero, size: safeSize), afterScreenUpdates: true)
+            }
+        }
     }
 
     var width: CGFloat { frame.width }
     var height: CGFloat { frame.height }
 
     var viewController: UIViewController? {
-        if let nextResponder = next as? UIViewController {
-            return nextResponder
-        }
-        if let nextResponder = next as? UIView {
-            return nextResponder.viewController
-        }
-        return nil
+        // Faster and safer responder-chain traversal
+        sequence(first: next, next: { $0?.next })
+            .compactMap { $0 as? UIViewController }
+            .first
     }
 
-    func disableUserInteractionFor(_ seconds: Double, disableAlpha: CGFloat = 1) {
-        guard isUserInteractionEnabled else {
+    func disableUserInteractionFor(
+        _ seconds: Double,
+        disableAlpha: CGFloat = 1
+    ) {
+        guard isUserInteractionEnabled, seconds > 0 else {
             return
         }
-        guard seconds > 0 else {
-            return
-        }
+
         isUserInteractionEnabled = false
         alpha = disableAlpha
-        DispatchQueue.main.asyncAfter(deadline: .now() + TimeInterval(seconds)) { [weak self] in
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [weak self] in
             self?.isUserInteractionEnabled = true
             self?.alpha = 1
         }

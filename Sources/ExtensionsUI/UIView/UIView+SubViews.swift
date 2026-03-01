@@ -7,10 +7,13 @@ import Foundation
 import UIKit
 
 public extension UIView {
+    /// Convenience: returns all subviews recursively (any type)
     var allSubviews: [UIView] { allSubviewsRecursive() }
+
     func removeAllSubviewsRecursive() {
         let allViews = UIView.allSubviewsRecursive(from: self) as [UIView]
-        _ = allViews.map { some in
+
+        for some in allViews {
             if let viewController = some.viewController {
                 viewController.destroy()
             }
@@ -30,15 +33,32 @@ public extension UIView {
         }
     }
 
+    // MARK: - Recursive Search (Generic)
+
+    /// Recursively retrieves all subviews of type T
     class func allSubviewsRecursive<T: UIView>(from view: UIView) -> [T] {
-        view.subviews.flatMap { subView -> [T] in
-            var result = allSubviewsRecursive(from: subView) as [T]
-            if let view = subView as? T {
-                result.append(view)
+        var result: [T] = []
+
+        // Iterative DFS: faster and avoids deep recursion stack on large hierarchies
+        var stack = view.subviews
+
+        while !stack.isEmpty {
+            let sub = stack.removeLast()
+
+            if let match = sub as? T {
+                result.append(match)
             }
-            return result
+
+            if !sub.subviews.isEmpty {
+                stack.append(contentsOf: sub.subviews)
+            }
         }
+
+        return result
     }
 
-    func allSubviewsRecursive<T: UIView>() -> [T] { UIView.allSubviewsRecursive(from: self) as [T] }
+    /// Recursively retrieves all subviews of type T (starting from self)
+    func allSubviewsRecursive<T: UIView>() -> [T] {
+        UIView.allSubviewsRecursive(from: self) as [T]
+    }
 }

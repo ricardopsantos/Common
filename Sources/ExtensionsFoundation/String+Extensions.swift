@@ -3,12 +3,14 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
+import CommonCrypto
 import Foundation
 import UIKit
-import CommonCrypto
 
 //
+
 // MARK: - Transformations / Operators
+
 //
 
 private extension String {
@@ -18,7 +20,7 @@ private extension String {
 }
 
 public extension String {
-    var random: String { String.random(Int.random(in: 10...100)) }
+    var random: String { String.random(Int.random(in: 10 ... 100)) }
     var length: Int { count }
     var first: String { String(prefix(1)) }
     var last: String { if isEmpty {
@@ -28,7 +30,8 @@ public extension String {
     } }
 
     var trim: String { // Trim and single spaces
-        replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression).trimmingCharacters(in: .whitespacesAndNewlines)
+        replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     var onlyWhiteSpace: String { // String with only white spaces return ""
@@ -134,7 +137,10 @@ public extension String {
     var decimalValue: Decimal? {
         let decimalSeparator = Locale.current.decimalSeparator ?? "."
         let groupingSeparator = Locale.current.groupingSeparator ?? ","
-        let regex: NSRegularExpression! = try? NSRegularExpression(pattern: "[^0-9\(decimalSeparator)]", options: .caseInsensitive)
+        let regex: NSRegularExpression! = try? NSRegularExpression(
+            pattern: "[^0-9\(decimalSeparator)]",
+            options: .caseInsensitive
+        )
         var formatter: NumberFormatter {
             let formatter = NumberFormatter()
             formatter.decimalSeparator = decimalSeparator
@@ -155,7 +161,9 @@ public extension String {
 }
 
 //
+
 // MARK: - Hashing
+
 //
 
 public extension String {
@@ -164,7 +172,7 @@ public extension String {
     // with a sequence of multipliers. The zip function pairs each UTF-8 character with a multiplier
     // in the sequence, then maps and reduces the results to produce a final hash value.
     var deterministicHashValue: Int {
-        zip(utf8.map(numericCast), Swift.sequence(first: 1, next: { $0 &* 589836 })).map(&*).reduce(0, &+)
+        zip(utf8.map(numericCast), Swift.sequence(first: 1, next: { $0 &* 589_836 })).map(&*).reduce(0, &+)
     }
 
     // Computes the SHA-1 hash of the string.
@@ -183,7 +191,9 @@ public extension String {
 }
 
 //
+
 // MARK: - Constructors
+
 //
 
 public extension String {
@@ -195,7 +205,9 @@ public extension String {
 }
 
 //
+
 // MARK: - Bools
+
 //
 
 extension String? {
@@ -242,7 +254,9 @@ public extension String {
 }
 
 //
+
 // MARK: - Utils
+
 //
 
 public extension CustomStringConvertible where Self: Codable {
@@ -295,12 +309,15 @@ public extension String {
     }
 
     func superscriptLastCharacter(font: UIFont) -> NSMutableAttributedString {
-        let superscriptAtttributedString = NSMutableAttributedString(string: self, attributes: [NSAttributedString.Key.font: font])
+        let superscriptAtttributedString = NSMutableAttributedString(
+            string: self,
+            attributes: [NSAttributedString.Key.font: font]
+        )
         if let superscriptFont = UIFont(name: font.fontName, size: font.pointSize * 0.6) {
             superscriptAtttributedString.setAttributes(
                 [
                     NSAttributedString.Key.font: superscriptFont,
-                    NSAttributedString.Key.baselineOffset: font.lineHeight * 0.3
+                    NSAttributedString.Key.baselineOffset: font.lineHeight * 0.3,
                 ],
                 range: NSRange(location: count - 1, length: 1)
             )
@@ -351,7 +368,7 @@ public extension String {
             "\"": "&quot;",
             "'": "&#x27;",
             "`": "&#x60;",
-            " ": "&nbsp;"
+            " ": "&nbsp;",
         ]
 
         var result = self
@@ -369,7 +386,7 @@ public extension String {
         }
         let options: [NSAttributedString.DocumentReadingOptionKey: Any] = [
             .documentType: NSAttributedString.DocumentType.html,
-            .characterEncoding: String.Encoding.utf8.rawValue
+            .characterEncoding: String.Encoding.utf8.rawValue,
         ]
         return try? NSAttributedString(data: data, options: options, documentAttributes: nil)
     }
@@ -393,15 +410,14 @@ public extension String {
     }
 
     static func random(_ length: Int, haveSpaces: Bool = false) -> String {
-        var letters: NSString!
-        if haveSpaces {
-            letters = "          abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        let letters: NSString! = if haveSpaces {
+            "          abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         } else {
-            letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         }
         var randomString = ""
-        for _ in 0..<length {
-            let rand = Int.random(in: 0...letters.length - 1)
+        for _ in 0 ..< length {
+            let rand = Int.random(in: 0 ... letters.length - 1)
             var nextChar = letters.character(at: Int(rand))
             randomString += NSString(characters: &nextChar, length: 1) as String
         }
@@ -421,7 +437,8 @@ public extension String {
 
     func htmlAttributedString(fontName: String, fontSize: Int, colorHex: String) -> NSAttributedString? {
         do {
-            let cssPrefix = "<style>* { font-family: \(fontName); color: #\(colorHex); font-size: \(fontSize); }</style>"
+            let cssPrefix =
+                "<style>* { font-family: \(fontName); color: #\(colorHex); font-size: \(fontSize); }</style>"
             let html = cssPrefix + self
             guard let data = html.data(using: String.Encoding.utf8) else {
                 return nil
@@ -430,12 +447,12 @@ public extension String {
                 data: data,
                 options: [
                     .documentType: NSAttributedString.DocumentType.html,
-                    .characterEncoding: String.Encoding.utf8.rawValue
+                    .characterEncoding: String.Encoding.utf8.rawValue,
                 ],
                 documentAttributes: nil
             )
         } catch {
-            Common_Logs.error("\(error)")
+            Common_Logs.error("\(error)", "\(Self.self)")
             return nil
         }
         /**
@@ -454,14 +471,16 @@ public extension String {
 public extension String {
     /// _10 min_ -> _10_
     var extrateMinutes: Int {
-        var minutes: Int = 0
+        var minutes = 0
         if contains(" "),
            let value = split(by: " ").first,
-           let intValue = value.intValue, intValue > 0 {
+           let intValue = value.intValue, intValue > 0
+        {
             minutes = intValue
         } else if contains(" "),
                   let value = split(by: " ").last,
-                  let intValue = value.intValue, intValue > 0 {
+                  let intValue = value.intValue, intValue > 0
+        {
             minutes = intValue
         } else if let intValue, intValue > 0 {
             minutes = intValue
@@ -471,15 +490,17 @@ public extension String {
 }
 
 //
+
 // MARK: - SubScript
+
 //
 
 public extension String {
-    subscript(i: Int) -> String { self[i..<i + 1] }
+    subscript(i: Int) -> String { self[i ..< i + 1] }
 
-    func substring(fromIndex: Int) -> String { self[min(fromIndex, length)..<length] }
+    func substring(fromIndex: Int) -> String { self[min(fromIndex, length) ..< length] }
 
-    func substring(toIndex: Int) -> String { self[0..<max(0, toIndex)] }
+    func substring(toIndex: Int) -> String { self[0 ..< max(0, toIndex)] }
 
     subscript(r: Range<Int>) -> String {
         let range = Range(uncheckedBounds: (
@@ -488,7 +509,7 @@ public extension String {
         ))
         let start = index(startIndex, offsetBy: range.lowerBound)
         let end = index(start, offsetBy: range.upperBound - range.lowerBound)
-        return String(self[start..<end])
+        return String(self[start ..< end])
     }
 
     subscript(i: Int) -> Character {
@@ -501,7 +522,7 @@ public extension String {
         if end < start {
             return ""
         }
-        return self[start..<end]
+        return self[start ..< end]
     }
 
     subscript(bounds: CountableClosedRange<Int>) -> Substring {
@@ -510,7 +531,7 @@ public extension String {
         if end < start {
             return ""
         }
-        return self[start...end]
+        return self[start ... end]
     }
 
     subscript(bounds: CountablePartialRangeFrom<Int>) -> Substring {
@@ -519,7 +540,7 @@ public extension String {
         if end < start {
             return ""
         }
-        return self[start...end]
+        return self[start ... end]
     }
 
     subscript(bounds: PartialRangeThrough<Int>) -> Substring {
@@ -527,7 +548,7 @@ public extension String {
         if end < startIndex {
             return ""
         }
-        return self[startIndex...end]
+        return self[startIndex ... end]
     }
 
     subscript(bounds: PartialRangeUpTo<Int>) -> Substring {
@@ -535,6 +556,6 @@ public extension String {
         if end < startIndex {
             return ""
         }
-        return self[startIndex..<end]
+        return self[startIndex ..< end]
     }
 }

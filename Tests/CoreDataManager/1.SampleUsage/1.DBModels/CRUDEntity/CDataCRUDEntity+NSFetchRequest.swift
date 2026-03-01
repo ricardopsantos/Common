@@ -2,9 +2,9 @@
 //  Created by Ricardo Santos on 14/08/2024.
 //
 
-import Foundation
-import CoreData
 @testable import Common
+import CoreData
+import Foundation
 
 //
 // NSFetchRequest Utils

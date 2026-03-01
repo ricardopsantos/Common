@@ -20,6 +20,7 @@
 //    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //    THE SOFTWARE.
+//
 
 // swiftlint:disable all
 
@@ -67,7 +68,8 @@ public extension TNConstrainable {
                 accessibilityId = ".[accessibility:\(accessibilityIdentifier)]"
             }
             let tag = view.tag > 0 ? ".[tag:\(view.tag)]" : ""
-            let mainId = "[\(NSStringFromClass(type(of: self) as! AnyClass))].[\(Unmanaged.passUnretained(view).toOpaque())]"
+            let mainId =
+                "[\(NSStringFromClass(type(of: self) as! AnyClass))].[\(Unmanaged.passUnretained(view).toOpaque())]"
             return "\(mainId)\(accessibilityId)\(tag)"
         } else {
             return "unknow_memory_address"

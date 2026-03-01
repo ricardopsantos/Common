@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  FileManager.swift
 //  Common
 //
 //  Created by Ricardo Santos on 20/09/2024.
@@ -39,7 +39,7 @@ public extension Common {
                         try fileManager.removeItem(at: fileURL)
                     }
                 } catch {
-                    Common_Logs.error(error)
+                    Common_Logs.error(error, "\(Self.self)")
                 }
             }
         }

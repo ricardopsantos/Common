@@ -17,6 +17,7 @@ public extension URLResponse {
         if let textEncodingName {
             message += "textEncodingName: \(textEncodingName) | "
         }
-        return message.replace("Optional", with: "").replace("(", with: "").replace(")", with: "").replace("\"", with: "")
+        return message.replace("Optional", with: "").replace("(", with: "").replace(")", with: "")
+            .replace("\"", with: "")
     }
 }

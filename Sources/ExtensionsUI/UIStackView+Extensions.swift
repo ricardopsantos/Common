@@ -4,101 +4,112 @@
 //
 
 import Foundation
-import UIKit
 import SwiftUI
+import UIKit
 
 public extension UIStackView {
-    var view: UIView { self as UIView }
+    var view: UIView { self }
 }
 
 public extension UIStackView {
-    static func defaultVerticalStackView(_ defaultMargin: CGFloat = 16, _ spacing: CGFloat = 5) -> UIStackView {
-        var layoutMargins: UIEdgeInsets {
-            let topAndBottomSpacing: CGFloat = 0
-            return UIEdgeInsets(
-                top: topAndBottomSpacing,
-                left: defaultMargin,
-                bottom: topAndBottomSpacing,
-                right: defaultMargin
-            )
-        }
+    static func defaultVerticalStackView(
+        _ defaultMargin: CGFloat = 16,
+        _ spacing: CGFloat = 5
+    ) -> UIStackView {
+        let layoutMargins = UIEdgeInsets(
+            top: 0,
+            left: defaultMargin,
+            bottom: 0,
+            right: defaultMargin
+        )
 
-        let some = UIStackView()
-        some.isLayoutMarginsRelativeArrangement = true
-        some.axis = .vertical
-        some.distribution = .fill
-        some.spacing = spacing
-        some.alignment = .fill
-        some.autoresizesSubviews = false
-        some.layoutMargins = layoutMargins
-        some.clipsToBounds = false // Avoiding crops shadows of inner elements
-        return some
+        let v = UIStackView()
+        v.isLayoutMarginsRelativeArrangement = true
+        v.axis = .vertical
+        v.distribution = .fill
+        v.spacing = spacing
+        v.alignment = .fill
+        v.autoresizesSubviews = false
+        v.layoutMargins = layoutMargins
+        v.clipsToBounds = false
+        return v
     }
 
-    static func defaultHorizontalStackView(_ defaultMargin: CGFloat = 16, _ spacing: CGFloat = 5) -> UIStackView {
-        var layoutMargins: UIEdgeInsets {
-            let topAndBottomSpacing: CGFloat = 0
-            return UIEdgeInsets(
-                top: topAndBottomSpacing,
-                left: defaultMargin,
-                bottom: topAndBottomSpacing,
-                right: defaultMargin
-            )
-        }
+    static func defaultHorizontalStackView(
+        _ defaultMargin: CGFloat = 16,
+        _ spacing: CGFloat = 5
+    ) -> UIStackView {
+        let layoutMargins = UIEdgeInsets(
+            top: 0,
+            left: defaultMargin,
+            bottom: 0,
+            right: defaultMargin
+        )
 
-        let some = UIStackView()
-        some.isLayoutMarginsRelativeArrangement = true
-        some.axis = .horizontal
-        some.spacing = spacing
-        some.distribution = .equalCentering
-        some.alignment = .center
-        some.autoresizesSubviews = false
-        some.layoutMargins = layoutMargins
-        some.clipsToBounds = false // Avoiding crops shadows of inner elements
-        return some
+        let h = UIStackView()
+        h.isLayoutMarginsRelativeArrangement = true
+        h.axis = .horizontal
+        h.spacing = spacing
+        h.distribution = .equalCentering
+        h.alignment = .center
+        h.autoresizesSubviews = false
+        h.layoutMargins = layoutMargins
+        h.clipsToBounds = false
+        return h
     }
 }
 
 public extension UIStackView {
-    func addSeparator(color: UIColor = UIColor.darkGray, size: CGFloat = 3) {
+    func addSeparator(
+        color: UIColor = .darkGray,
+        size: CGFloat = 3,
+        stackViewInvisibleSeparatorLineTag: Int = 5000,
+        stackViewVisibleSeparatorLineTag: Int = 50001
+    ) {
         let separator = UIView()
         separator.backgroundColor = color
-        if color == .clear {
-            separator.tag = Common.AppTags.stackViewInvisibleSeparatorLine.tag
-        } else {
-            separator.tag = Common.AppTags.stackViewVisibleSeparatorLine.tag
-        }
+        separator.tag = (color == .clear)
+            ? stackViewInvisibleSeparatorLineTag
+            : stackViewVisibleSeparatorLineTag
+
         addArrangedSubview(separator)
         separator.heightAnchor.constraint(equalToConstant: size).isActive = true
     }
 
     func edgeStackViewToSuperView(insets: UIEdgeInsets = .zero) {
-        guard let superview else {
-            return
-        }
-        layouts.edgesToSuperview(insets: insets) // Don't use RJPSLayouts. It will fail if scroll view is inside of stack view with lots of elements
-        layouts.width(to: superview) // NEEDS THIS!
+        guard let superview else { return }
+        layouts.edgesToSuperview(insets: insets)
+        layouts.width(to: superview)
     }
+
+    // MARK: - Centering helpers
 
     func addHorizontallyCentered(any: Any, margin: CGFloat) {
         if let view = any as? UIView {
-            let stackViewH = UIStackView.defaultHorizontalStackView(0, 0)
-            let lMargin = UIView()
-            let rMargin = UIView()
-            stackViewH.addArranged(uiview: lMargin)
-            stackViewH.addArranged(uiview: view)
-            stackViewH.addArranged(uiview: rMargin)
-            addArrangedSubview(stackViewH)
+            let h = UIStackView.defaultHorizontalStackView(0, 0)
+            let left = UIView()
+            let right = UIView()
+
+            h.addArrangedSubview(left)
+            h.addArrangedSubview(view)
+            h.addArrangedSubview(right)
+
+            left.backgroundColor = .clear
+            right.backgroundColor = .clear
+
             if margin > 0 {
-                stackViewH.alignment = .trailing
-                stackViewH.distribution = .fill
-                lMargin.layouts.width(margin)
-                rMargin.layouts.width(margin)
+                h.alignment = .trailing
+                h.distribution = .fill
+                left.layouts.width(margin)
+                right.layouts.width(margin)
             }
-            lMargin.backgroundColor = .clear
-            rMargin.backgroundColor = .clear
-        } else if let view = any as? AnyView {
-            addHorizontallyCentered(any: view, margin: margin)
+
+            addArrangedSubview(h)
+            return
+        }
+
+        if let swiftUIView = any as? AnyView {
+            addHorizontallyCentered(any: swiftUIView, margin: margin)
         }
     }
 
@@ -109,136 +120,122 @@ public extension UIStackView {
             view.layouts.centerToSuperview()
             view.layouts.size(size)
             container.layouts.height(size.height)
+
             addArrangedSubview(container)
-        } else if let view = any as? AnyView {
-            return addHorizontallyCentered(any: view, size: size)
+            return
+        }
+
+        if let swiftUIView = any as? AnyView {
+            addHorizontallyCentered(any: swiftUIView, size: size)
         }
     }
 
+    // MARK: - Add arranged subviews
+
     func addArranged(any: Any, id: String? = nil) {
-        if let uiView = any as? UIView {
-            addArranged(uiview: uiView, id: id)
-        } else if let view = any as? AnyView {
-            addArranged(view: view, id: id)
-        } else {
-            Common_Logs.error("Not predicted for [\(any)]")
+        if let v = any as? UIView {
+            addArranged(any: v, id: id)
+            return
         }
+
+        if let v = any as? AnyView {
+            addArranged(view: v, id: id)
+            return
+        }
+
+        Common_Logs.error("Not predicted for [\(any)]", "\(Self.self)")
     }
 
     func addArranged(view: some View, id: String? = nil) {
-        if let uiView = view.asViewController.view {
-            addArranged(uiview: uiView, id: id)
-        }
+        guard let uiView = view.asViewController.view else { return }
+        addArranged(uiView: uiView, id: id)
     }
 
-    func addArranged(uiview: UIView?, id: String? = nil) {
-        guard let uiview else { return }
+    func addArranged(uiView: UIView?, id: String? = nil) {
+        guard let uiView else { return }
+
         if let id {
-            if uiview.superview == nil {
-                addArrangedSubview(uiview)
-                uiview.accessibilityIdentifier = id
-                uiview.setNeedsLayout()
-                uiview.layoutIfNeeded()
-            } else {
-                if let old = arrangedSubviews.filter({ $0.accessibilityIdentifier == id }).first {
-                    arrangedSubviews.enumerated().forEach {
-                        if $0.1 == uiview {
-                            removeArrangedSubview(old)
-                            insertArrangedSubview(uiview, at: $0.0)
-                        }
-                    }
-                }
+            uiView.accessibilityIdentifier = id
+
+            if uiView.superview == nil {
+                addArrangedSubview(uiView)
+            } else if let existing = arrangedSubviews.first(where: { $0.accessibilityIdentifier == id }),
+                      let position = arrangedSubviews.firstIndex(of: existing)
+            {
+                removeArrangedSubview(existing)
+                insertArrangedSubview(uiView, at: position)
             }
         } else {
-            if uiview.superview == nil {
-                addArrangedSubview(uiview)
-                uiview.setNeedsLayout()
-                uiview.layoutIfNeeded()
+            if uiView.superview == nil {
+                addArrangedSubview(uiView)
             }
         }
+
+        uiView.setNeedsLayout()
+        uiView.layoutIfNeeded()
     }
 
+    // MARK: - Index helpers
+
     func arrangedSubview(at index: Int) -> UIView? {
-        guard index >= 0, index < arrangedSubviews.count else {
-            return nil
-        }
+        guard index >= 0, index < arrangedSubviews.count else { return nil }
         return arrangedSubviews[index]
     }
 
     func indexOfArrangedSubview(_ view: UIView) -> Int? {
-        // Iterate over arranged subviews and find the index of the provided view
-        for (index, arrangedSubview) in arrangedSubviews.enumerated() {
-            if arrangedSubview == view {
-                return index
-            }
-        }
-        // View not found in arrangedSubviews
-        return nil
+        arrangedSubviews.firstIndex(of: view)
     }
 
-    func insertArrangedSubview(_ uiview: UIView, atIndex: Int) {
-        insertArrangedSubview(uiview, at: atIndex)
+    // MARK: - Insert API
+
+    func insertArrangedSubview(_ view: UIView, atIndex: Int) {
+        insertArrangedSubview(view, at: atIndex)
         setNeedsLayout()
         layoutIfNeeded()
     }
 
-    func insertArrangedSubview(_ uiview: UIView, belowArrangedSubview subview: UIView) {
-        arrangedSubviews.enumerated().forEach {
-            if $0.1 == subview {
-                insertArrangedSubview(uiview, at: $0.0 + 1)
-                setNeedsLayout()
-                layoutIfNeeded()
-            }
-        }
+    func insertArrangedSubview(_ view: UIView, belowArrangedSubview subview: UIView) {
+        guard let idx = indexOfArrangedSubview(subview) else { return }
+        insertArrangedSubview(view, at: idx + 1)
+        setNeedsLayout()
+        layoutIfNeeded()
     }
 
     func insertArrangedSubview(_ view: UIView, aboveArrangedSubview subview: UIView) {
-        arrangedSubviews.enumerated().forEach {
-            if $0.1 == subview {
-                insertArrangedSubview(view, at: $0.0)
-                setNeedsLayout()
-                layoutIfNeeded()
-            }
-        }
+        guard let idx = indexOfArrangedSubview(subview) else { return }
+        insertArrangedSubview(view, at: idx)
+        setNeedsLayout()
+        layoutIfNeeded()
     }
 
+    // MARK: - Removal
+
     func removeArrangedSubview(at index: Int) {
-        guard index >= 0, index < arrangedSubviews.count else {
-            return // Index out of bounds
-        }
-        let removedView = arrangedSubviews[index]
-        removeArrangedSubview(removedView)
-        removedView.removeFromSuperview()
+        guard index >= 0, index < arrangedSubviews.count else { return }
+        let v = arrangedSubviews[index]
+        removeArrangedSubview(v)
+        v.removeFromSuperview()
         setNeedsLayout()
         layoutIfNeeded()
     }
 
     func removeAllArrangedSubviews(after index: Int) {
-        guard index >= 0, index < arrangedSubviews.count else {
-            return
-        }
+        guard index >= 0, index < arrangedSubviews.count else { return }
 
-        // Create a copy of the arrangedSubviews array
-        let subviewsToRemove = Array(arrangedSubviews.suffix(from: index + 1))
-
-        // Remove arranged subviews after the specified index
-        for arrangedSubview in subviewsToRemove {
-            NSLayoutConstraint.deactivate(arrangedSubview.constraints)
-            removeArrangedSubview(arrangedSubview)
-            arrangedSubview.removeFromSuperview()
+        let toRemove = arrangedSubviews.suffix(from: index + 1)
+        for v in toRemove {
+            NSLayoutConstraint.deactivate(v.constraints)
+            removeArrangedSubview(v)
+            v.removeFromSuperview()
         }
     }
 
     func removeAllArrangedSubviews() {
-        let removedSubviews = arrangedSubviews.reduce([]) { allSubviewsRecursive, subview -> [UIView] in
-            removeArrangedSubview(subview)
-            return allSubviewsRecursive + [subview]
-        }
-        // Deactivate all constraints
-        NSLayoutConstraint.deactivate(removedSubviews.flatMap(\.constraints))
-        // Remove the views from self
-        removedSubviews.forEach {
-            $0.removeFromSuperview()
+        let all = arrangedSubviews
+        for v in all {
+            removeArrangedSubview(v)
+            NSLayoutConstraint.deactivate(v.constraints)
+            v.removeFromSuperview()
         }
     }
 }

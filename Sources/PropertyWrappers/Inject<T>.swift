@@ -5,7 +5,7 @@
 
 import Foundation
 #if !os(watchOS)
-import SystemConfiguration
+    import SystemConfiguration
 #endif
 
 //
@@ -30,7 +30,10 @@ public extension Common_PropertyWrappers {
             let sDescribing = String(describing: type.self)
             let isResolved = factoryDict.keys.filter { $0 == sDescribing }.count == 1
             if !isResolved {
-                Common_Logs.error("\(Self.self) - Will fail resolving [\(type)] using [\(factoryDict.keys)]")
+                Common_Logs.error(
+                    "\(Self.self) - Will fail resolving [\(type)] using [\(factoryDict.keys)]",
+                    "\(Self.self)"
+                )
             }
             let block = factoryDict[sDescribing]
             return block?() as? Service
@@ -41,11 +44,12 @@ public extension Common_PropertyWrappers {
     struct Inject<T> {
         var type: T
         public init() {
-            self.type = PWInjectContainer.shared.resolve(T.self)!
+            type = PWInjectContainer.shared.resolve(T.self)!
         }
 
         /// The underlying value wrapped by the bindable state.
-        /// The property that stores the wrapped value of the property. It is the value that is accessed when the property is read or written.
+        /// The property that stores the wrapped value of the property. It is the value that is accessed when the
+        /// property is read or written.
         public var wrappedValue: T {
             get { type }
             mutating set { self.type = newValue }
@@ -59,11 +63,12 @@ public extension Common_PropertyWrappers {
         public init() {
             lock.lock()
             defer { lock.unlock() }
-            self.type = PWInjectContainer.shared.resolve(T.self)!
+            type = PWInjectContainer.shared.resolve(T.self)!
         }
 
         /// The underlying value wrapped by the bindable state.
-        /// The property that stores the wrapped value of the property. It is the value that is accessed when the property is read or written.
+        /// The property that stores the wrapped value of the property. It is the value that is accessed when the
+        /// property is read or written.
         public var wrappedValue: T {
             get { type }
             mutating set {
@@ -76,7 +81,9 @@ public extension Common_PropertyWrappers {
 }
 
 //
+
 // MARK: Sample Usage
+
 //
 
 private protocol SomeProtocol {
@@ -87,7 +94,7 @@ class SomeClass: SomeProtocol {
     func someFunc() {}
 }
 
-fileprivate extension Common_PropertyWrappers.InjectTreadSafe {
+private extension Common_PropertyWrappers.InjectTreadSafe {
     static func sampleUsage() {
         PWInjectContainer.shared.register(type: SomeProtocol.self) { SomeClass() }
 

@@ -25,17 +25,24 @@ public extension UIScrollView {
     }
 
     func scrollToBottom(animated: Bool) {
-        let desiredOffset = CGPoint(x: 0, y: contentInset.bottom)
+        let maxY = max(
+            -contentInset.top,
+            contentSize.height - bounds.size.height + contentInset.bottom
+        )
+        let desiredOffset = CGPoint(x: 0, y: maxY)
         setContentOffset(desiredOffset, animated: animated)
     }
 
     // Starts on page 1
-    func scrollTo(horizontalPage: CGFloat? = 0, verticalPage: CGFloat? = 0, animated: Bool? = true) {
-        var frameCopy: CGRect = frame
+    func scrollTo(horizontalPage: CGFloat? = 0,
+                  verticalPage: CGFloat? = 0,
+                  animated: Bool? = true)
+    {
+        var frameCopy = frame
         frameCopy.origin.x = frameCopy.size.width * CGFloat(horizontalPage ?? 0)
-        frameCopy.origin.y = frameCopy.size.width * CGFloat(verticalPage ?? 0)
+        frameCopy.origin.y = frameCopy.size.height * CGFloat(verticalPage ?? 0) // <- was width, now correct
         scrollRectToVisible(frameCopy, animated: animated ?? true)
     }
 }
 
-fileprivate extension UIScrollView {}
+private extension UIScrollView {}

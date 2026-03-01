@@ -1,12 +1,12 @@
 //
-//  CommonDefault.swift
+//  UserDefaultsManager.swift
 //  Common
 //
 //  Created by Ricardo Santos on 29/08/2024.
 //
 
-import Foundation
 import Combine
+import Foundation
 import UIKit
 
 public extension Common.UserDefaultsManager {

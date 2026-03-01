@@ -3,8 +3,8 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 import UIKit
 
 //
@@ -34,16 +34,20 @@ public extension Common {
 
         init(control: Control, events: UIControl.Event) {
             self.control = control
-            self.controlEvents = events
+            controlEvents = events
         }
 
-        public func receive<S>(subscriber: S) where S: Subscriber, S.Failure == UIControlPublisher.Failure, S.Input == UIControlPublisher.Output {
+        public func receive<S>(subscriber: S) where S: Subscriber, S.Failure == UIControlPublisher.Failure,
+            S.Input == UIControlPublisher.Output
+        {
             let subscription = UIControlSubscription(subscriber: subscriber, control: control, event: controlEvents)
             subscriber.receive(subscription: subscription)
         }
     }
 
-    final class UIControlSubscription<SubscriberType: Subscriber, Control: UIControl>: Subscription where SubscriberType.Input == Control {
+    final class UIControlSubscription<SubscriberType: Subscriber, Control: UIControl>: Subscription
+        where SubscriberType.Input == Control
+    {
         private var subscriber: SubscriberType?
         private let control: Control
 
@@ -53,7 +57,7 @@ public extension Common {
             control.addTarget(self, action: #selector(eventHandler), for: event)
         }
 
-        public func request(_ demand: Subscribers.Demand) {
+        public func request(_: Subscribers.Demand) {
             // We do nothing here as we only want to send events when they occur.
             // See, for more info: https://developer.apple.com/documentation/combine/subscribers/demand
         }

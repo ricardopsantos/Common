@@ -59,24 +59,12 @@ public extension UIButton {
         setTitleColor(color.alpha(0.25), for: .highlighted)
         setTitleColor(color, for: .selected)
     }
-    /*
-     func onTouchUpInside(autoDisableUserInteractionFor: Double = 1, block: @escaping () -> Void) {
-         class ClosureSleeve {
-             let block: () -> Void
-             init(_ block: @escaping () -> Void) {
-                 self.block = block
-             }
-             @objc func invoke() { block() }
-         }
-         (self as UIView).disableUserInteractionFor(autoDisableUserInteractionFor)
-         let sleeve = ClosureSleeve(block)
-         addTarget(sleeve, action: #selector(ClosureSleeve.invoke), for: .touchUpInside)
-         objc_setAssociatedObject(self, "[\(arc4random())]", sleeve, objc_AssociationPolicy.OBJC_ASSOCIATION_ASSIGN)
-     }*/
 }
 
 //
+
 // MARK: - Animations
+
 //
 
 public extension UIButton {

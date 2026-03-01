@@ -3,15 +3,17 @@
 //  Copyright © 2024 - 2019 Ricardo Santos. All rights reserved.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 //
+
 // MARK: - ExpiringCodableObjectWithKey
+
 //
 
 public extension Common {
-    class ExpiringKeyValueEntity: Codable {
+    struct ExpiringKeyValueEntity: Codable {
         public private(set) var key: String! // Cache key (built using api request name and parameters)
         public private(set) var object: Data? // Value to be stored
         public private(set) var expireDate: Date! // The limit date in witch we can retried the object
@@ -19,20 +21,19 @@ public extension Common {
         public private(set) var encoding: Int!
         public private(set) var objectType: String! // Value type to be stored (not needed for now)
 
-        public convenience init(
+        public init(
             key: String,
             expireDate: Date,
             object: Data?,
             objectType: String,
             encoding: ValueEncoding = .dataPlain
         ) {
-            self.init()
             self.key = key
             self.recordDate = Self.referenceDate
             self.expireDate = expireDate
             self.encoding = encoding.rawValue
             self.objectType = objectType
-            self.object = Data()
+
             switch encoding {
             case .dataPlain:
                 self.object = object
@@ -41,7 +42,7 @@ public extension Common {
             }
         }
 
-        public convenience init(
+        public init(
             key: String,
             params: [String],
             object: Data?,
@@ -57,7 +58,7 @@ public extension Common {
             )
         }
 
-        public convenience init(
+        public init(
             _ codable: some Codable,
             key: String,
             params: [any Hashable] = [],
@@ -76,7 +77,9 @@ public extension Common {
 }
 
 //
+
 // MARK: - Public
+
 //
 
 public extension Common.ExpiringKeyValueEntity {
@@ -87,12 +90,13 @@ public extension Common.ExpiringKeyValueEntity {
 
     static func composedKey(_ key: String, _ keyParams: [any Hashable]) -> String {
         let keyParams2 = keyParams.map { "\($0)".sha1 }
-        return "\(Common.UserDefaultsManager.Keys.expiringKeyValueEntity.defaultsKey)_\(key)_[" + keyParams2.joined(separator: ",") + "]"
+        return "\(Common.UserDefaultsManager.Keys.expiringKeyValueEntity.defaultsKey)_\(key)_[" + keyParams2
+            .joined(separator: ",") + "]"
     }
 
     var isExpired: Bool { valueData == nil }
 
-    func extract<T: Codable>(_ some: T.Type) -> T? {
+    func extract<T: Codable>(_: T.Type) -> T? {
         guard let data = valueData else {
             return nil
         }
@@ -111,10 +115,12 @@ public extension Common.ExpiringKeyValueEntity {
 }
 
 //
+
 // MARK: - fileprivate
+
 //
 
-fileprivate extension Common.ExpiringKeyValueEntity {
+private extension Common.ExpiringKeyValueEntity {
     var toData: Data? { try? JSONEncoder().encode(self) }
     static var referenceDate: Date { Date.utcNow }
     static var defaultMinutesTTL: Int { 60 * 24 }

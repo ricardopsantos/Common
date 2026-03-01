@@ -25,25 +25,26 @@ public extension TextField {
 }
 
 //
+
 // MARK: - Preview
+
 //
 
 #if canImport(SwiftUI) && DEBUG
-fileprivate extension Common_Preview {
-    struct TextExtensions: View {
-        public init() {}
-        @State var string: String = "string"
-        public var body: some View {
-            VStack {
-                Text("Text").textColor(.red)
-                TextField("TextField", text: $string).textColor(.red)
+    fileprivate extension Common_Preview {
+        struct TextExtensions: View {
+            public init() {}
+            @State var string: String = "string"
+            public var body: some View {
+                VStack {
+                    Text("Text").textColor(.red)
+                    TextField("TextField", text: $string).textColor(.red)
+                }
             }
         }
     }
-}
 
-#Preview {
-    Common_Preview.TextExtensions()
-}
-
+    #Preview {
+        Common_Preview.TextExtensions()
+    }
 #endif

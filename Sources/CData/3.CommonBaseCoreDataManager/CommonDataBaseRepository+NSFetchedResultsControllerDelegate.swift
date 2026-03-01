@@ -2,18 +2,20 @@
 //  Created by Ricardo Santos on 13/08/2024.
 //
 
-import Foundation
 import CoreData
+import Foundation
 
 //
+
 // MARK: - NSFetchedResultsControllerDelegate
+
 //
 
 extension CommonBaseCoreDataManager: NSFetchedResultsControllerDelegate {
     // This method serves as a preparation step before the individual changes are processed.
     // It's often used to signal the start of a batch update operation and can be used to perform
     // any necessary setup before applying the changes.
-    public func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+    public func controllerWillChangeContent(_: NSFetchedResultsController<NSFetchRequestResult>) {
         // You can perform any necessary setup before the changes are applied
     }
 
@@ -21,11 +23,11 @@ extension CommonBaseCoreDataManager: NSFetchedResultsControllerDelegate {
     // It provides detailed information about the change, including what type of change occurred (insert, delete,
     // update, move), the index paths of the affected objects before and after the change, and the type of change.
     public func controller(
-        _ controller: NSFetchedResultsController<NSFetchRequestResult>,
+        _: NSFetchedResultsController<NSFetchRequestResult>,
         didChange anObject: Any,
-        at indexPath: IndexPath?,
+        at _: IndexPath?,
         for type: NSFetchedResultsChangeType,
-        newIndexPath: IndexPath?
+        newIndexPath _: IndexPath?
     ) {
         var dbModelName: String?
         var id: String?
@@ -47,7 +49,7 @@ extension CommonBaseCoreDataManager: NSFetchedResultsControllerDelegate {
                 "entity_id",
                 "recordId",
                 "objectId",
-                "entityId"
+                "entityId",
             ]
             for key in possibleKeys {
                 if id == nil {
@@ -62,7 +64,7 @@ extension CommonBaseCoreDataManager: NSFetchedResultsControllerDelegate {
             }
         }
 
-        if let dbModelName = dbModelName {
+        if let dbModelName {
             switch type {
             case .insert:
                 Self.emit(event: .generic(.databaseDidInsertedContentOn(dbModelName, id: id)))
@@ -74,7 +76,7 @@ extension CommonBaseCoreDataManager: NSFetchedResultsControllerDelegate {
             }
             Self.emit(event: .generic(.databaseDidChangedContentItemOn(dbModelName)))
         } else {
-            Common_Logs.error("Not predicted for \(anObject)")
+            Common_Logs.error("Not predicted for \(anObject)", "\(Self.self)")
         }
     }
 
@@ -83,15 +85,15 @@ extension CommonBaseCoreDataManager: NSFetchedResultsControllerDelegate {
     // to perform any final UI updates or batch processing that you want to do after a series of changes.
     public func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         var dbModelName: String?
-        fetchedResultsController.forEach { key, value in
+        for (key, value) in fetchedResultsController {
             if dbModelName == nil, controller == value {
                 dbModelName = key
             }
         }
-        if let dbModelName = dbModelName {
+        if let dbModelName {
             Self.emit(event: .generic(.databaseDidFinishChangeContentItemsOn(dbModelName)))
         } else {
-            Common_Logs.error("Not predicted for \(controller)")
+            Common_Logs.error("Not predicted for \(controller)", "\(Self.self)")
         }
     }
 }

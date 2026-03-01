@@ -7,17 +7,37 @@ import Foundation
 import SwiftUI
 
 public extension UIScreen {
-    static var screenWidth: CGFloat { UIScreen.main.bounds.size.width }
-    static var screenHeight: CGFloat { UIScreen.main.bounds.size.height }
-    static var screenSize: CGSize { UIScreen.main.bounds.size }
+    static var screenWidth: CGFloat {
+        UIScreen.main.bounds.width
+    }
+
+    static var screenHeight: CGFloat {
+        UIScreen.main.bounds.height
+    }
+
+    static var screenSize: CGSize {
+        UIScreen.main.bounds.size
+    }
+
+    // MARK: - Safe Area Insets Helpers
+
+    private static var keyWindow: UIWindow? {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .first(where: \.isKeyWindow)
+    }
 
     static var safeAreaTopInset: CGFloat {
-        if let topSafeAreaMagnitude = UIWindow.firstWindow?.safeAreaInsets.top {
-            topSafeAreaMagnitude
+        if let inset = keyWindow?.safeAreaInsets.top {
+            inset
         } else {
+            // Fallback for extremely old devices or test environments
             UIDevice.isLargeOrXLarge ? 48 : 20
         }
     }
 
-    static var safeAreaBottomInset: CGFloat { UIWindow.firstWindow?.safeAreaInsets.bottom ?? 0 }
+    static var safeAreaBottomInset: CGFloat {
+        keyWindow?.safeAreaInsets.bottom ?? 0
+    }
 }

@@ -203,7 +203,7 @@ extension CacheManagerForCodableNSCacheRepository {
 
         // Retrieve a value for a key
         if let answer = cache.value(forKey: "answer") {
-            Common_Logs.debug("The answer is \(answer)")
+            Common_Logs.debug("The answer is \(answer)", "\(Self.self)")
         }
 
         // Update a value for a key
@@ -214,7 +214,7 @@ extension CacheManagerForCodableNSCacheRepository {
 
         // Use the subscript to retrieve a value
         if let value = cache["newKey"] {
-            Common_Logs.debug("The value for newKey is \(value)")
+            Common_Logs.debug("The value for newKey is \(value)", "\(Self.self)")
         }
 
         // Use the subscript to remove a value
@@ -224,7 +224,7 @@ extension CacheManagerForCodableNSCacheRepository {
         do {
             try cache.saveToDisk(with: "myCache")
         } catch {
-            Common_Logs.debug("Error saving cache to disk: \(error)")
+            Common_Logs.debug("Error saving cache to disk: \(error)", "\(Self.self)")
         }
 
         // Load a cache from disk
@@ -233,10 +233,13 @@ extension CacheManagerForCodableNSCacheRepository {
             let folderURLs = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)
             let fileURL = folderURLs[0].appendingPathComponent("myCache.cache")
             let data = try Data(contentsOf: fileURL)
-            let decodedCache = try JSONDecoder().decodeFriendly(CacheManagerForCodableNSCacheRepository<String, Int>.self, from: data)
-            Common_Logs.debug("Loaded cache from disk: \(decodedCache)")
+            let decodedCache = try JSONDecoder().decodeFriendly(
+                CacheManagerForCodableNSCacheRepository<String, Int>.self,
+                from: data
+            )
+            Common_Logs.debug("Loaded cache from disk: \(decodedCache)", "\(Self.self)")
         } catch {
-            Common_Logs.debug("Error loading cache from disk: \(error)")
+            Common_Logs.debug("Error loading cache from disk: \(error)", "\(Self.self)")
         }
     }
 }
