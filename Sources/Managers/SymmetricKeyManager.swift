@@ -19,26 +19,36 @@ public extension Common {
 //
 
 public extension Common.SymmetricKeyManager {
-    static var staticSymmetricKey: SymmetricKey {
-        SymmetricKey(data: [38, 99, 51, 110, 99, 104, 35, 73, 120, 88, 36, 104, 57, 117, 35, 86].reversed())
-    }
-
-    // Get SymmetricKey, generate if not exists
-    static var symmetricKey: SymmetricKey {
-        if let keyData = loadKeyFromKeychain() {
-            // Convert existing Data to SymmetricKey
-            return dataToSymmetricKey(keyData)
-        } else {
-            // Generate a new key and store it
-            let newKey = generateKey()
-            let keyData = symmetricKeyToData(newKey)
-            if saveKeyToKeychain(keyData) {
-                return newKey
-            } else {
-                Common_Logs.error("Failed to save symmetric key to Keychain", "\(Self.self)")
-                return staticSymmetricKey
-            }
+    /// The device key, loaded from the Keychain or generated on first use.
+    ///
+    /// `nil` means the Keychain was unavailable (locked device, entitlement
+    /// problem). Callers must fail the operation: encrypting under a fallback
+    /// key would either expose data under a key shipped in the binary, or make
+    /// previously written data undecryptable.
+    static var symmetricKey: SymmetricKey? {
+        // Tests run without Keychain entitlements on some hosts, so give them a
+        // deterministic key. This is the ONLY fallback: production must never
+        // silently encrypt under a key that ships in the binary.
+        if Common.Utils.onUnitTests {
+            return unitTestKey
         }
+
+        // Generation is read-modify-write against the Keychain: without this
+        // lock two threads racing on first use both generate and both save,
+        // and the loser hands back a key that is no longer stored.
+        keyLock.lock()
+        defer { keyLock.unlock() }
+
+        if let keyData = loadKeyFromKeychain() {
+            return dataToSymmetricKey(keyData)
+        }
+
+        let newKey = generateKey()
+        guard saveKeyToKeychain(symmetricKeyToData(newKey)) else {
+            Common_Logs.error("Failed to save symmetric key to Keychain", "\(Self.self)")
+            return nil
+        }
+        return newKey
     }
 }
 
@@ -48,6 +58,16 @@ public extension Common.SymmetricKeyManager {
 
 //
 private extension Common.SymmetricKeyManager {
+    static let keyLock = NSLock()
+
+    /// 256-bit, matching `generateKey()` so tests exercise the production key size.
+    static var unitTestKey: SymmetricKey {
+        SymmetricKey(data: Data((0 ..< 32).map { UInt8($0) }))
+    }
+
+    /// Frozen on purpose — the `Optional(...)` spelling is part of the stored
+    /// account name on existing installs. Changing it orphans their key and
+    /// makes everything written under it undecryptable.
     static let keychainKey =
         "\(String(describing: Bundle.main.bundleIdentifier))_\(Common.SymmetricKeyManager.self).symmetricKey"
 
@@ -68,19 +88,21 @@ private extension Common.SymmetricKeyManager {
 
     // Save Data to Keychain
     static func saveKeyToKeychain(_ data: Data) -> Bool {
-        let query: [String: Any] = [
+        // A generic password is identified by class + account only. Passing the
+        // value and accessibility here too can stop the delete from matching,
+        // which then makes SecItemAdd fail with errSecDuplicateItem.
+        let identity: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: keychainKey,
-            kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked,
         ]
 
-        // Delete any existing key before adding
-        SecItemDelete(query as CFDictionary)
+        SecItemDelete(identity as CFDictionary)
 
-        // Add new key
-        let status = SecItemAdd(query as CFDictionary, nil)
-        return status == errSecSuccess
+        var insert = identity
+        insert[kSecValueData as String] = data
+        insert[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlocked
+
+        return SecItemAdd(insert as CFDictionary, nil) == errSecSuccess
     }
 
     // Load Data from Keychain

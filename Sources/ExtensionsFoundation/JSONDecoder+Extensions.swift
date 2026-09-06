@@ -27,7 +27,9 @@ public extension JSONDecoder {
     // swiftlint:disable function_body_length
     func decodeFriendly<T: Decodable>(_ type: T.Type, from data: Data, printError: Bool = true) throws -> T {
         do {
-            return try JSONDecoder().decode(type, from: data)
+            // Must decode with `self`: callers configure date/key strategies
+            // (see `defaultForWebAPI`) and a fresh decoder would discard them.
+            return try decode(type, from: data)
         } catch {
             var debugMessage = "# Fail decoding data into [\(type)]"
             if let decodingError = error as? DecodingError {
@@ -93,12 +95,4 @@ public extension JSONDecoder {
     }
 
     // swiftlint:enable function_body_length
-
-    private func decodeSafe<T>(_ type: T.Type, from data: Data) throws -> T where T: Decodable {
-        // https://bugs.swift.org/browse/SR-6163 - Encode/Decode not possible < iOS 13 for top-level fragments (enum,
-        // int, string, etc.).
-        if #available(iOS 13.0, *) {
-            return try JSONDecoder().decodeFriendly(type, from: data)
-        } else {}
-    }
 }
