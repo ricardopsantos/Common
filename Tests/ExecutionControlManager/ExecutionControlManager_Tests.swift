@@ -2,23 +2,23 @@
 //  Created by Ricardo Santos on 12/08/2024.
 //
 
-import XCTest
-import Foundation
 import Combine
-//
-import Nimble
+import Foundation
+import Testing
 //
 @testable import Common
-class ExecutionControlManager_Tests: XCTestCase {
-    override func setUp() {
-        super.setUp()
-        continueAfterFailure = false
+
+/// Serialised: every test drives the same `ExecutionControlManager` global state.
+@Suite(.serialized)
+struct ExecutionControlManager_Tests {
+    init() {
         TestsGlobal.loadedAny = nil
         TestsGlobal.cancelBag.cancel()
         Common.ExecutionControlManager.reset()
     }
 
-    func testThrottle() {
+    @Test
+    func testThrottle() async {
         var executionCount = 0
         let operationId = #function
         let timeInterval: Double = 1
@@ -40,11 +40,12 @@ class ExecutionControlManager_Tests: XCTestCase {
         }
 
         // Test assertions
-        let timeout = NimbleTimeInterval.seconds(Int(timeInterval * 2))
-        expect(executionCount).toEventually(equal(2), timeout: timeout)
+        let timeout = timeInterval * 2
+        #expect(await eventually(timeoutSeconds: timeout) { executionCount == 2 })
     }
 
-    func testThrottleWithIgnoredClosure() {
+    @Test
+    func testThrottleWithIgnoredClosure() async {
         var executionCount = 0
         var ignoredCount = 0
         let operationId = #function
@@ -65,12 +66,13 @@ class ExecutionControlManager_Tests: XCTestCase {
         })
 
         // Test assertions
-        let timeout = NimbleTimeInterval.seconds(Int(timeInterval * 2))
-        expect(executionCount).toEventually(equal(1), timeout: timeout)
-        expect(ignoredCount).toEventually(equal(1), timeout: timeout)
+        let timeout = timeInterval * 2
+        #expect(await eventually(timeoutSeconds: timeout) { executionCount == 1 })
+        #expect(await eventually(timeoutSeconds: timeout) { ignoredCount == 1 })
     }
 
-    func testDebounce() {
+    @Test
+    func testDebounce() async {
         var executionCount = 0
         let operationId = #function
         let timeInterval: Double = 1
@@ -87,8 +89,8 @@ class ExecutionControlManager_Tests: XCTestCase {
         }
 
         // Expect only one closure execution after debounce interval
-        let timeoutT1 = NimbleTimeInterval.seconds(Int(timeInterval + 1))
-        expect(executionCount).toEventually(equal(1), timeout: timeoutT1)
+        let timeoutT1 = timeInterval + 1
+        #expect(await eventually(timeoutSeconds: timeoutT1) { executionCount == 1 })
 
         // Call debounce again after a delay and expect another execution
         DispatchQueue.main.asyncAfter(deadline: .now() + timeInterval + 0.1) {
@@ -98,11 +100,12 @@ class ExecutionControlManager_Tests: XCTestCase {
         }
 
         // Test assertions
-        let timeoutT2 = NimbleTimeInterval.seconds(Int(timeInterval + 2))
-        expect(executionCount).toEventually(equal(2), timeout: timeoutT2)
+        let timeoutT2 = timeInterval + 2
+        #expect(await eventually(timeoutSeconds: timeoutT2) { executionCount == 2 })
     }
 
-    func testDropFirstNegative() {
+    @Test
+    func testDropFirstNegative() async {
         var executionCount = 0
         let operationId = #function
         let timeInterval: Double = 1
@@ -116,11 +119,12 @@ class ExecutionControlManager_Tests: XCTestCase {
         }
 
         // Test assertions
-        let timeout = NimbleTimeInterval.seconds(Int(timeInterval))
-        expect(executionCount).toEventually(equal(2), timeout: timeout)
+        let timeout = timeInterval
+        #expect(await eventually(timeoutSeconds: timeout) { executionCount == 2 })
     }
 
-    func testDropFirst0() {
+    @Test
+    func testDropFirst0() async {
         var executionCount = 0
         let operationId = #function
         let timeInterval: Double = 1
@@ -134,46 +138,48 @@ class ExecutionControlManager_Tests: XCTestCase {
         }
 
         // Test assertions
-        let timeout = NimbleTimeInterval.seconds(Int(timeInterval))
-        expect(executionCount).toEventually(equal(2), timeout: timeout)
+        let timeout = timeInterval
+        #expect(await eventually(timeoutSeconds: timeout) { executionCount == 2 })
     }
 
-    func testDropFirst1() {
+    @Test
+    func testDropFirst1() async {
         var executionCount = 0
         let operationId = #function
         let timeInterval: Double = 1
         let drops: Int = 1
 
         Common.ExecutionControlManager.dropFirst(n: drops, operationId: operationId) {
-            XCTAssert(false) // Should not execute
+            Issue.record("Should not execute")
         }
         Common.ExecutionControlManager.dropFirst(n: drops, operationId: operationId) {
             executionCount += 1 // Should execute
         }
 
         // Test assertions
-        let timeout = NimbleTimeInterval.seconds(Int(timeInterval))
-        expect(executionCount).toEventually(equal(1), timeout: timeout)
+        let timeout = timeInterval
+        #expect(await eventually(timeoutSeconds: timeout) { executionCount == 1 })
     }
 
-    func testDropFirst2() {
+    @Test
+    func testDropFirst2() async {
         var executionCount = 0
         let operationId = #function
         let timeInterval: Double = 1
         let drops: Int = 2
 
         Common.ExecutionControlManager.dropFirst(n: drops, operationId: operationId) {
-            XCTAssert(false) // Should not execute
+            Issue.record("Should not execute")
         }
         Common.ExecutionControlManager.dropFirst(n: drops, operationId: operationId) {
-            XCTAssert(false) // Should not execute
+            Issue.record("Should not execute")
         }
         Common.ExecutionControlManager.dropFirst(n: drops, operationId: operationId) {
             executionCount += 1 // Should execute
         }
 
         // Test assertions
-        let timeout = NimbleTimeInterval.seconds(Int(timeInterval))
-        expect(executionCount).toEventually(equal(1), timeout: timeout)
+        let timeout = timeInterval
+        #expect(await eventually(timeoutSeconds: timeout) { executionCount == 1 })
     }
 }

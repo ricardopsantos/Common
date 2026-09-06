@@ -5,7 +5,6 @@
 import Combine
 import Common
 import Foundation
-import Nimble
 import XCTest
 
 class CommonBundleFinder {}

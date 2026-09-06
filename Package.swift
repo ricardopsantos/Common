@@ -1,4 +1,4 @@
-// swift-tools-version: 5.10
+// swift-tools-version: 6.0
 
 import PackageDescription
 
@@ -13,10 +13,6 @@ let package = Package(
             targets: ["Common"]
         ),
     ],
-    dependencies: [
-        .package(url: "https://github.com/realm/SwiftLint.git", from: "0.55.1"),
-        .package(url: "https://github.com/Quick/Nimble", from: "13.3.0"),
-    ],
     targets: [
         .target(
             name: "Common",
@@ -28,22 +24,19 @@ let package = Package(
             ],
             swiftSettings: [
                 .define("IN_PACKAGE_CODE"),
-            ],
-            plugins: [
-                //   .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLint")
+                // Tools version 6.0 would otherwise opt the whole package into
+                // the Swift 6 language mode and its strict concurrency checking.
+                .swiftLanguageMode(.v5),
             ]
         ),
         .testTarget(
             name: "CommonTests",
             dependencies: [
                 "Common",
-                .product(name: "Nimble", package: "Nimble"),
             ],
             swiftSettings: [
                 .define("IN_PACKAGE_CODE"),
-            ],
-            plugins: [
-                // .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLint")
+                .swiftLanguageMode(.v5),
             ]
         ),
     ]
