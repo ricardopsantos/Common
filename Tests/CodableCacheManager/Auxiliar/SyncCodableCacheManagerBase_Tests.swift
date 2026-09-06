@@ -2,258 +2,174 @@
 //  Created by Ricardo Santos on 12/08/2024.
 //
 
-import XCTest
-import Foundation
 import Combine
-//
-import Nimble
+import Foundation
+import Testing
 //
 @testable import Common
 
 //
-// Don't run directly! Run in SubClasses
-// Don't run directly! Run in SubClasses
-// Don't run directly! Run in SubClasses
+// Swift Testing has no test-class inheritance, so the old
+// base-class-plus-two-subclasses arrangement is expressed as one suite
+// parameterised over the backends it used to be subclassed for.
 //
-class SyncCodableCacheManagerBase_Tests: XCTestCase {
-    func enabled() -> Bool {
-        // Override with implementation
-        false
-    }
 
-    func codableCacheManager() -> CodableCacheManagerProtocol {
-        // Override with implementation
-        fatalError()
+enum CodableCacheBackend: String, CaseIterable, Sendable {
+    case userDefaults
+    case coreData
+
+    var manager: CodableCacheManagerProtocol {
+        switch self {
+        case .userDefaults: Common.CacheManagerForCodableUserDefaultsRepository.shared
+        case .coreData: Common.CacheManagerForCodableCoreDataRepository.shared
+        }
+    }
+}
+
+/// Serialised: the backends are shared singletons and the tests clear them.
+@Suite(.serialized)
+struct SyncCodableCacheManager_Tests {
+    init() {
+        TestsGlobal.loadedAny = nil
+        TestsGlobal.cancelBag.cancel()
     }
 
     private var sampleWebAPIUseCase: SampleWebAPIUseCase {
         SampleWebAPIUseCase()
     }
 
-    override func setUp() {
-        super.setUp()
-        continueAfterFailure = false
-        TestsGlobal.loadedAny = nil
-        TestsGlobal.cancelBag.cancel()
-    }
-
-    func test1_aSyncCRUD() async {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
-
+    @Test(arguments: CodableCacheBackend.allCases)
+    func test1_aSyncCRUD(backend: CodableCacheBackend) async {
+        let cache = backend.manager
         let model = SampleCodableStruct.random
         let key = String.random(10)
         let params = [model.age.description, model.name]
 
-        // Store records
-        await codableCacheManager().aSyncStore(model, key: key, params: params, timeToLiveMinutes: nil)
+        await cache.aSyncStore(model, key: key, params: params, timeToLiveMinutes: nil)
 
-        if let cached = await codableCacheManager().aSyncRetrieve(
-            SampleCodableStruct.self,
-            key: key,
-            params: params
-        ) {
-            // Assert that the record was stored and the info matches
-            XCTAssert(cached.model == model)
-        } else {
-            XCTAssert(false)
-        }
+        let cached = await cache.aSyncRetrieve(SampleCodableStruct.self, key: key, params: params)
+        #expect(cached?.model == model)
 
-        // Delete cache
-        await codableCacheManager().aSyncClearAll()
+        await cache.aSyncClearAll()
 
-        if await codableCacheManager().aSyncRetrieve(
-            SampleCodableStruct.self,
-            key: key,
-            params: params
-        ) != nil {
-            XCTAssert(false)
-        } else {
-            // Assert that that the object was deleted
-            XCTAssert(true)
-        }
+        let afterClear = await cache.aSyncRetrieve(SampleCodableStruct.self, key: key, params: params)
+        #expect(afterClear == nil)
     }
 
-    func test2_syncCRUD() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
-
+    @Test(arguments: CodableCacheBackend.allCases)
+    func test2_syncCRUD(backend: CodableCacheBackend) {
+        let cache = backend.manager
         let model = SampleCodableStruct.random
         let key = String.random(10)
         let params = [model.age.description, model.name]
 
-        // Store records
-        codableCacheManager().syncStore(model, key: key, params: params, timeToLiveMinutes: nil)
+        cache.syncStore(model, key: key, params: params, timeToLiveMinutes: nil)
 
-        if let cached = codableCacheManager().syncRetrieve(
-            SampleCodableStruct.self,
-            key: key,
-            params: params
-        ) {
-            // Assert that the record was stored and the info matches
-            XCTAssert(cached.model == model)
-        } else {
-            XCTAssert(false)
-        }
+        let cached = cache.syncRetrieve(SampleCodableStruct.self, key: key, params: params)
+        #expect(cached?.model == model)
 
-        // Delete cache
-        codableCacheManager().syncClearAll()
+        cache.syncClearAll()
 
-        if codableCacheManager().syncRetrieve(
-            SampleCodableStruct.self,
-            key: key,
-            params: params
-        ) != nil {
-            XCTAssert(false)
-        } else {
-            // Assert that that the object was deleted
-            XCTAssert(true)
-        }
+        #expect(cache.syncRetrieve(SampleCodableStruct.self, key: key, params: params) == nil)
     }
 
-    func test3_cachePolicy_ignoringCache() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+    @Test(arguments: CodableCacheBackend.allCases)
+    func test3_cachePolicy_ignoringCache(backend: CodableCacheBackend) async {
         var counter = 0
-        syncClearAll()
+        backend.manager.syncClearAll()
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .ignoringCache)
             .sinkToReceiveValue { some in
                 switch some {
-                case .success:
-                    counter += 1
+                case .success: counter += 1
                 case .failure: ()
                 }
             }.store(in: TestsGlobal.cancelBag)
-        expect(counter == 1).toEventually(beTrue(), timeout: .seconds(TestsGlobal.timeout))
+        #expect(await eventually { counter == 1 })
     }
 
-    func test4_cacheElseLoad() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+    @Test(arguments: CodableCacheBackend.allCases)
+    func test4_cacheElseLoad(backend: CodableCacheBackend) async {
         var counter = 0
-        syncClearAll()
+        backend.manager.syncClearAll()
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .cacheElseLoad)
             .sinkToReceiveValue { some in
                 switch some {
-                case .success:
-                    counter += 1
+                case .success: counter += 1
                 case .failure: ()
                 }
             }.store(in: TestsGlobal.cancelBag)
-        expect(counter).toEventually(equal(1), timeout: .seconds(TestsGlobal.timeout))
+        #expect(await eventually { counter == 1 })
     }
 
-    func test5_cacheDontLoad() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+    @Test(arguments: CodableCacheBackend.allCases)
+    func test5_cacheDontLoad(backend: CodableCacheBackend) async {
         var counter = 0
-        syncClearAll()
+        backend.manager.syncClearAll()
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .cacheDontLoad)
             .sinkToReceiveValue { some in
                 switch some {
-                case .success:
-                    counter += 1
+                case .success: counter += 1
                 case .failure: ()
                 }
             }.store(in: TestsGlobal.cancelBag)
-        expect(counter).toEventually(equal(0), timeout: .seconds(TestsGlobal.timeout))
+        #expect(await eventually { counter == 0 })
     }
 
-    func test6_cacheAndLoadT1() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+    @Test(arguments: CodableCacheBackend.allCases)
+    func test6_cacheAndLoadT1(backend: CodableCacheBackend) async {
         var counter = 0
-        syncClearAll()
+        backend.manager.syncClearAll()
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .cacheAndLoad)
             .sinkToReceiveValue { some in
                 switch some {
-                case .success:
-                    counter += 1
+                case .success: counter += 1
                 case .failure: ()
                 }
             }.store(in: TestsGlobal.cancelBag)
-        expect(counter == 1).toEventually(beTrue(), timeout: .seconds(TestsGlobal.timeout))
+        #expect(await eventually { counter == 1 })
     }
 
-    func test7_cacheAndLoadT2() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+    @Test(arguments: CodableCacheBackend.allCases)
+    func test7_cacheAndLoadT2(backend: CodableCacheBackend) async {
         var counter = 0
-        syncClearAll()
+        backend.manager.syncClearAll()
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .ignoringCache)
             .sinkToReceiveValue { some in
                 switch some {
                 case .success:
-                    self.sampleWebAPIUseCase.fetchEmployees(cachePolicy: .cacheAndLoad)
+                    sampleWebAPIUseCase.fetchEmployees(cachePolicy: .cacheAndLoad)
                         .sinkToReceiveValue { some in
                             switch some {
-                            case .success:
-                                counter += 1
+                            case .success: counter += 1
                             case .failure: ()
                             }
                         }.store(in: TestsGlobal.cancelBag)
                 case .failure: ()
                 }
             }.store(in: TestsGlobal.cancelBag)
-        expect(counter == 2).toEventually(beTrue(), timeout: .seconds(TestsGlobal.timeout))
+        #expect(await eventually { counter == 2 })
     }
 
-    func test8_fetchingRecordFrom_10000Records() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
-        syncClearAll()
-        syncStore(count: 10000)
-        measure {
-            // Time: 0.004 sec
-            syncFetchFirst()
-        }
-    }
-}
-
-//
-// MARK: Auxiliar
-//
-
-private extension SyncCodableCacheManagerBase_Tests {
-    func syncStore(count: Int) {
-        for i in 0...count {
-            codableCacheManager().syncStore(
+    @Test(arguments: CodableCacheBackend.allCases)
+    func test8_fetchingRecordFrom_10000Records(backend: CodableCacheBackend) {
+        let cache = backend.manager
+        cache.syncClearAll()
+        for i in 0 ... 10000 {
+            cache.syncStore(
                 SampleCodableStruct.random,
                 key: "cachedKey_\(i)",
                 params: [],
                 timeToLiveMinutes: nil
             )
         }
-    }
 
-    func syncFetchFirst() {
-        if codableCacheManager().syncRetrieve(
-            SampleCodableStruct.self,
-            key: "cachedKey_0",
-            params: []
-        ) != nil {
-        } else {
-            XCTAssert(false)
+        // Was an XCTest `measure` block; Swift Testing has no baseline-backed
+        // equivalent, so time it and assert the lookup stays sub-second rather
+        // than silently recording a number nothing checks.
+        let elapsed = Common_CronometerManager.measure {
+            _ = cache.syncRetrieve(SampleCodableStruct.self, key: "cachedKey_0", params: [])
         }
-    }
-
-    func syncClearAll() {
-        codableCacheManager().syncClearAll()
+        #expect(cache.syncRetrieve(SampleCodableStruct.self, key: "cachedKey_0", params: []) != nil)
+        #expect(elapsed < 1.0, "first-record lookup took \(elapsed)s")
     }
 }

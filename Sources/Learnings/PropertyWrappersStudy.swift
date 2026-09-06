@@ -51,7 +51,7 @@ extension CommonLearnings.PropertyWrappersStudy {
             Common_Logs.debug(samplePropertyWrapper1)
 
             // prints the projected value, which is 13 (the length of "Hello, world!")
-            Common_Logs.debug($samplePropertyWrapper1)
+            Common_Logs.debug("\($samplePropertyWrapper1)")
         }
     }
 }

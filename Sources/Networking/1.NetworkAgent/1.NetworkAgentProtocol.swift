@@ -91,7 +91,7 @@ public extension NetworkAgentProtocol {
             responseFormat: responseType
         )
         .runBlockAndContinue { _ in onCompleted() }
-        .map(\.model) // Extract decoded model
+        .map(\.modelDto) // Extract decoded model
         .eraseToAnyPublisher()
     }
 
@@ -123,7 +123,7 @@ public extension NetworkAgentProtocol {
 
         return responsePublisher
             .runBlockAndContinue { _ in onCompleted() }
-            .map(\.rawResponse) // Extract only the URLResponse
+            .compactMap(\.urlResponse) // Extract only the URLResponse
             .eraseToAnyPublisher()
     }
 
@@ -148,7 +148,7 @@ public extension NetworkAgentProtocol {
                 logger: logger,
                 responseFormat: responseType
             )
-            .map(\.model)
+            .map(\.modelDto)
             .eraseToAnyPublisher()
 
         return try await publisher.async()

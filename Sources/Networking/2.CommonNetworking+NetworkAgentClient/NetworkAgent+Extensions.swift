@@ -89,8 +89,8 @@ public extension CommonNetworking.NetworkAgent {
                     // Case 1: Caller expects `Void` → OK
                     if T.self == Void.self {
                         return CommonNetworking.Response(
-                            model: () as! T,
-                            rawResponse: result.response
+                            modelDto: () as! T,
+                            response: result.response
                         )
                     }
 
@@ -123,8 +123,8 @@ public extension CommonNetworking.NetworkAgent {
                     }
 
                     return CommonNetworking.Response(
-                        model: decoded,
-                        rawResponse: result.response
+                        modelDto: decoded,
+                        response: result.response
                     )
 
                 } catch {
@@ -138,7 +138,7 @@ public extension CommonNetworking.NetworkAgent {
             }
             .mapError { error in
                 if let api = error as? CommonNetworking.APIError { return api }
-                return .underlying(error)
+                return .network(description: error.localizedDescription)
             }
             .eraseToAnyPublisher()
     }

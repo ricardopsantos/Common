@@ -2,14 +2,14 @@
 //  Created by Ricardo Santos on 12/08/2024.
 //
 
-import XCTest
-import Foundation
 import Combine
-//
-import Nimble
+import Foundation
+import Testing
 //
 @testable import Common
-class CoreDataManager_CRUDTests: XCTestCase {
+/// Serialised: every test mutates the same shared store.
+@Suite(.serialized)
+struct CoreDataManager_CRUDTests {
     func enabled() -> Bool {
         true
     }
@@ -18,9 +18,7 @@ class CoreDataManager_CRUDTests: XCTestCase {
         .shared
     }()
 
-    override func setUp() {
-        super.setUp()
-        continueAfterFailure = false
+    init() {
         TestsGlobal.loadedAny = nil
         TestsGlobal.cancelBag.cancel()
     }
@@ -30,72 +28,69 @@ class CoreDataManager_CRUDTests: XCTestCase {
 // MARK: - CRUD
 //
 extension CoreDataManager_CRUDTests {
-    func testA1_syncCRUD() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+    @Test
+    @Test
+    func testA1_syncCRUD() async {
+        guard enabled() else { return }
 
         // Records count
         bd.syncClearAll()
-        XCTAssert(bd.syncRecordCount() == 0)
+        #expect(bd.syncRecordCount() == 0)
 
         // Batch Insert
         bd.syncClearAll()
         bd.syncStoreBatch([.random, .random, .random])
-        XCTAssert(bd.syncRecordCount() == 3)
-        XCTAssert(bd.syncRecordCount() == bd.syncAllIds().count)
+        #expect(bd.syncRecordCount() == 3)
+        #expect(bd.syncRecordCount() == bd.syncAllIds().count)
 
         // Insert
         bd.syncClearAll()
         var toStore: CoreDataSampleUsageNamespace.CRUDEntity = .random
         bd.syncStore(toStore)
-        XCTAssert(bd.syncRecordCount() == 1)
-        XCTAssert(bd.syncRecordCount() == bd.syncAllIds().count)
+        #expect(bd.syncRecordCount() == 1)
+        #expect(bd.syncRecordCount() == bd.syncAllIds().count)
 
         // Get
         var stored = bd.syncRetrieve(key: toStore.id)
-        XCTAssert(stored == toStore)
+        #expect(stored == toStore)
 
         // Update
         toStore.name = "NewName"
         bd.syncUpdate(toStore)
 
         stored = bd.syncRetrieve(key: toStore.id)
-        XCTAssert(stored?.name == "NewName")
+        #expect(stored?.name == "NewName")
 
         // Delete
         if let stored = stored {
             bd.syncDelete(stored)
             let some = bd.syncRetrieve(key: toStore.id)
-            XCTAssert(some == nil)
+            #expect(some == nil)
             let count1 = bd.syncRecordCount()
             let count2 = bd.syncAllIds().count
-            XCTAssert(count1 == 0)
-            XCTAssert(count1 == count2)
+            #expect(count1 == 0)
+            #expect(count1 == count2)
         } else {
-            XCTAssert(false)
+            Issue.record("unexpected path")
         }
     }
 
+    @Test
     func testA2_aSyncCRUD() async {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+        guard enabled() else { return }
 
         // Records count
         await bd.aSyncClearAll()
         let count1 = await bd.aSyncRecordCount()
         let count2 = await bd.aSyncAllIds().count
-        XCTAssert(count1 == 0)
-        XCTAssert(count1 == count2)
+        #expect(count1 == 0)
+        #expect(count1 == count2)
 
         // Batch Insert
         await bd.aSyncClearAll()
         await bd.aSyncStoreBatch([.random, .random, .random])
         let count3 = await bd.aSyncRecordCount()
-        XCTAssert(count3 == 3)
+        #expect(count3 == 3)
 
         // Insert
         bd.syncClearAll()
@@ -106,42 +101,41 @@ extension CoreDataManager_CRUDTests {
 
         // Records count
         let count4 = await bd.aSyncRecordCount()
-        XCTAssert(count4 == 1)
+        #expect(count4 == 1)
 
         // Get
         var stored = await bd.aSyncRetrieve(key: toStore.id)
-        XCTAssert(stored == toStore)
+        #expect(stored == toStore)
 
         // Update
         toStore.name = "NewName"
         await bd.aSyncUpdate(toStore)
 
         stored = await bd.aSyncRetrieve(key: toStore.id)
-        XCTAssert(stored?.name == "NewName")
+        #expect(stored?.name == "NewName")
 
         // Delete
         if let stored = stored {
             await bd.aSyncDelete(stored)
             let some = await bd.aSyncRetrieve(key: toStore.id)
-            XCTAssert(some == nil)
+            #expect(some == nil)
             let count1 = await bd.aSyncRecordCount()
             let count2 = await bd.aSyncAllIds().count
-            XCTAssert(count1 == 0)
-            XCTAssert(count1 == count2)
+            #expect(count1 == 0)
+            #expect(count1 == count2)
         } else {
-            XCTAssert(false)
+            Issue.record("unexpected path")
         }
     }
 
-    func testB1_syncDelete() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+    @Test
+    @Test
+    func testB1_syncDelete() async {
+        guard enabled() else { return }
         bd.syncStore(.random)
         bd.syncClearAll()
         let stored = bd.syncRecordCount()
-        XCTAssert(stored == 0)
+        #expect(stored == 0)
     }
 }
 
@@ -149,37 +143,32 @@ extension CoreDataManager_CRUDTests {
 // MARK: - Others
 //
 extension CoreDataManager_CRUDTests {
+    @Test
     func testC1_mergeContext1() async {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+        guard enabled() else { return }
         await bd.aSyncClearAll()
         // save async
         await bd.aSyncStore(.random)
         // get sync
         let stored = await bd.aSyncRecordCount()
-        XCTAssert(stored == 1)
+        #expect(stored == 1)
     }
 
+    @Test
     func testC2_mergeContext2() async {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+        guard enabled() else { return }
         bd.syncClearAll()
         // save sync
         bd.syncStore(.random)
         // get sync
         let stored = await bd.aSyncRecordCount()
-        XCTAssert(stored == 1)
+        #expect(stored == 1)
     }
 
-    func testC3_emitEventOnDataBaseInsert_test1() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+    @Test
+    @Test
+    func testC3_emitEventOnDataBaseInsert_test1() async {
+        guard enabled() else { return }
         var didInsertedContent = (value: false, id: "")
         var didChangedContent = 0
         var didFinishChangeContent = 0
@@ -206,25 +195,15 @@ extension CoreDataManager_CRUDTests {
         }
 
         // Verify that the event is emitted
-        expect(didFinishChangeContent == 1).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
-        expect(didInsertedContent.value).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
-        expect(didInsertedContent.id == toStore.id).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
-        expect(didChangedContent == 1).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
+        #expect(await eventually { didFinishChangeContent == 1 })
+        #expect(await eventually { didInsertedContent.value })
+        #expect(await eventually { didInsertedContent.id == toStore.id })
+        #expect(await eventually { didChangedContent == 1 })
     }
 
-    func testC4_emitEventOnDataBaseInsert_test2() {
+    @Test
+    @Test
+    func testC4_emitEventOnDataBaseInsert_test2() async {
         var didInsertedContent = 0
         var didChangedContent = 0
         var didFinishChangeContent = 0
@@ -253,17 +232,8 @@ extension CoreDataManager_CRUDTests {
         }
 
         // Verify that the event is emitted
-        expect(didInsertedContent == didInsertedContent).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
-        expect(didChangedContent == numberOfInserts).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
-        expect(didFinishChangeContent == numberOfInserts).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
+        #expect(await eventually { didInsertedContent == didInsertedContent })
+        #expect(await eventually { didChangedContent == numberOfInserts })
+        #expect(await eventually { didFinishChangeContent == numberOfInserts })
     }
 }

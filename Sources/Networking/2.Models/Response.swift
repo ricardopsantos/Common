@@ -22,6 +22,9 @@ public extension CommonNetworking {
             self.response = response
         }
 
+        /// The transport's `URLResponse`, when there was one.
+        public var urlResponse: URLResponse? { response as? URLResponse }
+
         public var statusCode: Int? {
             if let urlResponse = response as? HTTPURLResponse {
                 return urlResponse.statusCode

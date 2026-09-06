@@ -80,7 +80,7 @@ public extension Common {
         /// Things that must be fixed and shouldn't happen. This logs will always be printed (unless Prod apps)
         public static func error(
             _ any: any Error,
-            _ tag: String,
+            _ tag: String = "",
             function: String = #function,
             file: String = #file,
             line: Int = #line
@@ -90,7 +90,7 @@ public extension Common {
 
         public static func error(
             _ any: String,
-            _ tag: String,
+            _ tag: String = "",
             function: String = #function,
             file: String = #file,
             line: Int = #line
@@ -110,7 +110,7 @@ public extension Common {
 
         public static func debug(
             _ string: String,
-            _ tag: String,
+            _ tag: String = "",
             function: String = #function,
             file: String = #file,
             line: Int = #line
@@ -120,7 +120,7 @@ public extension Common {
 
         public static func debug(
             _ any: LogTemplate,
-            _ tag: String,
+            _ tag: String = "",
             function: String = #function,
             file: String = #file,
             line: Int = #line

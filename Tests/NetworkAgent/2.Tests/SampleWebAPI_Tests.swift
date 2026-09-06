@@ -2,21 +2,19 @@
 //  Created by Ricardo Santos on 12/08/2024.
 //
 
-import XCTest
-import Foundation
 import Combine
-//
-import Nimble
+import Foundation
+import Testing
 //
 @testable import Common
-class SampleWebAPI_Tests: XCTestCase {
+/// Serialised: shares `TestsGlobal.cancelBag` and hits a live endpoint.
+@Suite(.serialized)
+struct SampleWebAPI_Tests {
     func enabled() -> Bool {
         true
     }
 
-    override func setUp() {
-        super.setUp()
-        continueAfterFailure = false
+    init() {
         TestsGlobal.loadedAny = nil
         TestsGlobal.cancelBag.cancel()
     }
@@ -25,11 +23,10 @@ class SampleWebAPI_Tests: XCTestCase {
         SampleWebAPIUseCase()
     }
 
-    func test_fetchEmployeesAvailabilityCustom() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+    @Test
+    @Test
+    func test_fetchEmployeesAvailabilityCustom() async {
+        guard enabled() else { return }
         var counter = 0
         sampleWebAPIUseCase.fetchEmployeesAvailabilityCustom()
             .sinkToReceiveValue { some in
@@ -39,14 +36,13 @@ class SampleWebAPI_Tests: XCTestCase {
                 case .failure: ()
                 }
             }.store(in: TestsGlobal.cancelBag)
-        expect(counter == 1).toEventually(beTrue(), timeout: .seconds(TestsGlobal.timeout))
+        #expect(await eventually { counter == 1 })
     }
 
-    func test_fetchEmployeesAvailabilityGenericPublisher() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+    @Test
+    @Test
+    func test_fetchEmployeesAvailabilityGenericPublisher() async {
+        guard enabled() else { return }
         var counter = 0
         sampleWebAPIUseCase.fetchEmployeesPublisher()
             .sinkToReceiveValue { some in
@@ -56,23 +52,20 @@ class SampleWebAPI_Tests: XCTestCase {
                 case .failure: ()
                 }
             }.store(in: TestsGlobal.cancelBag)
-        expect(counter == 1).toEventually(beTrue(), timeout: .seconds(TestsGlobal.timeout))
+        #expect(await eventually { counter == 1 })
     }
 
+    @Test
     func test_fetchEmployeesAvailabilityGenericAsync() async {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+        guard enabled() else { return }
         let value = try? await sampleWebAPIUseCase.fetchEmployeesAsync()
-        await expect(value != nil).toEventually(beTrue(), timeout: .seconds(TestsGlobal.timeout))
+        #expect(await eventually { value != nil })
     }
 
-    func test_fetchEmployeesAvailabilityCustomWithCache() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+    @Test
+    @Test
+    func test_fetchEmployeesAvailabilityCustomWithCache() async {
+        guard enabled() else { return }
         var counter = 0
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .cacheElseLoad)
             .sinkToReceiveValue { some in
@@ -82,14 +75,13 @@ class SampleWebAPI_Tests: XCTestCase {
                 case .failure: ()
                 }
             }.store(in: TestsGlobal.cancelBag)
-        expect(counter == 1).toEventually(beTrue(), timeout: .seconds(TestsGlobal.timeout))
+        #expect(await eventually { counter == 1 })
     }
 
-    func test_fetchEmployeesAvailabilityGenericPublisherWithCache() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+    @Test
+    @Test
+    func test_fetchEmployeesAvailabilityGenericPublisherWithCache() async {
+        guard enabled() else { return }
         var counter = 0
         sampleWebAPIUseCase.fetchEmployees(cachePolicy: .cacheElseLoad)
             .sinkToReceiveValue { some in
@@ -99,14 +91,13 @@ class SampleWebAPI_Tests: XCTestCase {
                 case .failure: ()
                 }
             }.store(in: TestsGlobal.cancelBag)
-        expect(counter == 1).toEventually(beTrue(), timeout: .seconds(TestsGlobal.timeout))
+        #expect(await eventually { counter == 1 })
     }
 
-    func test_sslPiningWithCertificates() {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+    @Test
+    @Test
+    func test_sslPiningWithCertificates() async {
+        guard enabled() else { return }
         var counter = 0
         sampleWebAPIUseCase.fetchEmployeesAvailabilitySLLCertificate(server: .gitHub)
             .sinkToReceiveValue { some in
@@ -116,18 +107,17 @@ class SampleWebAPI_Tests: XCTestCase {
                 case .failure: ()
                 }
             }.store(in: TestsGlobal.cancelBag)
-        expect(counter == 1).toEventually(beTrue(), timeout: .seconds(TestsGlobal.timeout))
+        #expect(await eventually { counter == 1 })
     }
 
+    @Test
     func test_sslPiningWithPublicHashKeys() async {
-        guard enabled() else {
-            XCTAssert(true)
-            return
-        }
+        guard enabled() else { return }
         let value = try? await sampleWebAPIUseCase.fetchEmployeesAvailabilitySLLHashKeys(server: .gitHub).async()
-        await expect(value != nil).toEventually(beTrue(), timeout: .seconds(TestsGlobal.timeout))
+        #expect(await eventually { value != nil })
     }
 
+    @Test
     func test_authenticationHandlerWithHashKeys() async {
         let server: CommonNetworking.AuthenticationHandler.Server = .googleUkWithHashKeys
         let delegate = CommonNetworking.AuthenticationHandler(server: server)
@@ -141,12 +131,12 @@ class SampleWebAPI_Tests: XCTestCase {
         let request = URLRequest(url: URL(string: server.url)!)
         do {
             _ = try await urlSession.data(for: request)
-            XCTAssert(true)
         } catch {
-            XCTAssert(false)
+            Issue.record("unexpected path")
         }
     }
 
+    @Test
     func test_authenticationHandlerWithCertPath() async {
         let server: CommonNetworking.AuthenticationHandler.Server = .googleUkWithCertPath
         let delegate = CommonNetworking.AuthenticationHandler(server: server)
@@ -160,9 +150,8 @@ class SampleWebAPI_Tests: XCTestCase {
         let request = URLRequest(url: URL(string: server.url)!)
         do {
             _ = try await urlSession.data(for: request)
-            XCTAssert(true)
         } catch {
-            XCTAssert(false)
+            Issue.record("unexpected path")
         }
     }
 }
