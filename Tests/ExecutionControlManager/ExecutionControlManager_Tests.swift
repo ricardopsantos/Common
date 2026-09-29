@@ -6,8 +6,6 @@ import XCTest
 import Foundation
 import Combine
 //
-import Nimble
-//
 @testable import Common
 class ExecutionControlManager_Tests: XCTestCase {
     override func setUp() {
@@ -40,8 +38,9 @@ class ExecutionControlManager_Tests: XCTestCase {
         }
 
         // Test assertions
-        let timeout = NimbleTimeInterval.seconds(Int(timeInterval * 2))
-        expect(executionCount).toEventually(equal(2), timeout: timeout)
+        let timeout = TimeInterval(timeInterval * 2)
+        waitUntil(timeout) { executionCount == 2 }
+        XCTAssertEqual(executionCount, 2)
     }
 
     func testThrottleWithIgnoredClosure() {
@@ -65,9 +64,11 @@ class ExecutionControlManager_Tests: XCTestCase {
         })
 
         // Test assertions
-        let timeout = NimbleTimeInterval.seconds(Int(timeInterval * 2))
-        expect(executionCount).toEventually(equal(1), timeout: timeout)
-        expect(ignoredCount).toEventually(equal(1), timeout: timeout)
+        let timeout = TimeInterval(timeInterval * 2)
+        waitUntil(timeout) { executionCount == 1 }
+        XCTAssertEqual(executionCount, 1)
+        waitUntil(timeout) { ignoredCount == 1 }
+        XCTAssertEqual(ignoredCount, 1)
     }
 
     func testDebounce() {
@@ -87,8 +88,9 @@ class ExecutionControlManager_Tests: XCTestCase {
         }
 
         // Expect only one closure execution after debounce interval
-        let timeoutT1 = NimbleTimeInterval.seconds(Int(timeInterval + 1))
-        expect(executionCount).toEventually(equal(1), timeout: timeoutT1)
+        let timeoutT1 = TimeInterval(timeInterval + 1)
+        waitUntil(timeoutT1) { executionCount == 1 }
+        XCTAssertEqual(executionCount, 1)
 
         // Call debounce again after a delay and expect another execution
         DispatchQueue.main.asyncAfter(deadline: .now() + timeInterval + 0.1) {
@@ -98,8 +100,9 @@ class ExecutionControlManager_Tests: XCTestCase {
         }
 
         // Test assertions
-        let timeoutT2 = NimbleTimeInterval.seconds(Int(timeInterval + 2))
-        expect(executionCount).toEventually(equal(2), timeout: timeoutT2)
+        let timeoutT2 = TimeInterval(timeInterval + 2)
+        waitUntil(timeoutT2) { executionCount == 2 }
+        XCTAssertEqual(executionCount, 2)
     }
 
     func testDropFirstNegative() {
@@ -116,8 +119,9 @@ class ExecutionControlManager_Tests: XCTestCase {
         }
 
         // Test assertions
-        let timeout = NimbleTimeInterval.seconds(Int(timeInterval))
-        expect(executionCount).toEventually(equal(2), timeout: timeout)
+        let timeout = TimeInterval(timeInterval)
+        waitUntil(timeout) { executionCount == 2 }
+        XCTAssertEqual(executionCount, 2)
     }
 
     func testDropFirst0() {
@@ -134,8 +138,9 @@ class ExecutionControlManager_Tests: XCTestCase {
         }
 
         // Test assertions
-        let timeout = NimbleTimeInterval.seconds(Int(timeInterval))
-        expect(executionCount).toEventually(equal(2), timeout: timeout)
+        let timeout = TimeInterval(timeInterval)
+        waitUntil(timeout) { executionCount == 2 }
+        XCTAssertEqual(executionCount, 2)
     }
 
     func testDropFirst1() {
@@ -152,8 +157,9 @@ class ExecutionControlManager_Tests: XCTestCase {
         }
 
         // Test assertions
-        let timeout = NimbleTimeInterval.seconds(Int(timeInterval))
-        expect(executionCount).toEventually(equal(1), timeout: timeout)
+        let timeout = TimeInterval(timeInterval)
+        waitUntil(timeout) { executionCount == 1 }
+        XCTAssertEqual(executionCount, 1)
     }
 
     func testDropFirst2() {
@@ -173,7 +179,8 @@ class ExecutionControlManager_Tests: XCTestCase {
         }
 
         // Test assertions
-        let timeout = NimbleTimeInterval.seconds(Int(timeInterval))
-        expect(executionCount).toEventually(equal(1), timeout: timeout)
+        let timeout = TimeInterval(timeInterval)
+        waitUntil(timeout) { executionCount == 1 }
+        XCTAssertEqual(executionCount, 1)
     }
 }

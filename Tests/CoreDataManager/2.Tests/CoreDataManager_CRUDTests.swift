@@ -6,8 +6,6 @@ import XCTest
 import Foundation
 import Combine
 //
-import Nimble
-//
 @testable import Common
 class CoreDataManager_CRUDTests: XCTestCase {
     func enabled() -> Bool {
@@ -197,6 +195,7 @@ extension CoreDataManager_CRUDTests {
                     case .databaseDidDeletedContentOn: ()
                     case .databaseDidFinishChangeContentItemsOn:
                         didFinishChangeContent += 1
+                    case .databaseReloaded: ()
                     }
                 }
             }.store(in: TestsGlobal.cancelBag)
@@ -206,22 +205,14 @@ extension CoreDataManager_CRUDTests {
         }
 
         // Verify that the event is emitted
-        expect(didFinishChangeContent == 1).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
-        expect(didInsertedContent.value).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
-        expect(didInsertedContent.id == toStore.id).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
-        expect(didChangedContent == 1).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
+        waitUntil(TimeInterval(TestsGlobal.timeout)) { didFinishChangeContent == 1 }
+        XCTAssertEqual(didFinishChangeContent, 1)
+        waitUntil(TimeInterval(TestsGlobal.timeout)) { didInsertedContent.value }
+        XCTAssertTrue(didInsertedContent.value)
+        waitUntil(TimeInterval(TestsGlobal.timeout)) { didInsertedContent.id == toStore.id }
+        XCTAssertEqual(didInsertedContent.id, toStore.id)
+        waitUntil(TimeInterval(TestsGlobal.timeout)) { didChangedContent == 1 }
+        XCTAssertEqual(didChangedContent, 1)
     }
 
     func testC4_emitEventOnDataBaseInsert_test2() {
@@ -242,6 +233,7 @@ extension CoreDataManager_CRUDTests {
                     case .databaseDidDeletedContentOn: ()
                     case .databaseDidFinishChangeContentItemsOn:
                         didFinishChangeContent += 1
+                    case .databaseReloaded: ()
                     }
                 }
             }.store(in: TestsGlobal.cancelBag)
@@ -253,17 +245,11 @@ extension CoreDataManager_CRUDTests {
         }
 
         // Verify that the event is emitted
-        expect(didInsertedContent == didInsertedContent).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
-        expect(didChangedContent == numberOfInserts).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
-        expect(didFinishChangeContent == numberOfInserts).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
+        waitUntil(TimeInterval(TestsGlobal.timeout)) { didInsertedContent == didInsertedContent }
+        XCTAssertEqual(didInsertedContent, didInsertedContent)
+        waitUntil(TimeInterval(TestsGlobal.timeout)) { didChangedContent == numberOfInserts }
+        XCTAssertEqual(didChangedContent, numberOfInserts)
+        waitUntil(TimeInterval(TestsGlobal.timeout)) { didFinishChangeContent == numberOfInserts }
+        XCTAssertEqual(didFinishChangeContent, numberOfInserts)
     }
 }

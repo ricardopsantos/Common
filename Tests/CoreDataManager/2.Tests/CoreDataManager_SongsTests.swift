@@ -5,7 +5,6 @@
 import XCTest
 import Foundation
 import Combine
-import Nimble
 @testable import Common
 
 class CommonCoreData_SongsTests: XCTestCase {
@@ -47,7 +46,7 @@ extension CommonCoreData_SongsTests {
     @discardableResult
     func saveRandomCDataSinger(songs: Int = 0) -> CDataSinger {
         let singer = randomCDataSinger(songs: songs)
-        bd.save() // Save the singer and its songs to the database
+        bd.syncSave() // Save the singer and its songs to the database
         return singer
     }
 }
@@ -213,30 +212,23 @@ extension CommonCoreData_SongsTests {
                     case .databaseDidDeletedContentOn: ()
                     case .databaseDidFinishChangeContentItemsOn:
                         didFinishChangeContent += 1
+                    case .databaseReloaded: ()
                     }
                 }
             }.store(in: TestsGlobal.cancelBag)
 
         Common_Utils.delay { [weak self] in
-            self?.bd.save()
+            self?.bd.syncSave()
         }
 
         // Verify that the event is emitted
-        expect(didFinishChangeContent == 1).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
-        expect(didInsertedContent.value).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
-        expect(didInsertedContent.id == toStore.id).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
-        expect(didChangedContent == 1).toEventually(
-            beTrue(),
-            timeout: .seconds(TestsGlobal.timeout)
-        )
+        waitUntil(TimeInterval(TestsGlobal.timeout)) { didFinishChangeContent == 1 }
+        XCTAssertEqual(didFinishChangeContent, 1)
+        waitUntil(TimeInterval(TestsGlobal.timeout)) { didInsertedContent.value }
+        XCTAssertTrue(didInsertedContent.value)
+        waitUntil(TimeInterval(TestsGlobal.timeout)) { didInsertedContent.id == toStore.id }
+        XCTAssertEqual(didInsertedContent.id, toStore.id)
+        waitUntil(TimeInterval(TestsGlobal.timeout)) { didChangedContent == 1 }
+        XCTAssertEqual(didChangedContent, 1)
     }
 }

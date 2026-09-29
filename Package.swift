@@ -14,8 +14,8 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/realm/SwiftLint.git", from: "0.55.1"),
-        .package(url: "https://github.com/Quick/Nimble", from: "13.3.0"),
+    //    .package(url: "https://github.com/realm/SwiftLint.git", from: "0.55.1"),
+    //    .package(url: "https://github.com/Quick/Nimble", from: "13.3.0"),
     ],
     targets: [
         .target(
@@ -37,7 +37,6 @@ let package = Package(
             name: "CommonTests",
             dependencies: [
                 "Common",
-                .product(name: "Nimble", package: "Nimble"),
             ],
             swiftSettings: [
                 .define("IN_PACKAGE_CODE"),

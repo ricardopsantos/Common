@@ -5,7 +5,6 @@
 import Combine
 import Common
 import Foundation
-import Nimble
 import XCTest
 
 class CommonBundleFinder {}
@@ -99,6 +98,14 @@ func eventuallyAsync(
     }
     // Final check after the timeout window
     return await condition()
+}
+
+/// Synchronous polling helper for the legacy XCTest (`_Tests.swift`) suite,
+/// mirroring `eventually`/`eventuallyAsync` above for non-async call sites.
+func waitUntil(_ timeout: TimeInterval = 5, condition: @escaping () -> Bool) {
+    let predicate = NSPredicate { _, _ in condition() }
+    let expectation = XCTNSPredicateExpectation(predicate: predicate, object: nil)
+    _ = XCTWaiter().wait(for: [expectation], timeout: timeout)
 }
 
 func averageOperationTime(

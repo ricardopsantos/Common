@@ -1,9 +1,6 @@
 import XCTest
 import Foundation
 import Combine
-//
-import Nimble
-
 @testable import Common
 
 final class SyncCodableCacheManagerUserDefaults_Tests: SyncCodableCacheManagerBase_Tests {

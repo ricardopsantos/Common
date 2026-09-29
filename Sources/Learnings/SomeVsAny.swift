@@ -36,13 +36,13 @@ public extension CommonLearnings {
 
         struct Circle: SomeVsAnyShapeProtocol {
             func draw() {
-                Common_Logs.debug("Drawing a circle")
+                Common_Logs.debug("Drawing a circle", "SomeVsAny")
             }
         }
 
         struct Square: SomeVsAnyShapeProtocol {
             func draw() {
-                Common_Logs.debug("Drawing a square")
+                Common_Logs.debug("Drawing a square", "SomeVsAny")
             }
         }
 

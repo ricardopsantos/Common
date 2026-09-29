@@ -91,6 +91,7 @@ public extension CommonLearnings {
 // MARK: - Approach 3: ViewThatFits (iOS 16)
 //
 
+@available(iOS 16.0, *)
 struct DynamicStackV3<Content: View>: View {
     let content: () -> Content
     public init(@ViewBuilder content: @escaping () -> Content) {

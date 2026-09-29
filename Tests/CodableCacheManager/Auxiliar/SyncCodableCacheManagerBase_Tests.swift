@@ -6,8 +6,6 @@ import XCTest
 import Foundation
 import Combine
 //
-import Nimble
-//
 @testable import Common
 
 //
@@ -27,7 +25,7 @@ class SyncCodableCacheManagerBase_Tests: XCTestCase {
     }
 
     private var sampleWebAPIUseCase: SampleWebAPIUseCase {
-        SampleWebAPIUseCase()
+        SampleWebAPIUseCase(codableCacheManager: codableCacheManager())
     }
 
     override func setUp() {
@@ -130,7 +128,8 @@ class SyncCodableCacheManagerBase_Tests: XCTestCase {
                 case .failure: ()
                 }
             }.store(in: TestsGlobal.cancelBag)
-        expect(counter == 1).toEventually(beTrue(), timeout: .seconds(TestsGlobal.timeout))
+        waitUntil(TimeInterval(TestsGlobal.timeout)) { counter == 1 }
+        XCTAssertEqual(counter, 1)
     }
 
     func test4_cacheElseLoad() {
@@ -148,7 +147,8 @@ class SyncCodableCacheManagerBase_Tests: XCTestCase {
                 case .failure: ()
                 }
             }.store(in: TestsGlobal.cancelBag)
-        expect(counter).toEventually(equal(1), timeout: .seconds(TestsGlobal.timeout))
+        waitUntil(TimeInterval(TestsGlobal.timeout)) { counter == 1 }
+        XCTAssertEqual(counter, 1)
     }
 
     func test5_cacheDontLoad() {
@@ -166,7 +166,8 @@ class SyncCodableCacheManagerBase_Tests: XCTestCase {
                 case .failure: ()
                 }
             }.store(in: TestsGlobal.cancelBag)
-        expect(counter).toEventually(equal(0), timeout: .seconds(TestsGlobal.timeout))
+        waitUntil(TimeInterval(TestsGlobal.timeout)) { counter == 0 }
+        XCTAssertEqual(counter, 0)
     }
 
     func test6_cacheAndLoadT1() {
@@ -184,7 +185,8 @@ class SyncCodableCacheManagerBase_Tests: XCTestCase {
                 case .failure: ()
                 }
             }.store(in: TestsGlobal.cancelBag)
-        expect(counter == 1).toEventually(beTrue(), timeout: .seconds(TestsGlobal.timeout))
+        waitUntil(TimeInterval(TestsGlobal.timeout)) { counter == 1 }
+        XCTAssertEqual(counter, 1)
     }
 
     func test7_cacheAndLoadT2() {
@@ -209,7 +211,8 @@ class SyncCodableCacheManagerBase_Tests: XCTestCase {
                 case .failure: ()
                 }
             }.store(in: TestsGlobal.cancelBag)
-        expect(counter == 2).toEventually(beTrue(), timeout: .seconds(TestsGlobal.timeout))
+        waitUntil(TimeInterval(TestsGlobal.timeout)) { counter == 2 }
+        XCTAssertEqual(counter, 2)
     }
 
     func test8_fetchingRecordFrom_10000Records() {

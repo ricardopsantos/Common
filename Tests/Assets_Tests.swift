@@ -7,8 +7,6 @@ import Foundation
 import Combine
 import SwiftUI
 //
-import Nimble
-//
 @testable import Common
 class Assets_Tests: XCTestCase {
     func enabled() -> Bool {
