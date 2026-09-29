@@ -44,17 +44,25 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
     {
         let composedKey = Commom_ExpiringKeyValueEntity.composedKey(key, params)
         let context = viewContext
-        do {
-            let request = latestRecordFetchRequest(for: composedKey)
-            if let record = try context.fetch(request).first,
-               let model = record.asExpiringKeyValueEntity?.extract(T.self)
-            {
-                return (model, record.recordDate ?? .distantPast)
+        // `sync*` is callable from any thread, but NSManagedObjectContext (including
+        // `viewContext`) is confined to its own queue — accessing it directly from an
+        // arbitrary thread is a Core Data threading violation that corrupts internal
+        // state (seen as "Failed to find a unique match for an NSEntityDescription" /
+        // "-[__NSCFSet addObject:]: attempt to insert nil" under concurrent access).
+        var result: (model: T, recordDate: Date)?
+        context.performAndWait {
+            do {
+                let request = latestRecordFetchRequest(for: composedKey)
+                if let record = try context.fetch(request).first,
+                   let model = record.asExpiringKeyValueEntity?.extract(T.self)
+                {
+                    result = (model, record.recordDate ?? .distantPast)
+                }
+            } catch {
+                Common_Logs.error("syncRetrieve failed: \(error.localizedDescription)", "\(Self.self)")
             }
-        } catch {
-            Common_Logs.error("syncRetrieve failed: \(error.localizedDescription)", "\(Self.self)")
         }
-        return nil
+        return result
     }
 
     public func syncStore(
@@ -72,20 +80,22 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
         guard let composedKey = toStore.key, !composedKey.isEmpty else { return }
 
         let context = viewContext
-        let entity = CDataExpiringKeyValueEntity(context: context)
-        entity.key = toStore.key
-        entity.recordDate = toStore.recordDate
-        entity.expireDate = toStore.expireDate
-        entity.encoding = Int16(toStore.encoding)
-        entity.object = toStore.object
-        entity.objectType = toStore.objectType
+        context.performAndWait {
+            let entity = CDataExpiringKeyValueEntity(context: context)
+            entity.key = toStore.key
+            entity.recordDate = toStore.recordDate
+            entity.expireDate = toStore.expireDate
+            entity.encoding = Int16(toStore.encoding)
+            entity.object = toStore.object
+            entity.objectType = toStore.objectType
 
-        guard context.hasChanges else { return }
-        do {
-            try context.save()
-        } catch {
-            context.rollback()
-            Common_Logs.error("syncStore save failed: \(error.localizedDescription)", "\(Self.self)")
+            guard context.hasChanges else { return }
+            do {
+                try context.save()
+            } catch {
+                context.rollback()
+                Common_Logs.error("syncStore save failed: \(error.localizedDescription)", "\(Self.self)")
+            }
         }
     }
 
@@ -95,33 +105,38 @@ extension Common.CacheManagerForCodableCoreDataRepository: CodableCacheManagerPr
 
     public func syncClearAll() {
         let context = viewContext
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = CDataExpiringKeyValueEntity.fetchRequest()
-        do {
-            let count = try context.count(for: fetchRequest)
-            guard count > 0 else { return }
-        } catch {
-            // If count fails, still attempt a batch delete — Core Data can handle it.
-        }
-        let success = CommonCoreData.Utils.batchDelete(context: context, request: fetchRequest)
-        if !success {
-            Common_Logs.error("Failed to delete \(CDataExpiringKeyValueEntity.self) records", "\(Self.self)")
+        context.performAndWait {
+            let fetchRequest: NSFetchRequest<NSFetchRequestResult> = CDataExpiringKeyValueEntity.fetchRequest()
+            do {
+                let count = try context.count(for: fetchRequest)
+                guard count > 0 else { return }
+            } catch {
+                // If count fails, still attempt a batch delete — Core Data can handle it.
+            }
+            let success = CommonCoreData.Utils.batchDelete(context: context, request: fetchRequest)
+            if !success {
+                Common_Logs.error("Failed to delete \(CDataExpiringKeyValueEntity.self) records", "\(Self.self)")
+            }
         }
     }
 
     public func syncAllCachedKeys() -> [(String, Date)] {
         let context = viewContext
-        let fetchRequest: NSFetchRequest<CDataExpiringKeyValueEntity> = CDataExpiringKeyValueEntity.fetchRequest()
-        do {
-            let records = try context.fetch(fetchRequest)
-            return records.compactMap { rec in
-                if let k = rec.key, let d = rec.recordDate { return (k, d) }
-                return nil
+        var result: [(String, Date)] = []
+        context.performAndWait {
+            let fetchRequest: NSFetchRequest<CDataExpiringKeyValueEntity> = CDataExpiringKeyValueEntity.fetchRequest()
+            do {
+                let records = try context.fetch(fetchRequest)
+                result = records.compactMap { rec in
+                    if let k = rec.key, let d = rec.recordDate { return (k, d) }
+                    return nil
+                }
+                .sorted { $0.1 > $1.1 } // newest first by recordDate
+            } catch {
+                Common_Logs.error("syncAllCachedKeys failed: \(error.localizedDescription)", "\(Self.self)")
             }
-            .sorted { $0.1 > $1.1 } // newest first by recordDate
-        } catch {
-            Common_Logs.error("syncAllCachedKeys failed: \(error.localizedDescription)", "\(Self.self)")
-            return []
         }
+        return result
     }
 
     // MARK: - Async

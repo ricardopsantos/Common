@@ -48,10 +48,6 @@ public extension CommonCoreData.Utils {
         }
     }
 
-    // MARK: - Synchronous Save Wrapper
-
-    private static let syncSaveGroup = DispatchGroup()
-
     // MARK: - Public Synchronous Save Wrapper (Safe)
 
     @discardableResult
@@ -60,6 +56,13 @@ public extension CommonCoreData.Utils {
         canEmitChanges: Bool = true
     ) -> Bool {
         guard let viewContext else { return false }
+
+        // A group local to this call — a shared static group would couple unrelated
+        // concurrent saves together: thread A's `wait()` would block until every
+        // other thread's concurrent syncSave also finished (or hang forever if one
+        // never completes), since a DispatchGroup only reaches zero once ALL
+        // outstanding enters, from any caller, have a matching leave.
+        let syncSaveGroup = DispatchGroup()
 
         var finalResult = false
         syncSaveGroup.enter()
