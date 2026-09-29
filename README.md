@@ -4,10 +4,10 @@ __Guys love tools, this is my Swift toolbox (UIKit, Foundation, SwiftUI & Combin
 
 <p align="center">
    <a href="https://developer.apple.com/swift/">
-      <img src="https://img.shields.io/badge/Swift-5.1-orange.svg?style=flat" alt="Swift 5.3">
+      <img src="https://img.shields.io/badge/Swift-6.0-orange.svg?style=flat" alt="Swift 6.0">
    </a>
     <a href="https://developer.apple.com/swift/">
-      <img src="https://img.shields.io/badge/Xcode-15.4.-blue.svg" alt="Swift 5.3">
+      <img src="https://img.shields.io/badge/Xcode-16-blue.svg" alt="Xcode 16">
    </a>
    <a href="">
       <img src="https://img.shields.io/cocoapods/p/ValidatedPropertyKit.svg?style=flat" alt="Platform">
