@@ -116,11 +116,16 @@ public extension Common {
         }
 
         /// Locks the unfair lock (blocking).
+        ///
+        /// - Warning: `os_unfair_lock` enforces same-thread ownership. `unlock()` MUST be
+        ///   called on the same thread that called `lock()` — unlocking from a different
+        ///   thread (e.g. a different `DispatchQueue`/`Task`) aborts the process. Prefer
+        ///   `execute(_:)`/`tryExecute(_:)`, which keep lock/unlock on one call stack.
         public func lock() {
             os_unfair_lock_lock(pointer)
         }
 
-        /// Unlocks the unfair lock.
+        /// Unlocks the unfair lock. Must be called from the same thread that called `lock()`.
         public func unlock() {
             os_unfair_lock_unlock(pointer)
         }

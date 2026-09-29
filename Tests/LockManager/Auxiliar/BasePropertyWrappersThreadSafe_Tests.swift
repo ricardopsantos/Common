@@ -12,6 +12,10 @@ import Combine
 protocol TestClassProtocol {
     var value: Int { get set }
     mutating func modify()
+    /// Atomic read-modify-write increment (`value += 1` through the wrapper's own
+    /// locked closure API, not a separate get+set — see `ThreadSafeDispatchQueue`'s
+    /// doc comment for why that distinction matters under contention).
+    func increment()
 }
 
 class BasePropertyWrappersThreadSafe_Tests: XCTestCase {
@@ -35,7 +39,7 @@ class BasePropertyWrappersThreadSafe_Tests: XCTestCase {
         let expectation = XCTestExpectation(description: #function)
 
         DispatchQueue.concurrentPerform(iterations: incrementIterations) { _ in
-            testInstance.value += 1
+            testInstance.increment()
         }
 
         DispatchQueue.concurrentPerform(iterations: resetIterations) { _ in
@@ -92,7 +96,7 @@ class BasePropertyWrappersThreadSafe_Tests: XCTestCase {
         let iterations = 1000
         let expectation = XCTestExpectation(description: #function)
         DispatchQueue.concurrentPerform(iterations: iterations) { _ in
-            testInstance.value += 1
+            testInstance.increment()
         }
         // Allow some time for the concurrent operations to finish
         DispatchQueue.global().asyncAfter(deadline: .now() + 1) {
@@ -120,13 +124,13 @@ class BasePropertyWrappersThreadSafe_Tests: XCTestCase {
 
         DispatchQueue.concurrentPerform(iterations: iterations) { _ in
             queue.async {
-                testInstance.value += 1
+                testInstance.increment()
             }
             queue.sync {
-                testInstance.value += 1
+                testInstance.increment()
             }
             queue.async {
-                testInstance.value += 1
+                testInstance.increment()
             }
         }
 
@@ -153,7 +157,7 @@ class BasePropertyWrappersThreadSafe_Tests: XCTestCase {
 
         DispatchQueue.concurrentPerform(iterations: iterations) { _ in
             queue.async {
-                testInstance.value += 1
+                testInstance.increment()
                 let value = testInstance.value
                 queue.async(flags: .barrier) {
                     readResults.append(value)
@@ -182,7 +186,7 @@ class BasePropertyWrappersThreadSafe_Tests: XCTestCase {
         let expectation = XCTestExpectation(description: #function)
 
         DispatchQueue.concurrentPerform(iterations: iterations) { _ in
-            testInstance.value += 1
+            testInstance.increment()
         }
 
         // Allow some time for the concurrent operations to finish

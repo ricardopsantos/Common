@@ -112,6 +112,9 @@ final class UnfairLockManager_Tests: XCTestCase {
     }
 
     func test_deadlockPrevention() {
+        // os_unfair_lock enforces same-thread lock/unlock ownership: unlocking from a
+        // different thread than the one that locked it aborts the process. Each queue
+        // below must lock and unlock on its own thread.
         let expectation = XCTestExpectation(description: #function)
 
         let queue1 = DispatchQueue(label: "com.test.queue1")
@@ -119,17 +122,14 @@ final class UnfairLockManager_Tests: XCTestCase {
 
         queue1.async {
             self.lockManager.lock()
-            DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
-                self.lockManager.unlock()
-            }
+            Thread.sleep(forTimeInterval: 0.1)
+            self.lockManager.unlock()
         }
 
-        queue2.async {
-            DispatchQueue.global().asyncAfter(deadline: .now() + 0.05) {
-                self.lockManager.lock()
-                self.lockManager.unlock()
-                expectation.fulfill()
-            }
+        queue2.asyncAfter(deadline: .now() + 0.05) {
+            self.lockManager.lock()
+            self.lockManager.unlock()
+            expectation.fulfill()
         }
 
         wait(for: [expectation], timeout: TimeInterval(TestsGlobal.timeout))

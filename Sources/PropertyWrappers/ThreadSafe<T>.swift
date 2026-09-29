@@ -57,24 +57,50 @@ public extension Common_PropertyWrappers {
      preventing concurrent read and write operations from causing data races or inconsistent states.
      It uses a DispatchQueue configured for concurrent access to manage thread safety.
 
-     __This FAILS on way more unit tests than `ThreadSafeUnfairLock`__
+     Like any lock-backed wrapper, individual `get`/`set` are atomic, but a compound
+     operation performed externally (e.g. `wrapper.value += 1`) is NOT atomic — it is a
+     separate get followed by a separate set, so concurrent writers can still lose
+     updates in between. Use `read(_:)`/`write(_:)` (via the `$` projection) to perform
+     an atomic read-modify-write.
      */
     @propertyWrapper
     struct ThreadSafeDispatchQueue<T> {
+        /// Reference box so the value is shared (not duplicated) across any copies of
+        /// this struct — copies of `ThreadSafeDispatchQueue` still synchronize on the
+        /// same underlying storage.
+        private final class Box {
+            var value: T
+            init(_ value: T) { self.value = value }
+        }
+
         private let synchronizedQueue = DispatchQueue
             .synchronizedQueue(label: "\(Common.self)_\(T.self)_\(UUID().uuidString)")
-        private var objectValue: T!
+        private let box: Box
 
         public init(wrappedValue value: T) {
-            objectValue = value
+            box = Box(value)
         }
 
         /// The underlying value wrapped by the bindable state.
         /// The property that stores the wrapped value of the property. It is the value that is accessed when the
         /// property is read or written.
         public var wrappedValue: T {
-            get { synchronizedQueue.sync { objectValue } }
-            set { synchronizedQueue.sync(flags: .barrier) { objectValue = newValue } }
+            get { synchronizedQueue.sync { box.value } }
+            set { synchronizedQueue.sync(flags: .barrier) { box.value = newValue } }
+        }
+
+        public var projectedValue: ThreadSafeDispatchQueue<T> { self }
+
+        /// Atomic read.
+        public func read<V>(_ f: (T) -> V) -> V {
+            synchronizedQueue.sync { f(box.value) }
+        }
+
+        /// Atomic read-modify-write — use this instead of `wrapper.value += 1`, which
+        /// is two separate (individually-atomic, but not jointly-atomic) operations.
+        @discardableResult
+        public func write<V>(_ f: (inout T) -> V) -> V {
+            synchronizedQueue.sync(flags: .barrier) { f(&box.value) }
         }
     }
 }
