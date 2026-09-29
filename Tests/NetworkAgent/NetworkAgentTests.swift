@@ -41,7 +41,7 @@ struct NetworkAgentTests {
                 }
             },
             receiveValue: { value in
-                model = value.model
+                model = value.modelDto
                 print(model)
             }
         )

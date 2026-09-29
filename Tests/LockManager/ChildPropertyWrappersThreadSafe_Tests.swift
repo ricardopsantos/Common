@@ -20,6 +20,9 @@ class PropertyWrappers_ThreadSafeUnfairLock_Tests: BasePropertyWrappersThreadSaf
             _ = value
             value = .random(in: 0...1000)
         }
+        func increment() {
+            $value.write { $0 += 1 }
+        }
     }
 
     override func enabled() -> Bool {
@@ -41,6 +44,9 @@ class PropertyWrappers_ThreadSafeDispatchQueue_Tests: BasePropertyWrappersThread
         mutating func modify() {
             _ = value
             value = .random(in: 0...1000)
+        }
+        func increment() {
+            $value.write { $0 += 1 }
         }
     }
 

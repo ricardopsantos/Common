@@ -29,7 +29,6 @@ struct CoreDataManager_CRUDTests {
 //
 extension CoreDataManager_CRUDTests {
     @Test
-    @Test
     func testA1_syncCRUD() async {
         guard enabled() else { return }
 
@@ -129,7 +128,6 @@ extension CoreDataManager_CRUDTests {
     }
 
     @Test
-    @Test
     func testB1_syncDelete() async {
         guard enabled() else { return }
         bd.syncStore(.random)
@@ -166,7 +164,6 @@ extension CoreDataManager_CRUDTests {
     }
 
     @Test
-    @Test
     func testC3_emitEventOnDataBaseInsert_test1() async {
         guard enabled() else { return }
         var didInsertedContent = (value: false, id: "")
@@ -186,12 +183,13 @@ extension CoreDataManager_CRUDTests {
                     case .databaseDidDeletedContentOn: ()
                     case .databaseDidFinishChangeContentItemsOn:
                         didFinishChangeContent += 1
+                    case .databaseReloaded: ()
                     }
                 }
             }.store(in: TestsGlobal.cancelBag)
 
-        Common_Utils.delay { [weak self] in
-            self?.bd.syncStore(toStore)
+        Common_Utils.delay {
+            bd.syncStore(toStore)
         }
 
         // Verify that the event is emitted
@@ -201,7 +199,6 @@ extension CoreDataManager_CRUDTests {
         #expect(await eventually { didChangedContent == 1 })
     }
 
-    @Test
     @Test
     func testC4_emitEventOnDataBaseInsert_test2() async {
         var didInsertedContent = 0
@@ -221,13 +218,14 @@ extension CoreDataManager_CRUDTests {
                     case .databaseDidDeletedContentOn: ()
                     case .databaseDidFinishChangeContentItemsOn:
                         didFinishChangeContent += 1
+                    case .databaseReloaded: ()
                     }
                 }
             }.store(in: TestsGlobal.cancelBag)
 
-        Common_Utils.delay { [weak self] in
+        Common_Utils.delay {
             for _ in 1...numberOfInserts {
-                self?.bd.syncStore(.random)
+                bd.syncStore(.random)
             }
         }
 

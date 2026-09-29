@@ -7,8 +7,10 @@ import Foundation
 import Combine
 @testable import Common
 
-public class SampleWebAPIUseCase {
-    private let webAPI: SampleWebAPIProtocol = SampleWebAPI(session: .defaultForNetworkAgent)
+/// Legacy (pre-refactor) use case, kept only for the legacy XCTest suite (`2.Tests/SampleWebAPI_Tests.swift`).
+/// Renamed to avoid colliding with the modern `SampleWebAPIUseCase` in `2.SampleUsage/`.
+public class SampleWebAPIUseCaseLegacy {
+    private let webAPI: SampleWebAPIProtocol = SampleWebAPILegacy(session: .defaultForNetworkAgent)
     private let codableCacheManager = Common.CacheManagerForCodableUserDefaultsRepository.shared
 
     public typealias EmployeesAvailabilityResponse = AnyPublisher<
@@ -62,7 +64,7 @@ public class SampleWebAPIUseCase {
     // MARK: - API Request + SSL Pinning (with Certificate)
     //
     func fetchEmployeesAvailabilitySLLCertificate(server: CommonNetworking.AuthenticationHandler.Server) -> EmployeesAvailabilityResponse {
-        let webAPISSLPinningWithCertificates = SampleWebAPI(
+        let webAPISSLPinningWithCertificates = SampleWebAPILegacy(
             session: .defaultForNetworkAgent,
             pathToCertificates: server.pathToCertificates ?? []
         )
@@ -74,7 +76,7 @@ public class SampleWebAPIUseCase {
     // MARK: - API Request + SSL Pinning (with Certificate)
     //
     func fetchEmployeesAvailabilitySLLHashKeys(server: CommonNetworking.AuthenticationHandler.Server) -> EmployeesAvailabilityResponse {
-        let webAPISSLPinningWithCertificates = SampleWebAPI(
+        let webAPISSLPinningWithCertificates = SampleWebAPILegacy(
             session: .defaultForNetworkAgent,
             pathToCertificates: server.publicHashKeys
         )

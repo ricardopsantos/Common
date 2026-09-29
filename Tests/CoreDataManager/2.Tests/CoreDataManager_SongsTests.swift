@@ -46,7 +46,7 @@ extension CommonCoreData_SongsTests {
     @discardableResult
     func saveRandomCDataSinger(songs: Int = 0) -> CDataSinger {
         let singer = randomCDataSinger(songs: songs)
-        bd.save() // Save the singer and its songs to the database
+        bd.syncSave() // Save the singer and its songs to the database
         return singer
     }
 }
@@ -56,7 +56,6 @@ extension CommonCoreData_SongsTests {
 //
 extension CommonCoreData_SongsTests {
     // Test to ensure that deleting a singer also deletes the associated songs (cascade delete)
-    @Test
     @Test
     func test_cascadeDelete() async {
         guard enabled() else { return }
@@ -78,7 +77,6 @@ extension CommonCoreData_SongsTests {
 
     // Test to save a singer with one song and verify the correct saving
     @Test
-    @Test
     func test_saveSingerWith1Song() async {
         guard enabled() else { return }
         bd.deleteAllSingers() // Clear all existing singers
@@ -90,7 +88,6 @@ extension CommonCoreData_SongsTests {
     }
 
     // Test to verify that deleting a specific singer does not affect other singers
-    @Test
     @Test
     func test_deleteSpecificSinger() async {
         guard enabled() else { return }
@@ -109,7 +106,6 @@ extension CommonCoreData_SongsTests {
 
     // Test to map a singer to a model and verify the integrity of related data
     @Test
-    @Test
     func test_singerMapToModel() async {
         guard enabled() else { return }
         bd.deleteAllSingers() // Clear all existing singers
@@ -123,7 +119,6 @@ extension CommonCoreData_SongsTests {
     }
 
     // Test to map a song to a model and verify the inclusion or exclusion of related singer
-    @Test
     @Test
     func test_songMapToModel() async {
         guard enabled() else { return }
@@ -140,7 +135,6 @@ extension CommonCoreData_SongsTests {
 
     // Test to save a singer with three songs and verify the correct saving
     @Test
-    @Test
     func test_saveSingerWith3Song() async {
         guard enabled() else { return }
         bd.deleteAllSingers() // Clear all existing singers
@@ -152,7 +146,6 @@ extension CommonCoreData_SongsTests {
     }
 
     // Test to delete all songs and verify that the singer still exists
-    @Test
     @Test
     func test_deleteSong() async {
         guard enabled() else { return }
@@ -167,13 +160,14 @@ extension CommonCoreData_SongsTests {
 
     // Test to check performance when saving a large number of songs
     @Test
-    @Test
     func test_performanceSaveManySongs() async {
         guard enabled() else { return }
         bd.deleteAllSingers() // Clear all existing singers
 
-        // Time: 0.010 sec
-        measure {
+        // `measure` (XCTest) has no Swift Testing equivalent; the assertions below
+        // depend on running 10 times (measure's default iteration count), so that's
+        // replicated explicitly here rather than timed.
+        for _ in 0 ..< 10 {
             saveRandomCDataSinger(songs: 1000) // Save a singer with 1000 songs
         }
 
@@ -181,7 +175,6 @@ extension CommonCoreData_SongsTests {
         #expect(bd.allSongs().count == 1000 * 10)
     }
 
-    @Test
     @Test
     func test_emitEventOnDataBaseInsert() async {
         guard enabled() else { return }
@@ -203,12 +196,13 @@ extension CommonCoreData_SongsTests {
                     case .databaseDidDeletedContentOn: ()
                     case .databaseDidFinishChangeContentItemsOn:
                         didFinishChangeContent += 1
+                    case .databaseReloaded: ()
                     }
                 }
             }.store(in: TestsGlobal.cancelBag)
 
-        Common_Utils.delay { [weak self] in
-            self?.bd.save()
+        Common_Utils.delay {
+            bd.syncSave()
         }
 
         // Verify that the event is emitted

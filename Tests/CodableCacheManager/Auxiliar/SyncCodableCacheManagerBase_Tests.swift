@@ -35,7 +35,7 @@ struct SyncCodableCacheManager_Tests {
     }
 
     private var sampleWebAPIUseCase: SampleWebAPIUseCase {
-        SampleWebAPIUseCase()
+        SampleWebAPIUseCase(codableCacheManager: Common.CacheManagerForCodableUserDefaultsRepository.shared)
     }
 
     @Test(arguments: CodableCacheBackend.allCases)

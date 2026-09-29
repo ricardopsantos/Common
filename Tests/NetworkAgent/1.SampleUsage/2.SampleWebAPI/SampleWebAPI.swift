@@ -7,9 +7,15 @@ import Foundation
 import Combine
 @testable import Common
 
-public class SampleWebAPI: CommonNetworking.NetworkAgentClient, NetworkAgentProtocol {
-    public var client: CommonNetworking.NetworkAgentClient {
-        CommonNetworking.NetworkAgentClient(session: urlSession)
+/// Legacy (pre-refactor) client, kept only for the legacy `2.Tests/SampleWebAPI_Tests.swift`
+/// suite. Renamed to avoid colliding with the modern `SampleWebAPI` in `1.SampleWebAPI/`.
+public class SampleWebAPILegacy: CommonNetworking.NetworkAgentClient, NetworkAgentProtocol {
+    // `NetworkAgentProtocol.client` requires `CommonNetworking.NetworkAgent`, a different
+    // type from `NetworkAgentClient` (which this class subclasses for `run`/`runAsync`,
+    // used directly below instead of going through `client`). Only present to satisfy
+    // the protocol requirement.
+    public var client: CommonNetworking.NetworkAgent {
+        CommonNetworking.NetworkAgent(session: urlSession)
     }
 
     #if targetEnvironment(simulator)

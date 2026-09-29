@@ -19,11 +19,10 @@ struct SampleWebAPI_Tests {
         TestsGlobal.cancelBag.cancel()
     }
 
-    private var sampleWebAPIUseCase: SampleWebAPIUseCase {
-        SampleWebAPIUseCase()
+    private var sampleWebAPIUseCase: SampleWebAPIUseCaseLegacy {
+        SampleWebAPIUseCaseLegacy()
     }
 
-    @Test
     @Test
     func test_fetchEmployeesAvailabilityCustom() async {
         guard enabled() else { return }
@@ -39,7 +38,6 @@ struct SampleWebAPI_Tests {
         #expect(await eventually { counter == 1 })
     }
 
-    @Test
     @Test
     func test_fetchEmployeesAvailabilityGenericPublisher() async {
         guard enabled() else { return }
@@ -63,7 +61,6 @@ struct SampleWebAPI_Tests {
     }
 
     @Test
-    @Test
     func test_fetchEmployeesAvailabilityCustomWithCache() async {
         guard enabled() else { return }
         var counter = 0
@@ -79,7 +76,6 @@ struct SampleWebAPI_Tests {
     }
 
     @Test
-    @Test
     func test_fetchEmployeesAvailabilityGenericPublisherWithCache() async {
         guard enabled() else { return }
         var counter = 0
@@ -94,7 +90,6 @@ struct SampleWebAPI_Tests {
         #expect(await eventually { counter == 1 })
     }
 
-    @Test
     @Test
     func test_sslPiningWithCertificates() async {
         guard enabled() else { return }

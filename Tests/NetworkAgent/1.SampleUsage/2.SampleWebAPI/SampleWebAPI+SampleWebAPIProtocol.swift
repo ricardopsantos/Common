@@ -11,7 +11,7 @@ import CryptoKit
 //
 // MARK: - SampleWebAPIProtocol
 //
-extension SampleWebAPI: SampleWebAPIProtocol {
+extension SampleWebAPILegacy: SampleWebAPIProtocol {
     //
     // MARK: - Generic api calls
     //
@@ -28,7 +28,7 @@ extension SampleWebAPI: SampleWebAPIProtocol {
                 request: request.urlRequest!,
                 decoder: .defaultForWebAPI,
                 logger: defaultLogger,
-                responseType: request.responseFormat, onCompleted: {
+                responseFormat: request.responseFormat, onCompleted: {
                     CronometerAverageMetrics.shared.end(key: cronometerAverageMetricsKey)
                 }
             )
@@ -48,11 +48,11 @@ extension SampleWebAPI: SampleWebAPIProtocol {
                 request: request.urlRequest!,
                 decoder: .defaultForWebAPI,
                 logger: defaultLogger,
-                responseType: request.responseFormat,
-                onCompleted: {
-                    CronometerAverageMetrics.shared.start(key: cronometerAverageMetricsKey)
-                }
+                responseFormat: request.responseFormat
             )
+            .runBlockAndContinue { _ in
+                CronometerAverageMetrics.shared.start(key: cronometerAverageMetricsKey)
+            }
             .flatMap { response in
                 Just(response.modelDto).setFailureType(to: CommonNetworking.APIError.self).eraseToAnyPublisher()
             }
@@ -83,11 +83,11 @@ extension SampleWebAPI: SampleWebAPIProtocol {
             request: request.urlRequest!,
             decoder: .defaultForWebAPI,
             logger: defaultLogger,
-            responseType: request.responseFormat,
-            onCompleted: {
-                CronometerAverageMetrics.shared.start(key: cronometerAverageMetricsKey)
-            }
+            responseFormat: request.responseFormat
         )
+        .runBlockAndContinue { _ in
+            CronometerAverageMetrics.shared.start(key: cronometerAverageMetricsKey)
+        }
         .flatMap { response in
             Just(response.modelDto).setFailureType(to: CommonNetworking.APIError.self).eraseToAnyPublisher()
         }
@@ -98,7 +98,7 @@ extension SampleWebAPI: SampleWebAPIProtocol {
 //
 // MARK: - SampleWebAPIProtocol
 //
-fileprivate extension SampleWebAPI {
+fileprivate extension SampleWebAPILegacy {
     private func buildRequest(api: SampleWebAPIMethods) -> CommonNetworking.NetworkAgentRequest {
         .init(
             path: api.data.path,
